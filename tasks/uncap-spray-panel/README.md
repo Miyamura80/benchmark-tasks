@@ -37,7 +37,9 @@ IsaacSim6.1.0.0, InspectRobots1.0.0/agent0.30.0, and yam-arena revision
 `https://github.com/isaac-sim/IsaacLab-Arena` at
 `c7edf3a9d5d8276565208f72422f8f8a0806d6cf`. Native physics960Hz uses the
 baseline body solver. The demo was tested on one L40S; runtime on other hardware
-is unmeasured. Follow the launchable setup at that revision before running these commands;
+is unmeasured. Run `bash launchable/setup.sh` in the launchable repository checked out at that
+revision before running these commands. The exact installer is
+[launchable/setup.sh](https://github.com/ttpierson/YAM-inspect-Isaac/blob/25a2963d10451265dd2a6cbddea69d6a3b3b9b0d/launchable/setup.sh);
 this task reuses its installed Arena environment rather than a separate Python
 virtualenv. Full package version pins are in `RUNTIME.json`. Use a NEW log directory and fresh native reset:
 
