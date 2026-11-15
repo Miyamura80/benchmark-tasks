@@ -1,0 +1,107 @@
+# Uncap a spray can and coat a circular plaque
+
+Remove and park the cap, coat the fixed80mm white plaque, then hold the can
+upright and steady in the left gripper with the nozzle released and right hand
+clear. The can need not be set down. Exact layout, scoring, reset and fidelity
+are specified in `task.json`, `config.py`, `mechanics.py` and `scoring.py`.
+
+**Fresh clock-only demo:1.0. Genuine Dream run attempted; renderer failed before
+any recorded action. Media bundle:`M-Q4X9HF`.** The historical privileged-teacher029 run scored
+1.0; it is development evidence and is not submission-policy proof. The recorded policy and failed Dream attempt are documented separately.
+
+## Setup and score
+
+The fixed seed0 scene contains two ordinary YAM arms, a capped250g can with a
+moving spring-return nozzle, blue cap pad, grey can pad/50mm riser, white80mm
+plaque,360mm backing, steel stand and work mat. Coordinates are world metres;
+table z=0.7475. No jitter or convenient grasp handle is added. `task.json`
+lists every object, size and starting pose; the setup screenshot is included in the media bundle.
+
+Scores are0.25 for removed/parked cap;0.50 for at least50% coating with at most
+15% cumulative overspray;0.75 for at least90%;1.00 adds the measured upright,
+steady left-held/nozzle-off/opposing-contact/right-clear finish for1s. All52
+sample centres,0.08s dose, contact and pose thresholds are in the unchanged
+scorer. Invalid samples/drops earn0. Coarse cone quadrature and native spring/
+torsional-contact approximations are uncalibrated, as disclosed in `task.json`.
+
+## Run and score
+
+Requires the pinned YAM/Inspect Robots Isaac environment, NumPy, renderer and
+model-service access for Dream-1. The package retains the custom native runner;
+loading `task.py` alone does not install its passive mechanics/scorer adapter.
+The tested runtime is pinned in `RUNTIME.json`: Ubuntu24.04, Python3.12.16,
+IsaacSim6.1.0.0, InspectRobots1.0.0/agent0.30.0, and yam-arena revision
+`0059d02a1a91bc6834c1d0846022891df0c78730`. The YAM launchable source is
+`https://github.com/ttpierson/YAM-inspect-Isaac` at
+`25a2963d10451265dd2a6cbddea69d6a3b3b9b0d`; Arena is
+`https://github.com/isaac-sim/IsaacLab-Arena` at
+`c7edf3a9d5d8276565208f72422f8f8a0806d6cf`. Native physics960Hz uses the
+baseline body solver. The demo was tested on one L40S; runtime on other hardware
+is unmeasured. Follow the launchable setup at that revision before running these commands;
+this task reuses its installed Arena environment rather than a separate Python
+virtualenv. Full package version pins are in `RUNTIME.json`. Use a NEW log directory and fresh native reset:
+
+```sh
+# Scripted submission candidate: clock-only playback, normal native RGB enabled.
+python tasks/uncap-spray-panel/run.py --policy recorded-demo --stage full \
+  --physics-hz 960 --max-steps 2400 --log-dir /tmp/spray-recorded-demo
+
+# Dream-1 attempt. The recorded attempt failed in RTX; no completed score is claimed.
+python tasks/uncap-spray-panel/run.py --policy dream --stage full \
+  --physics-hz 960 --max-steps 2400 --log-dir /tmp/spray-dream
+
+# CPU checks (NumPy and the pinned yam_arena import path required).
+python -m unittest discover -s tasks/uncap-spray-panel -p 'test*.py'
+```
+
+Seed0 and object_jitter0 are fixed by the runner. Control is20Hz; physics960Hz;
+limit2400 applied14D joint/gripper commands/120 simulated seconds. The replay
+has779 unchanged recorded actions plus at most40 final-hold actions:819 actions/
+40.95s maximum. Measured scores are emitted by the native runner/registered
+`task_score` scorer, using actual state/contact/dose telemetry. Missing samples
+invalidate the trial. Preserve sources, run log, mode, result, trace and media.
+
+Fresh standard-reset playback030 reached1.0 in779 actions/38.95 simulated seconds,
+with100% coverage and5.24152% overspray. Independent geometry/dose/scoring audit
+passed; all779 actual14D commands exactly match the frozen action dataset.
+Launch was20:41:11UTC; the completed score-summary file was written20:46:19.24UTC,
+308.24s later including startup. This is not a precise simulation-loop benchmark. Tested versions/revisions are
+in `RUNTIME.json`. Demo video contains all780 captured states at20fps/39s.
+
+## Demo provenance and observation contract
+
+`recorded_demo.py` reads only `Observation.state_time`; its reset ignores scene
+state. It imports no teacher/telemetry/FK/native-object interface and has no
+feedback fallback. Dataset779 ordinary bounded14D commands came from the
+privileged029 teacher offline, unchanged:
+SHA256`18c5770b6db55699669193644402a8e3ccc033e656436fc910a9111e3ff0bd63`.
+This is fixed-layout playback, not an autonomous generalization claim. See
+`RECORDED_DEMO.md` and the bundled dataset/metadata for alignment and hashes.
+The separate `--policy demo` is the privileged development teacher and is NOT
+submitted as the observation-limited demonstration. Fresh initial-state
+playback030 reached1.0 within the declared limit. TraceSHA256:
+`5e471c1f9f3d183865c19e04f4f2dd39375f101185b18abc6279627f78f2353c`.
+
+## Evidence and media limits
+
+Historical teacher029 has an audited1.0/100% coverage/5.24152% overspray result,
+with an explicitly labelled offline exact-physics replay. It stopped before its
+auxiliary20mm finger-face cleanup; no can parking/cleanup completion is claimed.
+Those historical details remain in `VALIDATION.json`, clearly distinct from
+the fresh clock-demo proof and failed model-attempt evidence.
+
+`--no-video` is an engineering-only option: the runner marks it diagnostic,
+state-only and media_eligible=false. Its pose/paint replay is OFFLINE animation
+of recorded physics, not native RGB footage or model camera observations.
+The clearly labelled faithful offline Storm render depicts the SAME fresh
+clock-only native episode after full source/geometry/paint/score audit; raw
+diagnostic flags remain unchanged. Public rules do not expressly ban
+such demo rendering, but reviewer acceptance is uncertain. Dream still requires
+actual camera observations and genuine model video. The780-frame same-episode demo and first-frame setup screenshot are prepared.
+The genuine Dream attempt failed before any recorded action. Its2.4s video
+contains48 actual native RGB arrays per camera; it is initialization footage,
+not a completed model trial. No model score is claimed. The exact renderer error
+was `VkResult: ERROR_DEVICE_LOST`, followed by `submitToQueueCommon failed.` and
+`A GPU crash occurred. Exiting the application...`; process exited139.
+The SDK entered its inference call, but there is no action or provider-response
+record; whether the HTTP request reached the provider is unknown. Source and error evidence are retained. The uploaded media bundle is `M-Q4X9HF`.

@@ -1,0 +1,21 @@
+{
+  "title": "Uncap a spray can and coat a circular plaque",
+  "category": "Other",
+  "keywords": [
+    "bimanual",
+    "aerosol can",
+    "cap removal",
+    "spray coating",
+    "overspray",
+    "nozzle actuation"
+  ],
+  "instruction": "Remove the cap from the spray-paint can and put it on the blue pad. Spray a blue coat over the single white circular plaque, keeping paint off the surrounding backing. Finish holding the can upright and steady in the left gripper, with its nozzle released and the right hand clear.",
+  "context": "Small aerosol coating jobs combine cap handling, stable holding, nozzle pressure and keeping paint off the surrounding surface. The target is one fixed household-sized plaque.",
+  "setup": "Fixed seed0, no object jitter. World metres, +x forward, +y left, +z up; table top z=0.7475. Ordinary two YAM arms with parallel grippers and unchanged physical wrist-camera housings. Orange rigid aluminium can:52mm diameter,140mm overall body height,250g, upright root(0.26,0,0.8675), outlet facing+x;80x80x50mm grey riser at(0.26,0,0.7725). Initially seated hollow charcoal plastic cap:60mm diameter,34mm tall,18g, root(0.26,0,0.9545), approximately3mm wall/2mm lid. White plastic button:18mm diameter,10mm tall,3g, root(0.26,0,0.9445),3mm downward travel. Blue cap pad100x100x2mm at(0.34,-0.10,0.7485); grey can pad same size at(0.26,0,0.7485). Fixed white circular plaque:80mm diameter,2mm thick, faces\u2212x, frontx=0.47, centre(y,z)=(-0.035,0.9525); fixed grey backing360x360x12mm centred(0.478,-0.035,0.9525). Steel support behind it at(0.52,-0.035,0.7475):two120x26x6mm feet at localy\u00b10.13,450mm uprights, braces/crossbar/mounts, exact beam geometry in mechanics.py. Work mat570x630x1mm centred(0.30,0,0.7480). No prepared grasp handles, paint strips or removed-cap start.",
+  "scoring": "End-state score from actual native geometry/contact and accumulated measured spray dose.0.25:cap physically detached and more than60mm from its seated location, then parked within45mm horizontally and12mm vertically of its pad target, speed<20mm/s.0.50:above,\u226550% of52 plaque sample centres coated and cumulative overspray\u226415%.0.75:above,\u226590% coverage.1.00:above plus can within10deg upright and speed<20mm/s, button travel<0.5mm, right TCP>70mm from both can and cap, and both named left fingertips have opposing can contacts\u22650.1N each (normalized dot\u2264\u22120.5), continuously1s. Each cell requires0.08 effective plume-centre seconds; emission requires\u22652mm actual button travel after cap removal. Paint outside target counts cumulatively. Missing/nonfinite/nonmonotonic samples or a can/cap drop>30mm below table invalidates all credit. No parking or left-hand release required at finish.",
+  "run_limit": "2,400 actions (120 seconds at20Hz); native physics960Hz,48 substeps/action",
+  "reset_notes": "Use a fresh native reset with cap seated, button released, zero paint dose, original can/pad/plaque layout and seed0. Do not restore a manipulated episode or reuse painted surface state.",
+  "fidelity": "Rigid compound can/cap/button. Uncalibrated cap spring1800N/m releases at4mm; button2200N/m,1N\u00b7s/m damping;3mm finger torsion patch. Paint uses12deg cone quadrature,120\u2013300mm range,10mm grid/0.08s dose and coarse sphere occlusion, not CFD or calibrated film thickness. Dose drives appearance. Clock-only demo replays commands from an offline privileged teacher; fresh-reset replay scored1.0; model renderer failed. Teacher029 is not submission proof. Details in README.",
+  "scores": "Clock-only scripted demo:1.0 in779 actions/38.95s. Dream-1 attempt: renderer failed with \"VkResult: ERROR_DEVICE_LOST\" before any recorded action; no completed model score. Model video shows2.4s of actual captured initialization RGB.",
+  "media": "M-Q4X9HF"
+}
