@@ -45,6 +45,8 @@ ANGULAR_OFFSETS = (-.15, -.075, 0, .075, .15)
 TARGET = .92
 PORCELAIN = (.91, .90, .85)
 SOIL = (.24, .095, .031)
+SEAT_COLOR = (.97, .97, .95)
+TANK_CENTER = (.487, CENTER[1])
 
 OBJECTS = [
     Box("bowl_support", (*CENTER, TOP + .011), size=(.340, .222, .022),
@@ -186,11 +188,54 @@ def rings(profiles, count=80):
     return points, faces
 
 
+def rounded_housing(center, levels):
+    """Loft rounded rectangles with independent depth, width, and corner radii."""
+    points = []
+    for z, depth, width, radius in levels:
+        for corner in range(4):
+            angle = corner * pi / 2
+            cx = center[0] + (depth / 2 - radius) * (1 if corner in (0, 3) else -1)
+            cy = center[1] + (width / 2 - radius) * (1 if corner < 2 else -1)
+            for index in range(9):
+                theta = angle + pi * index / 16
+                points.append((cx + radius * cos(theta), cy + radius * sin(theta), z))
+    n = 36
+    faces = [(row * n + i, row * n + (i + 1) % n,
+              (row + 1) * n + (i + 1) % n, (row + 1) * n + i)
+             for row in range(len(levels) - 1) for i in range(n)]
+    faces.extend([tuple(reversed(range(n))), tuple(range(len(points) - n, len(points)))])
+    return points, faces
+
+
 class View:
     def __init__(self, state):
         g = self.g = Geometry()
         g.mesh("VitreousChinaBowl", *rings(INNER_PROFILE + OUTER_PROFILE), PORCELAIN)
-        g.cylinder("PorcelainFoot", (CENTER[0], CENTER[1], TOP + .023), .088, .032, PORCELAIN)
+        seat = ((.151, .115, RIM + .007), (.153, .117, RIM + .014),
+                (.160, .124, RIM + .019), (.175, .137, RIM + .019),
+                (.182, .144, RIM + .014), (.184, .146, RIM + .006))
+        g.mesh("OpenSeatRing", *rings(seat), SEAT_COLOR)
+        for side in (-1, 1):
+            g.cylinder(f"SeatHinge{side}", (.426, CENTER[1] + side * .069, RIM + .012),
+                       .014, .032, SEAT_COLOR, axis="Y")
+        g.mesh("PorcelainPlinth", *rounded_housing(CENTER, (
+            (TOP, .344, .226, .040), (TOP + .005, .352, .234, .038),
+            (TOP + .023, .352, .234, .038), (TOP + .040, .294, .214, .037),
+        )), PORCELAIN)
+        g.box("CisternFoot", (*TANK_CENTER, TOP + .053), (.078, .165, .106), PORCELAIN)
+        g.mesh("RearCistern", *rounded_housing(TANK_CENTER, (
+            (TOP + .088, .073, .198, .019), (TOP + .100, .091, .230, .022),
+            (TOP + .196, .097, .245, .023), (TOP + .207, .094, .244, .022),
+        )), PORCELAIN)
+        g.mesh("CisternLidSeam", *rounded_housing(TANK_CENTER, (
+            (TOP + .207, .094, .244, .022), (TOP + .211, .095, .245, .022),
+        )), (.53, .56, .55))
+        g.mesh("OverhangingCisternLid", *rounded_housing(TANK_CENTER, (
+            (TOP + .211, .102, .252, .024), (TOP + .216, .108, .257, .025),
+            (TOP + .225, .106, .255, .024), (TOP + .232, .095, .243, .021),
+        )), SEAT_COLOR)
+        g.cylinder("FlushButtonCollar", (*TANK_CENTER, TOP + .233), .013, .003, (.44, .48, .50))
+        g.cylinder("FlushButton", (*TANK_CENTER, TOP + .235), .009, .003, (.74, .77, .78))
         g.sphere("Water", (*CENTER, RIM - .075), (.059, .050, .002), (.13, .37, .43))
         g.cylinder("BrushStand", (*HOLDER[:2], TOP + .032), .030, .050, (.10, .23, .27))
         g.cylinder("HolderLiner", (*HOLDER[:2], TOP + .058), .026, .006, (.10, .13, .15))

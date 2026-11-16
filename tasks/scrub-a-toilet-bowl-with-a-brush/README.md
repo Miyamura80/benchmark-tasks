@@ -7,6 +7,7 @@ Remove four brown marks inside the bowl, including two under the rim, then retur
 | Part | Material, dimensions and fixed reset |
 | --- | --- |
 | Toilet bowl | Compact white vitreous-china bowl section. Outer rim 386 × 304 mm, opening 294 × 222 mm, 101 mm deep from rim to tabletop. Centred at (263, −124) mm, with rim 101 mm above the table. The ceramic is held in a 340 × 222 mm support. |
+| Toilet trim | The scene includes an open seat ring with hinges and a rear cistern with an overhanging lid and flush button. The cistern is behind the brush working area. |
 | Brush and holder | Nylon bristles on a rounded 46 mm head, round shaft, and 22 mm rubber grip. The robot grasps the low section of a 230 mm brush handle, 64 mm above the bristle centre. Start upright in the holder at (155, −306) mm, grip centre 112 mm above the table. |
 | Stains | Four clusters of five washable brown pigment patches. Two opposite patches near the back-facing lip, 10 mm below the rim, and two on the sloping bowl wall, 18 mm below the rim. Angles and radii are listed in `task.py`. Reset each patch to fully soiled. |
 | Waterline | Fixed visual surface at 75 mm below the rim. Use clean water and washable marks for a bench trial. No cleaners are needed. |
@@ -35,6 +36,8 @@ A marked region is clean when at least 92% of its pigment is gone. Score 1.0 whe
 YAM runs in IsaacLab with stock station cameras. The bristles use a swept contact footprint and tangential travel to remove dirt from the curved ceramic. A brush tip outside the inner bowl, above the mark or stationary removes no pigment. The holder and brush grasp use geometric constraints. Bristle flex, scrubbing force, aqueous flow and chemical cleaning are approximated or omitted. The tool path is driven by actual robot joint positions. The scripted controller uses fixed robot targets.
 
 ## Recorded results
+
+The recorded videos and setup image show the earlier bowl exterior. The seat and cistern revision uses the same bowl contact surface and brush trajectory.
 
 | Trial | Score | Control steps | Runtime including startup |
 | --- | ---: | ---: | ---: |
