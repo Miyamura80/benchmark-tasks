@@ -25,15 +25,21 @@ The specified component and nominal spacing are reproducible. The 110 mm free ce
 Use Inspect Robots 1.0 and the YAM Arena station from the RoboCurve walkthrough. From this folder, with the Arena environment active:
 
 ```bash
-BELT_SETUP_PNG=setup.png python run_task.py yam_scripted --log-dir runs/demo --max-steps 590
+BELT_SETUP_PNG=setup.png python run_task.py yam_scripted --log-dir runs/demo --max-steps 650
 python run_task.py dream --log-dir runs/dream
-python run_task.py yam_scripted --control release-before-tightening --log-dir runs/release --max-steps 590
+python run_task.py yam_scripted --control release-before-tightening --log-dir runs/release --max-steps 650
 python controls.py --out runs/controls
 python make_evidence.py runs/demo demo.mp4
 python make_evidence.py runs/dream dream.mp4 --title 'Dream-1 baseline'
 ```
 
-The wrapper registers station reset and the task scorer, then calls the standard Inspect Robots runner with `yam_arena` and `task_score`. The run limit is 1,400 steps at 20 Hz (70 simulation seconds). The scripted evidence runs use a 590-step cap. The station seed is 42 and there is no object jitter. Recorded JSON files contain the trial scores, and `mechanism.jsonl` records clamp load, plate position, test state, and hand release at each control step. `controls.py` tests the reduced-order mechanism independently of robot IK. It exports the exact trace for each negative control.
+The wrapper registers station reset and the task scorer, then calls the standard Inspect Robots runner with `yam_arena` and `task_score`. The run limit is 1,400 steps at 20 Hz (70 simulation seconds). The scripted evidence runs use a 650-step cap. The station seed is 42 and there is no object jitter. Recorded JSON files contain the trial scores, and `mechanism.jsonl` records clamp load, plate position, test state, and hand release at each control step. `controls.py` tests the reduced-order mechanism independently of robot IK. It exports the exact trace for each negative control.
+
+## Revised demonstration
+
+The revised native scripted demo scored 1.0 in 595 control steps. It recorded
+1.4185 mm on both post-release loads and 0.196 N m of estimated torque per bolt.
+The revision still needs physical calibration of the fixture.
 
 ## Historical trials using the previous scorer
 
