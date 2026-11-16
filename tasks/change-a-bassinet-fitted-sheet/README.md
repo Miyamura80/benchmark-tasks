@@ -32,9 +32,11 @@ The runner uses seed 42, 20 Hz and a 1,400-step (70 s) limit, with zero object j
 
 Full credit requires the released used sheet entirely clear of the mattress (no material points within its footprint at or above 3 mm below its underside) and at least 65% of its material sample points inside the laundry zone, all four clean elastic pockets seated and released, and at least 88% of the clean sheet's interior sample points lying on the mattress-height band. Score 0.17 for stripping the used sheet, another 0.08 for placing it in the laundry zone, and another 0.155 for each seated clean pocket after the used sheet has been stripped. The last 0.13 requires the complete result. A physical trial uses a top view, corner photos and an inspection of the mattress surface.
 
-Cloth is simulated as a mass-point grid with stretch and shear constraints and mattress collision. The fitted hem remains caught until it is stretched clear; installation follows an outside-to-under motion and a release. The loose clean corners are kept in their initial folds until picked, representing tray friction. Jaw pinch and elastic edge retention are geometric approximations; the model omits fibre mechanics, seam damage, and cloth-on-cloth collisions. Both arms and their cameras run in IsaacLab. The scripted policy commands fixed robot waypoints.
+Cloth is simulated as a mass-point grid with stretch and shear constraints and mattress collision. The fitted hem remains caught until it is stretched clear; installation follows an outside-to-under motion and a release. The loose clean corners are kept in their initial folds until picked, representing tray friction. Jaw pinch and elastic edge retention are geometric approximations; the model omits fibre mechanics, seam damage, and cloth-on-cloth collisions. A denser visible fabric mesh follows the underlying contact grid. The elastic hem wraps down the mattress sides as its corner pockets seat, and the sewn tabs droop when released. Both arms and their cameras run in IsaacLab. The scripted policy commands fixed robot waypoints.
 
 ## Recorded results
+
+The recorded videos and setup image show the earlier cloth rendering. A replay of the recorded arm endpoints checked the revised sheet view against the same contact model.
 
 | Trial | Score | Control steps | Runtime including startup |
 | --- | ---: | ---: | ---: |

@@ -139,9 +139,9 @@ def demo():
     return result
 
 
-def grid_faces():
-    return [(x*GRID_Y+y, (x+1)*GRID_Y+y, (x+1)*GRID_Y+y+1, x*GRID_Y+y+1)
-            for x in range(GRID_X-1) for y in range(GRID_Y-1)]
+def grid_faces(nx, ny):
+    return [(x*ny+y, (x+1)*ny+y, (x+1)*ny+y+1, x*ny+y+1)
+            for x in range(nx-1) for y in range(ny-1)]
 
 
 def make_positions():
@@ -353,6 +353,58 @@ class State:
         }
 
 
+# Render a denser fabric surface from the same simulated vertices. The sewn
+# skirt wraps the mattress wherever the adjacent elastic pockets are seated.
+RENDER_X, RENDER_Y = 29, 49
+U, V = np.meshgrid(np.linspace(0, 1, RENDER_X), np.linspace(0, 1, RENDER_Y), indexing="ij")
+HEM = np.r_[np.arange(RENDER_Y), np.arange(1, RENDER_X) * RENDER_Y + RENDER_Y - 1,
+            np.arange(RENDER_Y - 2, -1, -1) + (RENDER_X - 1) * RENDER_Y,
+            np.arange(RENDER_X - 2, 0, -1) * RENDER_Y]
+# Move each perimeter sample one grid point inward, including the four corners.
+HEM_INNER = (np.clip(HEM // RENDER_Y, 1, RENDER_X - 2) * RENDER_Y
+             + np.clip(HEM % RENDER_Y, 1, RENDER_Y - 2))
+HEM_FACES = [(i, (i + 1) % len(HEM), (i + 1) % len(HEM) + len(HEM), i + len(HEM))
+             for i in range(len(HEM))]
+
+
+def interpolate_axis(vertices, count):
+    """Interpolate with bounded cubic tangents so the folds have soft creases."""
+    t = np.linspace(0, len(vertices) - 1, count)
+    i = np.minimum(t.astype(int), len(vertices) - 2)
+    t = (t - i)[:, None, None]
+    a, b = vertices[i], vertices[i + 1]
+    before = vertices[np.maximum(i - 1, 0)]
+    after = vertices[np.minimum(i + 2, len(vertices) - 1)]
+    bend = .5 * t * (1 - t) * ((1 - t) * (b - before) - t * (after - a))
+    return np.clip(a + t*t*(3-2*t)*(b-a) + bend, np.minimum(a,b), np.maximum(a,b))
+
+
+def fabric_surface(sheet, fitted_corners):
+    xyz = sheet.xyz.reshape(GRID_X, GRID_Y, 3)
+    dense = interpolate_axis(interpolate_axis(xyz, RENDER_X).swapaxes(0, 1), RENDER_Y).swapaxes(0, 1)
+    if not np.any(fitted_corners > .28):
+        return dense.reshape(-1, 3)
+
+    # An elastic mattress skirt is short, while the upper panel stays wide.
+    # Each seated corner only draws in its connected part of the visual mesh.
+    fit = np.stack(((1-U)*(1-V), U*(1-V), U*V, (1-U)*V), axis=-1) @ fitted_corners
+    fit = np.clip((fit-.28)/.65, 0, 1)
+    fit *= fit * (3-2*fit)
+    skirt_x = np.clip(1 - np.minimum(U, 1-U)/.070, 0, 1)
+    skirt_y = np.clip(1 - np.minimum(V, 1-V)/.060, 0, 1)
+    skirt = np.maximum(skirt_x, skirt_y)**1.5
+    # Project the skirt over the top edge and down the side in separate
+    # bands, leaving a rounded shoulder instead of a diagonal plane.
+    x = np.interp(U, [0, .035, .072, .928, .965, 1],
+                  [X0-.008, X0-.006, X0-.002, X1+.002, X1+.006, X1+.008])
+    y = np.interp(V, [0, .03, .061, .939, .97, 1],
+                  [-Y-.008, -Y-.006, -Y-.002, Y+.002, Y+.006, Y+.008])
+    wrinkle = .0012 * np.sin(9*pi*U + 3*pi*V) * np.sin(12*pi*V)
+    z = ZTOP+.003 - (ZTOP+.003-SEAT[0,2])*skirt + wrinkle*(1-skirt)
+    fitted = np.stack((x, y, z), axis=-1)
+    return (dense + fit[..., None] * (fitted-dense)).reshape(-1, 3)
+
+
 class View:
     def __init__(self, state):
         g = self.g = Geometry()
@@ -362,25 +414,51 @@ class View:
         for j, y in enumerate((-.292, .292)):
             g.box(f"LaundryEdge{j}", (.093,y,TOP+.007), (.187,.007,.003), (.69,.65,.23))
         self.sheets = []
-        self.seams = []
+        self.hems = []
         self.tags = []
+        self.fitted_corners = [sheet.latched.astype(float) for sheet in (state.old, state.clean)]
         for i, (sheet, color, seam_color) in enumerate((
-            (state.old,(.64,.25,.19),(.72,.35,.25)),
-            (state.clean,(.18,.46,.63),(.21,.55,.71)),
+            (state.old,(.63,.25,.20),(.52,.18,.15)),
+            (state.clean,(.18,.46,.63),(.13,.35,.52)),
         )):
-            self.sheets.append(g.mesh(f"Fabric{i}",sheet.xyz,grid_faces(),color))
-            corners = []
-            for j in range(4):
-                marker = g.group(f"Pocket{i}_{j}")
-                g.sphere("SeamFold", (0,0,.002), (.013,.011,.005), seam_color, marker)
-                g.box("FabricPullTab", TAB_OFFSETS[j] * .55 + (0,0,.002), (.017,.037,.003),
-                      seam_color, marker)
-                corners.append(marker)
-            self.tags.append(corners)
+            points = fabric_surface(sheet, self.fitted_corners[i])
+            mesh = g.mesh(f"Fabric{i}", points, grid_faces(RENDER_X, RENDER_Y), color)
+            self.sheets.append(mesh)
+            hem = g.mesh(f"ElasticHem{i}", self.hem_points(points), HEM_FACES, seam_color)
+            self.hems.append(hem)
+            tabs = [g.mesh(f"PullTab{i}_{j}", self.tab_points(sheet, j),
+                           [(k,k+1,k+6,k+5) for k in range(4)], color)
+                    for j in range(4)]
+            self.tags.append(tabs)
         self.update(state)
+
+    @staticmethod
+    def hem_points(surface):
+        exterior = surface[HEM]
+        interior = surface[HEM_INNER]
+        offset = np.array([0, 0, .001])
+        return np.concatenate((exterior + offset, exterior + .47*(interior-exterior) + offset))
+
+    @staticmethod
+    def tab_points(sheet, i):
+        base = sheet.xyz[CORNER_I[i]]
+        lengths = np.linspace(0, 1, 5)
+        center = base + lengths[:, None] * TAB_OFFSETS[i]
+        # The free fabric tab droops under its own weight. A pinch straightens it.
+        drop = .009 if sheet.grasps[i] is None else .001
+        center[:, 2] += .002 - drop * lengths**2
+        width = .008 - .002 * lengths**2
+        cross = width[:, None] * (1., 0., .12)
+        return np.concatenate((center-cross, center+cross))
 
     def update(self,state):
         for i,sheet in enumerate((state.old,state.clean)):
-            self.g.points(self.sheets[i],sheet.xyz)
-            for marker,vertex in zip(self.tags[i],CORNER_I):
-                self.g.move(marker,sheet.xyz[vertex])
+            corners = self.fitted_corners[i]
+            # Let the fabric settle over several physics frames when a corner
+            # catches or releases, instead of snapping the visible panel.
+            corners += .38 * (sheet.latched - corners)
+            points = fabric_surface(sheet, corners)
+            self.g.points(self.sheets[i], points)
+            self.g.points(self.hems[i], self.hem_points(points))
+            for j, tab in enumerate(self.tags[i]):
+                self.g.points(tab, self.tab_points(sheet, j))
