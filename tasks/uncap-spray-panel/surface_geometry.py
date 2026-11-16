@@ -16,7 +16,7 @@ def _split(polygon,n,limit):
 def circle_cell_parts(y,z,half,center,radius,sides=128):
     """Partition one square into white/gray polygons; 128-sided inscribed circle.
 
-    This affects appearance only. The scorer uses exact radius at cell centres.
+    This affects appearance only. The scorer uses analytic circle/cell areas.
     Maximum radial visualization error is radius*(1-cos(pi/128)) < 13 microns.
     """
     local=[(y-center[0]+dy,z-center[1]+dz) for dy,dz in ((-half,-half),(half,-half),(half,half),(-half,half))]

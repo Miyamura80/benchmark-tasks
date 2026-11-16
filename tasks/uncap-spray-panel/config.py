@@ -21,6 +21,13 @@ PRESS_TRAVEL = .002
 SPRAY_HALF_ANGLE = 12.  # degrees
 MIN_RANGE, MAX_RANGE = .12, .30
 COAT_DOSE = .08  # effective seconds at plume centre
+# Photo-area rubric, fixed before rescoring the historical run. A visible coat
+# is at least the midpoint blend from the original surface to displayed blue.
+VISIBLE_COAT_FRACTION = .5
+VISIBLE_DOSE = VISIBLE_COAT_FRACTION*COAT_DOSE
+PLAQUE_AREA_M2 = 3.141592653589793*TARGET_RADIUS**2
+MAX_OFF_PLAQUE_AREA_M2 = .15*PLAQUE_AREA_M2  # 7.539822 cm², fixed plaque reference
+SPRAY_DOMAIN_TOLERANCE_M = 1e-9
 MAX_SPRAY_SECONDS = 12.
 CAN_COLOR = (1., .26, .025)
 CAP_COLOR = (.055, .065, .075)

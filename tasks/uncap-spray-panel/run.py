@@ -176,29 +176,30 @@ def configure_contact_diagnostic(configs,enabled):
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--policy',choices=['probe','capprobe','demo','recorded-demo','dream','rest-probe'],default='probe')
+    parser.add_argument('--policy',choices=['probe','capprobe','demo','recorded-demo','aimed-demo','dream','rest-probe'],default='probe')
     parser.add_argument('--contact-diagnostic',action='store_true',help='Unscored stages only: raw native contact points/friction; no forces applied')
     parser.add_argument('--physics-hz',type=int,choices=[240,960],default=240,help='Physics integration frequency; controller remains20Hz')
     parser.add_argument('--body-solver-32-8',action='store_true',help='Explicit can/button PhysX solver precision; all other physics unchanged')
     parser.add_argument('--rest-solver',choices=['baseline','32-8'],default='baseline',help='Unscored passive-rest coupon only')
     parser.add_argument('--stage',choices=['cap','press','full'],default='full')
-    parser.add_argument('--max-steps',type=int,default=2400)
+    parser.add_argument('--max-steps',type=int,default=1200)
     parser.add_argument('--render-sync',action='store_true',help='Use real RGB cameras with FXAA and synchronous rendering for the device-loss mitigation trial')
     parser.add_argument('--no-video',action='store_true',help='State-only demo engineering run; no camera renderer, images or eligible final media')
     parser.add_argument('--log-dir',type=Path,required=True)
     args=parser.parse_args()
-    if not 1 <= args.max_steps <= 2400:parser.error('max-steps must be 1..2400')
+    if not 1 <= args.max_steps <= 1200:parser.error('max-steps must be 1..1200')
     if args.policy=='rest-probe':args.stage='press';args.no_video=True
     elif args.rest_solver!='baseline':parser.error('--rest-solver is allowed only with --policy rest-probe')
     if args.contact_diagnostic and not (args.policy=='rest-probe' or (args.policy=='demo' and args.stage!='full')):parser.error('--contact-diagnostic requires an explicitly unscored demo stage or rest-probe')
-    if args.no_video and args.policy not in ('demo','recorded-demo','rest-probe'):parser.error('--no-video is allowed only with --policy demo/recorded-demo/rest-probe; image-based policies require cameras')
+    if args.no_video and args.policy not in ('demo','recorded-demo','aimed-demo','rest-probe'):parser.error('--no-video is allowed only with --policy demo/recorded-demo/aimed-demo/rest-probe; image-based policies require cameras')
     if args.no_video and args.render_sync:parser.error('--no-video cannot be combined with --render-sync')
-    if args.policy=='recorded-demo' and (args.stage!='full' or args.physics_hz!=960 or args.body_solver_32_8):parser.error('recorded-demo requires full stage,960Hz and baseline body solver')
+    if args.policy in ('recorded-demo','aimed-demo') and (args.stage!='full' or args.physics_hz!=960 or args.body_solver_32_8):parser.error('recorded-demo requires full stage,960Hz and baseline body solver')
     out=args.log_dir.expanduser().resolve();out.mkdir(parents=True,exist_ok=False)
     (out/'source').mkdir()
     sources=list(Path(__file__).parent.glob('*.py'))
     sources.append(Path(__file__).with_name('press_face.json'))
-    if args.policy=='recorded-demo':sources.extend(Path(__file__).with_name(name)for name in ('recorded_demo_actions.jsonl','recorded_demo_metadata.json'))
+    if args.policy in ('recorded-demo','aimed-demo'):sources.extend(Path(__file__).with_name(name)for name in ('recorded_demo_actions.jsonl','recorded_demo_metadata.json'))
+    if args.policy=='aimed-demo':sources.extend(Path(__file__).with_name(name)for name in ('aimed_demo_actions.jsonl','aimed_demo_metadata.json'))
     for source in sources:(out/'source'/source.name).write_bytes(source.read_bytes())
     (out/'source-sha256.json').write_text(json.dumps(
         {s.name:hashlib.sha256(s.read_bytes()).hexdigest() for s in sources},indent=2))
@@ -365,7 +366,7 @@ def main():
             self.mist.CreateDisplayColorAttr([(.45,.70,1.)])
             from surface_geometry import circle_cell_parts
             for i,p,target in SprayScorer.cells():
-                parts=circle_cell_parts(p[1],p[2],CELL*.49,TARGET_CENTER,TARGET_RADIUS)
+                parts=circle_cell_parts(p[1],p[2],CELL*.5,TARGET_CENTER,TARGET_RADIUS)
                 obj=UsdGeom.Mesh.Define(self.stage,f'/World/spray_surface/cell_{i}')
                 points=[];counts=[];indices=[];bases=[]
                 for polygon,white in parts:
@@ -580,12 +581,15 @@ def main():
     elif policy=='recorded-demo':
         from recorded_demo import register_policy
         policy=register_policy()
+    elif policy=='aimed-demo':
+        from aimed_demo import register_policy
+        policy=register_policy()
     elif policy=='demo':
         from demo_policy import register_policy
         policy=register_policy(cap_only=args.stage=='cap',press_only=args.stage=='press')
     diagnostic=args.no_video or args.policy in ('probe','capprobe') or (args.policy=='demo' and args.stage!='full')
-    (out/'mode.json').write_text(json.dumps(dict(policy=args.policy,stage=args.stage,diagnostic=diagnostic,render_sync=args.render_sync,
-                                               state_only=args.no_video,media_eligible=not diagnostic,contact_diagnostic=args.contact_diagnostic,physics_hz=args.physics_hz,body_solver_32_8=args.body_solver_32_8,recorded_clock_only=args.policy=='recorded-demo',passive_rest=args.policy=='rest-probe',rest_solver=args.rest_solver if args.policy=='rest-probe' else None)))
+    (out/'mode.json').write_text(json.dumps(dict(policy=args.policy,stage=args.stage,diagnostic=diagnostic,render_sync=args.render_sync,run_limit_actions=args.max_steps,
+                                               state_only=args.no_video,media_eligible=not diagnostic,contact_diagnostic=args.contact_diagnostic,physics_hz=args.physics_hz,body_solver_32_8=args.body_solver_32_8,recorded_clock_only=args.policy in ('recorded-demo','aimed-demo'),passive_rest=args.policy=='rest-probe',rest_solver=args.rest_solver if args.policy=='rest-probe' else None)))
     return cli(['run','--embodiment','uncap_spray_prototype','--policy',policy,
                 '-E',f'task={Path(__file__).parent / "task.py"}','-E','object_jitter=0',
                 '-E','control_hz=20','-E','cam_width=320','-E','cam_height=176',

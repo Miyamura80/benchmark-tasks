@@ -34,9 +34,10 @@ class PlaybackClock:
   if self.last_index is None and index!=0:raise ValueError('recorded policy requires fresh time-zero reset')
   if self.last_index is not None and index not in (self.last_index,self.last_index+1):raise ValueError('clock skipped or reversed a recorded action')
   if self.stopped and index!=self.last_index:raise RuntimeError('playback already requested stop')
-  if index>=819:raise RuntimeError('recorded playback exceeded bounded action budget')
-  self.last_index=index;self.stopped=index==818
-  return self.actions[min(index,778)].copy(),self.stopped
+  total=len(self.actions)+self.metadata['hold_steps']
+  if index>=total:raise RuntimeError('recorded playback exceeded bounded action budget')
+  self.last_index=index;self.stopped=index==total-1
+  return self.actions[min(index,len(self.actions)-1)].copy(),self.stopped
 
 class RecordedDemo:
  def __init__(self):

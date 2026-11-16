@@ -1,3 +1,13 @@
+# Historical dataset and revised early-release candidate
+
+The original779commands remain bundled unchanged for provenance. Under the revised visible-area scorer, native030 scores0.25, not1.0. The revised aimed_demo.py reads a separate pinned779-command dataset, compiled offline by compile_aimed_demo.py from the original commands. Both TCP paths receive the same smooth22mm-forward/2mm-right offset between actions530and610 while the parked cap is clear and the can is held. Orientations, all gripper commands, the prefix through530, and the original press/release timing are preserved. The online policy reads only state_time; no teacher, geometry, contacts or state estimates are read. A direct early-release splice was rejected before native use.
+
+NewdatasetSHA256:a355dc44db2a9a238eb23617c947650560f40444ae953efee4c17d73526feb05. MetadataSHA256:bc0ceb26ada7826af44df2ddb94e38e66c37f583361ca83cee523bf810b63e22. All779commands plus40bounded final holds fit within the revised1200-action/60-second limit. Recompiling changes the candidate and requires new native validation; do not regenerate after validating a recording.
+
+CPU waypoint IK, exactfloat32 transport and full robot-geometry screens passed. The common translation changes the finite riser support footprint; actual can support, grasp and nozzle motion remain native-validation requirements. No new full-score claim is made here.
+
+## Historical original playback documentation
+
 # Clock-only recorded demo candidate
 
 This fixed-layout, seed0 policy replays the **779 recorded commands** from

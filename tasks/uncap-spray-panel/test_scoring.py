@@ -3,7 +3,7 @@ import copy
 import math
 import unittest
 from config import *
-from scoring import SprayScorer,opposing_left_can_contacts,right_tcp_clear
+from scoring import SprayScorer,opposing_left_can_contacts,right_tcp_clear,cell_area_weights
 
 
 def sample(**changes):
@@ -35,25 +35,26 @@ class ScoringTests(unittest.TestCase):
         t.update(s);self.tick(t,s,20)
         self.assertEqual(t.value,.25);self.assertEqual(t.emitted,0)
 
-    def test_wrong_facing_is_overspray(self):
+    def test_wrong_facing_is_invalid_not_fictional_painted_area(self):
         t=SprayScorer();s=sample(cap_detached=True,cap=(CAP_PAD[0],CAP_PAD[1],TOP+.017),button_travel=.003,axis=(-1.,0.,0.))
         t.update(s);self.tick(t,s,20)
-        self.assertEqual(t.result()['overspray'],1);self.assertFalse(any(t.dose))
+        self.assertEqual(t.result()['off_target_mass_fraction_diagnostic'],1);self.assertEqual(t.result()['off_plaque_painted_area_m2'],0.);self.assertIsNotNone(t.invalid);self.assertFalse(any(t.dose))
 
     def test_far_spray_no_credit(self):
         t=SprayScorer();s=sample(cap_detached=True,cap=(CAP_PAD[0],CAP_PAD[1],TOP+.017),button_travel=.003,nozzle=(0.,0.,TARGET_CENTER[1]))
         t.update(s);self.tick(t,s,20)
-        self.assertFalse(any(t.dose));self.assertEqual(t.result()['overspray'],1)
+        self.assertFalse(any(t.dose));self.assertEqual(t.result()['off_target_mass_fraction_diagnostic'],1);self.assertEqual(t.result()['off_plaque_painted_area_m2'],0.);self.assertIsNotNone(t.invalid)
 
     def test_cap_off_but_not_parked_zero(self):
         t=SprayScorer();s=sample(cap_detached=True,cap=(.3,.2,TOP+.02))
         t.update(s);self.assertEqual(t.value,0)
 
-    def test_center_spray_coats_the_circle_and_preserves_overspray_accounting(self):
-        t=SprayScorer();s=sample(cap_detached=True,cap=(CAP_PAD[0],CAP_PAD[1],TOP+.017),button_travel=.003)
+    def test_mass_clean_centre_spray_can_still_fail_visible_area_limit(self):
+        t=SprayScorer();s=sample(cap_detached=True,cap=(CAP_PAD[0],CAP_PAD[1],TOP+.017),button_travel=.003,nozzle=(TARGET_X-.21,*TARGET_CENTER))
         t.update(s);self.tick(t,s,40)
         self.assertGreaterEqual(t.result()['coverage'],.9)
-        self.assertLess(t.result()['overspray'],.15)
+        self.assertGreater(t.result()['off_plaque_painted_area_m2'],MAX_OFF_PLAQUE_AREA_M2)
+        self.assertLess(t.result()['off_target_mass_fraction_diagnostic'],.15)
 
     def test_circular_mask_uses_radius_not_square_and_has_fifty_two_sample_cells(self):
         cells=list(SprayScorer.cells());targets=[(p,t) for _,p,t in cells if t]
@@ -66,7 +67,8 @@ class ScoringTests(unittest.TestCase):
         tracker=SprayScorer()
         for index,_,target in cells:
             if not target:tracker.dose[index]=COAT_DOSE*100
-        self.assertEqual(tracker.result()['coverage'],0.)
+        expected=sum(cell_area_weights()[i][0]for i,_,target in cells if not target)/PLAQUE_AREA_M2
+        self.assertAlmostEqual(tracker.result()['coverage'],expected);self.assertGreater(expected,0.)
 
     def test_budget_is_finite(self):
         t=SprayScorer();s=sample(cap_detached=True,cap=(CAP_PAD[0],CAP_PAD[1],TOP+.017),button_travel=.003)
@@ -142,6 +144,8 @@ class ScoringTests(unittest.TestCase):
         for i,_,target in t.cells():
             if target:t.dose[i]=COAT_DOSE
         t.emitted=1.;t.off_target=.2
+        for i,_,target in t.cells():
+            if not target:t.dose[i]=VISIBLE_DOSE
         t.update(sample(cap_detached=True,cap=(CAP_PAD[0],CAP_PAD[1],TOP+.017),hands_clear=True))
         self.assertEqual(t.value,.25)
 
@@ -162,7 +166,7 @@ class ScoringTests(unittest.TestCase):
         t=SprayScorer();s=sample(cap_detached=True,cap=(CAP_PAD[0],CAP_PAD[1],TOP+.017))
         t.update(s)
         s['can']=SPRAY_HELD_CAN
-        s['nozzle']=(CAN_START[0]+.009,*TARGET_CENTER)
+        s['nozzle']=(TARGET_X-.18,*TARGET_CENTER)
         s['button_travel']=.0027;self.tick(t,s,16)
         self.assertGreaterEqual(t.result()['coverage'],.9)
         self.assertLess(t.result()['overspray'],.15)

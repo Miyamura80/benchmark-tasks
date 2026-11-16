@@ -3,6 +3,7 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+from audit_trial import verify_final_full_score_hold
 import subprocess
 
 
@@ -26,6 +27,7 @@ def main():
         not audit.get('passed') or audit.get('score')!=1 or audit.get('trace_sha256')!=manifest['trace_sha256'] or
         audit.get('samples')!=len(rows) or manifest['frames']!=len(rows)):
         raise ValueError('preview requires a complete, audited, matching offline physics replay')
+    verify_final_full_score_hold(rows)
     names=('top_cam','left_cam','right_cam')
     cameras={name:sorted((replay/'frames'/name).glob('frame-*.png')) for name in names}
     for name,files in cameras.items():
@@ -34,7 +36,7 @@ def main():
     width,height=320,176
     output=args.output or replay/'complete-physics-replay.mp4'
     command=['/opt/homebrew/bin/ffmpeg','-y','-loglevel','error','-f','rawvideo',
-             '-vcodec','rawvideo','-pix_fmt','rgb24','-s',f'{2*width}x{3*height+72}',
+             '-vcodec','rawvideo','-pix_fmt','rgb24','-s',f'{2*width}x{3*height+96}',
              '-r','20','-i','-','-an','-c:v','libx264','-crf','20',
              '-pix_fmt','yuv420p','-movflags','+faststart',str(output)]
     process=subprocess.Popen(command,stdin=subprocess.PIPE)
@@ -52,9 +54,11 @@ def main():
                         cv2.FONT_HERSHEY_SIMPLEX,.45,(255,255,255),1)
             cv2.putText(title,'Recorded native poses; offline USD rendering, normalized lighting',(8,38),
                         cv2.FONT_HERSHEY_SIMPLEX,.36,(220,220,220),1)
-            footer=np.zeros((24,2*width,3),dtype=np.uint8);m=row['metrics']
-            text=f"{row['time']:.2f}s  score {m['score']:.2f}  coverage {m['coverage']:.0%}  overspray {m['overspray']:.1%}"
+            footer=np.zeros((48,2*width,3),dtype=np.uint8);m=row['metrics']
+            text=f"{row['time']:.2f}s  score {m['score']:.2f}  coverage {m['coverage']:.0%}  hold {m['finish_hold']:.2f}s"
             cv2.putText(footer,text,(8,17),cv2.FONT_HERSHEY_SIMPLEX,.44,(255,255,255),1)
+            area=f"Paint outside plaque {m['off_plaque_painted_area_cm2']:.2f} / {m['max_off_plaque_painted_area_cm2']:.2f} cm2"
+            cv2.putText(footer,area,(8,39),cv2.FONT_HERSHEY_SIMPLEX,.44,(255,255,255),1)
             process.stdin.write(np.concatenate([title,scene,wrists,footer],axis=0).tobytes())
         process.stdin.close()
         if process.wait()!=0:raise RuntimeError('composite encoding failed')

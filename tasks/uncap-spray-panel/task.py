@@ -3,7 +3,9 @@ from yam_arena.task_file import Box
 from config import *
 
 SCENE = 'station'
-SUCCESS_HOLD_S = 0.
+# Retain21 consecutive full-score states (1.0s elapsed at20Hz) before
+# termination; the adapter counts the first successful sample as one.
+SUCCESS_HOLD_S = 1.05
 SCORE_OVER = 'end'
 OBJECTS = [
     # run.py replaces the three proxies with compound cylindrical colliders.

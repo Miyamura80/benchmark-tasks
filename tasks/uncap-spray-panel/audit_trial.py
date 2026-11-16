@@ -7,6 +7,18 @@ from pathlib import Path
 from scoring import SprayScorer
 from config import PRESS_TRAVEL
 
+def verify_final_full_score_hold(rows):
+    """Require one real second of consecutive full-score endpoint samples."""
+    if not rows or rows[-1]['metrics']['score']!=1.:raise ValueError('no final full score')
+    first=len(rows)-1
+    while first>0 and rows[first-1]['metrics']['score']==1.:first-=1
+    tail=rows[first:]
+    if (tail[-1]['time']-tail[0]['time']<1.-1e-8 or
+        any(abs(b['time']-a['time']-.05)>1e-8 for a,b in zip(tail,tail[1:]))):
+        raise ValueError('video trace lacks a continuous one-second final full-score hold')
+    return dict(first_full_score_time_s=tail[0]['time'],final_time_s=tail[-1]['time'],
+                full_score_elapsed_s=tail[-1]['time']-tail[0]['time'],full_score_samples=len(tail))
+
 
 def audit(run):
     rows=[json.loads(x) for x in (run/'trajectory.jsonl').read_text().splitlines()]
@@ -38,10 +50,12 @@ def audit(run):
     summary=json.loads((run/'score-summary.json').read_text())
     if abs(summary['score']-scorer.value)>1e-7:raise ValueError('summary score mismatch')
     if scorer.value==1. and (not detached or not presses):raise ValueError('full score without physical cap/press evidence')
+    final_hold=verify_final_full_score_hold(rows) if scorer.value==1. else None
     return dict(passed=True,trace_sha256=hashlib.sha256((run/'trajectory.jsonl').read_bytes()).hexdigest(),samples=len(rows),control_steps=len(rows)-1,
                 duration=rows[-1]['time'],score=scorer.value,cap_detached=detached,
                 depressed_control_samples=presses,max_planned_ik_error_m=max_ik,
                 max_planned_ik_rotation_rad=max_rot,metrics=scorer.result(),
+                final_full_score_hold=final_hold,
                 scope='source integrity, all-sample scorer replay and measured stage evidence; not contact-force calibration')
 
 
