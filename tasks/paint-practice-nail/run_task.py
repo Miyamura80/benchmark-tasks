@@ -143,23 +143,27 @@ def enable_replay(task_path):
     clip = np.asarray(json.loads(task_path.with_name("scripted_actions.json").read_text()), dtype=np.float64)
     if clip.ndim != 2 or clip.shape[1] != 14 or len(clip) == 0 or not np.isfinite(clip).all():
         raise ValueError("Expected a nonempty sequence of finite 14-axis joint targets")
-    # The new foam-tip dock raises the handle by 4 mm. Move only the
-    # pickup and lift, leaving the existing polish stroke available to tune.
+    # Raise the pickup for the slotted dock. Lower the painting pass so the
+    # native foam collider can make contact with the curved nail.
     from yam_arena import station
 
-    pickup = clip.copy()
+    retargeted = clip.copy()
     base = station.BASES["left"]
-    for i in range(42, 105):
-        fraction = min(1., max(0., (i-42)/15), max(0., (104-i)/17))
-        start, rotation = ik.tcp_pose(clip[i,:6], base)
+    for i, action in enumerate(clip):
+        pickup = float(np.clip(min((i-42)/15, (104-i)/17), 0., 1.))
+        stroke = float(np.clip((i-173)/23, 0., 1.))
+        dz = .004*ik.smoothstep(pickup) - .0045*ik.smoothstep(stroke)
+        if dz == 0.:
+            continue
+        start, rotation = ik.tcp_pose(action[:6], base)
         q, position_error, rotation_error = ik.solve(
-            start + (0.,0.,.004*ik.smoothstep(fraction)),
-            ik.matrix_to_quat_xyzw(rotation), clip[i,:6], base_pos=base, iters=95,
+            start + (0.,0.,dz), ik.matrix_to_quat_xyzw(rotation),
+            action[:6], base_pos=base, iters=95,
         )
         if position_error > .001 or rotation_error > .025:
-            raise ValueError(f"Applicator pickup misses IK tolerance at action {i}")
-        pickup[i,:6] = q
-    clip = pickup
+            raise ValueError(f"Applicator pose misses IK tolerance at action {i}")
+        retargeted[i,:6] = q
+    clip = retargeted
     reset, act = YamScriptedPolicy.reset, YamScriptedPolicy.act
 
     def is_this_task(policy):
