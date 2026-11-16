@@ -18,7 +18,7 @@ This is an unpowered bench fixture with the pulley axes horizontal in Y. All coo
 | Driver and cradle | 7 mm socket for the M4 hex heads, 53 mm from grip centre to socket tip, with orange T-handle. Start in its 63 × 51 × 16 mm cradle at (0.165, −0.149), at +60° yaw. |
 | Test gauge | Fixture-mounted spring probe centred over the upper belt span. Press the blue cap at (0.257, 0.032, 0.8335) to its 10 mm detent. A kinematically linked 10:1 scale shows the loaded measurement in the green band at 1.40–1.95 mm, and retains its reading on release. Reset its follower to zero. |
 
-The specified component and nominal spacing are reproducible. The 110 mm free centre distance is calculated from the pitch geometry (300 mm belt minus an 80 mm pulley circumference, divided by two). The 2.5 N force and 1.40–1.95 mm pass band are **fixture-specific design inputs**, pending physical bench calibration. The [Gates force–deflection procedure](https://www.gates.com/content/dam/documents-library/catalogs/powergrip-gt3-drive-design-manual-en.pdf) supports a perpendicular test at midspan. Its 1/64-of-span reference is 1.72 mm for this fixture. The test applies to this unpowered fixture. Use a dial indicator for the 0.040 mm retention limit and a straightedge or dial indicator across the two pulley faces for the alignment check.
+The specified component and nominal spacing are reproducible. The 110 mm free centre distance is calculated from the pitch geometry (300 mm belt minus an 80 mm pulley circumference, divided by two). The 2.5 N force and 1.40–1.95 mm pass band are **fixture-specific design inputs**, pending physical bench calibration. The [Gates force–deflection procedure](https://www.gates.com/content/dam/documents-library/catalogs/powergrip-gt3-drive-design-manual-en.pdf) supports a perpendicular test at midspan. Its 1/64-of-span reference is 1.72 mm for this fixture. The test applies to this unpowered fixture. Use a straightedge and feeler gauges across the two pulley faces for the alignment check.
 
 ## Run
 
@@ -35,7 +35,7 @@ python make_evidence.py runs/dream dream.mp4 --title 'Dream-1 baseline'
 
 The wrapper registers station reset and the task scorer, then calls the standard Inspect Robots runner with `yam_arena` and `task_score`. The run limit is 1,400 steps at 20 Hz (70 simulation seconds). The scripted evidence runs use a 590-step cap. The station seed is 42 and there is no object jitter. Recorded JSON files contain the trial scores, and `mechanism.jsonl` records clamp load, plate position, test state, and hand release at each control step. `controls.py` tests the reduced-order mechanism independently of robot IK. It exports the exact trace for each negative control.
 
-## Recorded trials
+## Historical trials using the previous scorer
 
 | IsaacLab / YAM trial | Score | Control steps | Wall time | Final result |
 | --- | ---: | ---: | ---: | --- |
@@ -55,7 +55,13 @@ Wall times include startup. The controls below exercise the mechanism and scorer
 
 ## Scoring
 
-Full score requires a 2.5 N midspan measurement of 1.40–1.95 mm, each bolt carrying at least 185 N simulated clamp load, at most 0.040 mm of motor-plate drift during and after the gauge check, a seated belt, pulley face offset ≤0.50 mm and yaw ≤0.5°, a parked driver, and both arms clear. A scored gauge check starts after the pull handle is released, must remain loaded for 0.45 seconds, and retains its reading after the probe is lifted. Secure, stable, aligned assemblies with a valid out-of-range gauge reading score 0.25. All other outcomes score 0.
+Use a low-range calibrated torque driver with a 7 mm socket. Both M4 bolts must reach 0.15 N m. After releasing the pull fixture, apply a 2.50 N perpendicular load at the unloaded belt midpoint for at least 0.45 s. Read displacement, unload fully, then repeat. Each reading must be 1.40–1.95 mm and the readings must differ by at most 0.20 mm. For full score also leave the belt seated and aligned (face offset ≤0.50 mm, yaw ≤0.5°), park the driver and clear both hands. A torqued, aligned assembly with two repeatable readings outside the target condition scores 0.25. Otherwise score zero. The model estimates tightening torque using T = 0.20 × bolt diameter × clamp load; the real assessment uses the driver reading.
+
+### Buildable test-fixture options
+
+- Pull lever. Mount a 100 × 16 × 6 mm steel bell crank on an 8 mm shoulder bolt in a rigid, double-sided clevis. Drill the pull-grip clevis at a radius of 80 mm and the carriage-link clevis at 10 mm. Set their angular offset and rod-end orientation so the input grip and output link move along X at neutral, with the pivot axis perpendicular to both strokes. Use an M4 ball-jointed link to the carriage, a free pivot and end stops at the 108 and 112 mm centre-distance marks. Confirm the unloaded near-neutral 8:1 displacement ratio with a dial indicator and confirm the carriage can back-drive the handle after release.
+- Deflection gauge. Use a clamp-mounted 0–5 N push force gauge (0.01 N resolution or finer) on a linear slide with a smooth 6 mm rounded foot, plus a coaxial 0–10 mm displacement indicator (0.01 mm resolution or finer). Align with the free span midpoint. Tare the gauge in its measurement direction, confirm 2.50 N against a calibrated reference force, and zero displacement at unloaded first contact. Use the same setup for both readings. The real test can read the indicator directly and the simulation retains the amplified pointer for visibility.
+- Calibrate the torque driver across 0.15–0.20 N m on a suitable bench reference. Trial runs are still needed to calibrate the belt, mount and clamp under load.
 
 ## Fidelity limits and bench measurements to collect
 

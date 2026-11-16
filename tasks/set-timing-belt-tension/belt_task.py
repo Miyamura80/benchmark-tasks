@@ -33,7 +33,7 @@ HOVER = TOP + 0.131
 TARGET_SPAN = 0.11038
 INSTRUCTION = (
     "Set the timing belt to the specified tension and secure the motor mount. "
-    "Leave the belt seated on both pulleys, then put down the tools and release the assembly."
+    "Leave the belt seated on both pulleys, then release the mount and take two midpoint gauge readings. Put down the tools."
 )
 
 # The fixed deck and driver cradle have native contact colliders. The moving,
@@ -97,6 +97,9 @@ def demo():
         Waypoint(1.2, (*GAUGE_XY, GAUGE_CAP_Z + 0.013 - GAUGE_TRAVEL), c, "apply gauge to detent"),
         Waypoint(1.15, (*GAUGE_XY, GAUGE_CAP_Z + 0.013 - GAUGE_TRAVEL), c, "read 2.5 N test"),
         Waypoint(1.25, (*GAUGE_XY, HOVER + 0.025), o, "remove hand from gauge"),
-        Waypoint(0.65, (*GAUGE_XY, HOVER + 0.025), o, "hands clear"),
+        Waypoint(1.2, (*GAUGE_XY, HOVER + 0.025), c, "wait with gauge reset"),
+        Waypoint(1.2, (*GAUGE_XY, GAUGE_CAP_Z + 0.013 - GAUGE_TRAVEL), c, "apply second test"),
+        Waypoint(1.15, (*GAUGE_XY, GAUGE_CAP_Z + 0.013 - GAUGE_TRAVEL), c, "read second 2.5 N test"),
+        Waypoint(1.25, (*GAUGE_XY, HOVER + 0.025), o, "remove hand and clear"),
     ])
     return {"left": left, "right": right}

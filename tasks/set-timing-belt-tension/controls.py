@@ -4,7 +4,7 @@ import csv
 import json
 from pathlib import Path
 
-from mechanics import HOLD_TOLERANCE, Rig, TEST_FORCE, midspan_deflection, span_tension
+from mechanics import Rig, TEST_FORCE, midspan_deflection
 
 CASES = {
     "nominal": (0.11038, 2, True, 0.0001, 1.0),
@@ -37,13 +37,16 @@ def trial(span, bolts, seated, offset):
         step(f"tighten bolt {i + 1}", 45, pull=span, bolt=i, clockwise=2.13 / 45)
     step("release", 20)
     step("check under 2.5 N", 14, gauge=True)
-    step("release gauge", 12)
+    step("release gauge", 24)
+    step("repeat check under 2.5 N", 14, gauge=True)
+    step("release gauge again", 12)
     return dict(
         model="reduced-order contact model",
         pre_release_mm=round(before * 1000, 5), final_span_mm=round(rig.span * 1000, 5),
         pre_release_deflection_mm=round(before_deflection * 1000, 4),
         deflection_mm=None if rig.checked_mm is None else round(rig.checked_mm, 4),
-        retention_drift_mm=round(rig.drift * 1000, 5),
+        retention_difference_mm=None if rig.retention_mm is None else round(rig.retention_mm, 4),
+        bolt_torque_nm=[round(value, 4) for value in rig.torque_nm],
         slip_mm=round(rig.slip * 1000, 5), clamp_n=[round(n, 2) for n in rig.clamp],
         seated=rig.seated, alignment_mm=round(rig.offset * 1000, 4), score=rig.outcome(),
     ), history
@@ -67,7 +70,7 @@ def main():
                 writer.writerows(trace)
     assert summary["release-before-tightening"]["slip_mm"] > 0.2
     assert 1.4 <= summary["release-before-tightening"]["pre_release_deflection_mm"] <= 1.95
-    assert summary["single-bolt-slip"]["slip_mm"] > HOLD_TOLERANCE * 1000
+    assert summary["single-bolt-slip"]["slip_mm"] > 0.04
     print(json.dumps({"test_force_n": TEST_FORCE, "trials": summary}, indent=2))
     if args.out:
         (args.out / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")

@@ -19,13 +19,15 @@ TEST_FORCE = 2.5
 TARGET_DEFLECTION = (0.00140, 0.00195)
 SPAN_STIFFNESS = 100_000.0
 PULL_RATIO = 8.0
-HOLD_TOLERANCE = 0.000040
+RETENTION_LIMIT_MM = 0.20
+MIN_TORQUE = 0.15  # N m, fixture target; verify on the built rig
+TORQUE_FACTOR = 0.20
+BOLT_DIAMETER = 0.004
 ALIGNMENT_LIMIT = 0.00050
 YAW_LIMIT = 0.5 * pi / 180
 BOLT_PITCH = 0.00070
 CLAMP_GAP = 0.000105
 CLAMP_STIFFNESS = 1_900_000.0
-SECURE_LOAD = 185.0
 MAX_LOAD = 245.0
 MAX_ANGLE = (CLAMP_GAP + MAX_LOAD / CLAMP_STIFFNESS) * (2 * pi) / BOLT_PITCH
 STATIC_FRICTION = 0.29
@@ -71,8 +73,8 @@ class Rig:
     gauge_loaded: bool = False
     checking_since: float = 0.0
     checked_mm: float | None = None
-    check_min: float | None = None
-    check_max: float | None = None
+    first_check_mm: float | None = None
+    check_count: int = 0
     slip: float = 0.0
     peak_tension_span: float = START_SPAN
 
@@ -81,19 +83,24 @@ class Rig:
         return tuple(preload(bolt) for bolt in self.bolts)
 
     @property
-    def secured(self):
-        return min(self.clamp) >= SECURE_LOAD
+    def torque_nm(self):
+        return tuple(TORQUE_FACTOR * BOLT_DIAMETER * load for load in self.clamp)
 
     @property
-    def drift(self):
-        if self.check_min is None or self.check_max is None:
-            return 0.0
-        return self.check_max - self.check_min
+    def secured(self):
+        return min(self.torque_nm) >= MIN_TORQUE
+
+    @property
+    def retention_mm(self):
+        if self.check_count < 2:
+            return None
+        return abs(self.checked_mm - self.first_check_mm)
 
     def invalidate_check(self):
         self.checking_since = 0.0
         self.checked_mm = None
-        self.check_min = self.check_max = None
+        self.first_check_mm = None
+        self.check_count = 0
 
     def step(self, *, dt=1 / CONTROL_HZ, pull=None, bolt=None, clockwise=0.0, gauge=False):
         was_held = self.held
@@ -140,24 +147,23 @@ class Rig:
             self.slip += before - self.span
         self.peak_tension_span = max(self.span, self.peak_tension_span)
 
-        if self.check_min is not None:
-            self.check_min = min(self.check_min, self.span)
-            self.check_max = max(self.check_max, self.span)
         if self.gauge_loaded and not self.held:
-            if self.check_min is None:
-                self.check_min = min(before, self.span)
-                self.check_max = max(before, self.span)
+            previous_duration = self.checking_since
             self.checking_since += dt
             if self.checking_since >= 0.45:
                 self.checked_mm = midspan_deflection(self.span) * 1000
+                if previous_duration < 0.45:
+                    self.check_count += 1
+                if self.check_count == 1:
+                    self.first_check_mm = self.checked_mm
         elif not self.held:
             self.checking_since = 0.0
 
     def outcome(self, tools_parked=True, hands_clear=True):
-        measured = None if self.checked_mm is None else self.checked_mm / 1000
         aligned = abs(self.offset) <= ALIGNMENT_LIMIT and abs(self.yaw) <= YAW_LIMIT
         released = not self.held and not self.gauge_loaded and tools_parked and hands_clear
-        stable = measured is not None and self.drift <= HOLD_TOLERANCE
-        in_range = measured is not None and TARGET_DEFLECTION[0] <= measured <= TARGET_DEFLECTION[1]
+        stable = self.retention_mm is not None and self.retention_mm <= RETENTION_LIMIT_MM
+        in_range = stable and all(TARGET_DEFLECTION[0] <= mm / 1000 <= TARGET_DEFLECTION[1]
+                                  for mm in (self.first_check_mm, self.checked_mm))
         secure = released and self.seated and aligned and self.secured and stable
         return 1.0 if secure and in_range else 0.25 if secure else 0.0

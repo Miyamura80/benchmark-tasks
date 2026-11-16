@@ -123,7 +123,10 @@ class Contacts:
             socket=self.socket,
             driver_parked=self.driver_parked,
             seated=self.rig.seated,
-            drift_mm=round(self.rig.drift * 1000, 5),
+            first_gauge_mm=self.rig.first_check_mm,
+            gauge_checks=self.rig.check_count,
+            retention_difference_mm=self.rig.retention_mm,
+            bolt_torque_nm=list(self.rig.torque_nm),
             slip_mm=round(self.rig.slip * 1000, 5),
             score=score,
         )

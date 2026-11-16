@@ -8,13 +8,13 @@
     "fastener preload",
     "bimanual"
   ],
-  "instruction": "Set the timing belt to the specified tension and secure the motor mount. Leave the belt seated on both pulleys, then put down the tools and release the assembly.",
+  "instruction": "Set the timing belt to the specified tension and secure the motor mount. Leave the belt seated on both pulleys, then release the mount, take two midpoint gauge readings and park the tools.",
   "context": "Belt-driven robot joints need a measured installation tension that holds after the motor mount is tightened. Incorrect tension can cause tooth skipping or excessive shaft and bearing loads.",
   "setup": "An unpowered joint fixture has two 16-tooth 5 mm-pitch pulleys and a Gates 300-5MGT-09 belt already seated but slack at 109.25 mm centre distance. The fixed 224 × 175 × 14 mm aluminium base holds a sliding motor plate with two threaded M4 clamps, an orange back-drivable pull handle, and a 2.5 N spring-deflection gauge on the upper span. A 7 mm socket driver is parked in a cradle. The README specifies the full layout, dimensions, and reset marks.",
-  "scoring": "Score 1.0 if the post-release 2.5 N midspan reading is 1.40–1.95 mm, both bolts retain ≥185 N clamp load, the mount drifts ≤0.040 mm during and after the check, the belt is seated and alignment is ≤0.50 mm and ≤0.5 degrees, the driver is parked and both arms are clear. Score 0.25 for a secure, stable, aligned assembly with a valid out-of-range reading. Otherwise 0.0.",
+  "scoring": "Tighten both M4 bolts to at least 0.15 N m. Release the pull fixture. Two separate 2.5 N midpoint deflection readings must agree within 0.20 mm and both be within 1.40–1.95 mm. Full score also requires aligned, seated pulleys, a parked driver and clear hands. Score 0.25 for a retained, torqued assembly with a repeatable out-of-band reading. Otherwise 0.",
   "run_limit": "1,400 control steps (70 seconds of simulation at 20 Hz)",
   "reset_notes": "Release both bolts to a 0.105 mm clamp gap, return motor to 109.25 mm pulley spacing, seat the belt, reset the test pointer, and park the driver at +60 degrees in the cradle.",
   "fidelity": "Reduced-order flexible belt and linear slide, with lead-dependent threaded clamp preload, force–deflection and slip. Custom fixture contacts are geometrically constrained. Belt stiffness, friction, and clamp compliance are unvalidated physical assumptions.",
-  "scores": "Dream-1: 0.0 (1,400 steps). Scripted YAM demo: 1.0 (499 steps, 1.4185 mm after release). Release-before-tightening control: 0.0 (340 steps, 10.6098 mm after release).",
-  "media": "M-L53WBE"
+  "scores": "Revised scorer validated with reduced-order controls. Native and physical fixture validation pending.",
+  "media": ""
 }
