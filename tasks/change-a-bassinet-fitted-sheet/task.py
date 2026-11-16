@@ -37,6 +37,12 @@ CORNER_I = [0, (GRID_X - 1) * GRID_Y, GRID_X * GRID_Y - 1, GRID_Y - 1]
 LAUNDRY_END = .196
 TOP_CORNER_I = [GRID_Y+1, (GRID_X-2)*GRID_Y+1, (GRID_X-2)*GRID_Y+GRID_Y-2, 2*GRID_Y-2]
 TOP_CORNERS = np.column_stack((CORNERS - SIGNS * (.040, .048), np.full(4, ZTOP + .003)))
+HEM_SUPPORTS = (
+    (0, 1, (GRID_X//2)*GRID_Y, ((X0+X1)/2, -Y-.005, ZTOP-.025), (GRID_X//2)*GRID_Y+1),
+    (1, 2, (GRID_X-1)*GRID_Y+GRID_Y//2, (X1+.005, 0., ZTOP-.025), (GRID_X-2)*GRID_Y+GRID_Y//2),
+    (2, 3, (GRID_X//2+1)*GRID_Y-1, ((X0+X1)/2, Y+.005, ZTOP-.025), (GRID_X//2+1)*GRID_Y-2),
+    (3, 0, GRID_Y//2, (X0-.005, 0., ZTOP-.025), GRID_Y+GRID_Y//2),
+)
 
 OBJECTS = [
     Box("bassinet_foam_mattress", ((X0 + X1) / 2, 0, (ZTOP + ZBOTTOM) / 2),
@@ -167,6 +173,121 @@ REST = np.linalg.norm(make_positions()[B] - make_positions()[A], axis=1)
 DEGREE = np.bincount(np.concatenate((A, B)), minlength=GRID_X*GRID_Y)[:, None]
 
 
+def project_box(points, before, lower, upper, margin):
+    """Keep samples on the side of the solid they approached from."""
+    low, high = np.asarray(lower) - margin, np.asarray(upper) + margin
+    delta = points - before
+    active = np.abs(delta) > 1e-10
+    safe_delta = np.where(active, delta, 1.)
+    near = np.where(delta > 0, low, high)
+    far = np.where(delta > 0, high, low)
+    enter = np.where(active, (near - before) / safe_delta, -np.inf)
+    exit_ = np.where(active, (far - before) / safe_delta, np.inf)
+    entry = enter.max(axis=1)
+    exit_ = exit_.min(axis=1)
+    parallel_inside = np.all(active | ((before > low) & (before < high)), axis=1)
+    hit = (entry >= -1e-8) & (entry <= 1.) & (entry < exit_) & parallel_inside
+    rows = np.flatnonzero(hit)
+    axes = np.argmax(enter[rows], axis=1)
+    points[rows, axes] = near[rows, axes]
+
+    # Stretch constraints can move a resting point off a corner within one
+    # iteration. Repair overlap even when its previous position is inside.
+    inside = np.all((points > low) & (points < high), axis=1)
+    rows = np.flatnonzero(inside)
+    distances = np.column_stack((points[rows] - low, high - points[rows]))
+    face = np.argmin(distances, axis=1)
+    axis = face % 3
+    points[rows, axis] = np.where(face < 3, low[axis], high[axis])
+
+
+SOLIDS = (
+    ((X0, -Y, ZBOTTOM), (X1, Y, ZTOP)),
+    ((X0-.012, -Y-.010, TOP), (X1+.012, Y+.010, TOP+.014)),
+    ((.1185, -.263, TOP), (.1635, .263, TOP+.020)),
+    ((-.0135, -.300, TOP), (.1935, .300, TOP+.006)),
+)
+THICKNESS = .002
+FACES = np.array(grid_faces(GRID_X, GRID_Y))
+TRIANGLES = FACES[:, (0, 1, 2, 0, 2, 3)].reshape(-1, 3)
+GRID_COORDINATES = np.column_stack(np.unravel_index(np.arange(GRID_X*GRID_Y), (GRID_X, GRID_Y)))
+TOPOLOGICAL_GAPS = np.max(np.abs(GRID_COORDINATES[:, None, None, :]
+                                 - GRID_COORDINATES[TRIANGLES][None, :, :, :]), axis=3)
+SELF_CONTACT = np.all(TOPOLOGICAL_GAPS > 1, axis=2)
+# Edge midpoints and the quad centre participate in rigid contact.
+CONTACT_WEIGHTS = np.array([[.5,.5,0,0], [0,.5,.5,0], [0,0,.5,.5],
+                            [.5,0,0,.5], [.25,.25,.25,.25]])
+CONTACT_IDS = np.repeat(FACES, len(CONTACT_WEIGHTS), axis=0)
+SAMPLE_WEIGHTS = np.tile(CONTACT_WEIGHTS, (len(FACES), 1))
+
+
+def fixture_contact(points, before):
+    # Horizontal support surfaces use unilateral height constraints.
+    points[:, 2] = np.maximum(points[:, 2], TOP + THICKNESS)
+    for lower, upper in SOLIDS:
+        project_box(points, before, lower, upper, THICKNESS)
+
+
+def face_contact(points, before, vertices, previous, search=None):
+    """Project cloth vertices against the other layer's swept triangles."""
+    tri = vertices[TRIANGLES]
+    old_tri = previous[TRIANGLES]
+    lower = np.minimum(tri.min(axis=1), old_tri.min(axis=1)) - THICKNESS
+    upper = np.maximum(tri.max(axis=1), old_tri.max(axis=1)) + THICKNESS
+    points_lo, points_hi = np.minimum(points, before), np.maximum(points, before)
+    candidates = np.flatnonzero(np.all((points_hi > lower.min(axis=0))
+                                       & (points_lo < upper.max(axis=0)), axis=1))
+    bounds = ((points_hi[candidates, None, :] > lower)
+              & (points_lo[candidates, None, :] < upper)).all(axis=2)
+    if search is not None:
+        bounds &= search[candidates]
+    rows, j = np.nonzero(bounds)
+    i = candidates[rows]
+    if not len(i):
+        return
+    p, q, r = tri[j].transpose(1, 0, 2)
+    old_p, old_q, old_r = old_tri[j].transpose(1, 0, 2)
+    u, v = q - p, r - p
+    normals = np.cross(u, v)
+    magnitude = np.linalg.norm(normals, axis=1)
+    n = normals / np.maximum(magnitude[:, None], 1e-10)
+    old_n = np.cross(old_q-old_p, old_r-old_p)
+    old_n /= np.maximum(np.linalg.norm(old_n, axis=1, keepdims=True), 1e-10)
+    old_n *= np.where(np.sum(n*old_n, axis=1, keepdims=True) >= 0, 1., -1.)
+    d0 = np.sum((before[i] - old_p)*old_n, axis=1)
+    relative = points[i] - p
+    d1 = np.sum(relative*n, axis=1)
+    side = np.where(d0 >= 0, 1., -1.)
+    near = np.abs(d1) < THICKNESS
+    crossing = ((d0*d1 < 0) & (np.abs(d0) > 1e-5))
+    tau = np.where(crossing, np.clip(d0 / np.where(crossing, d0-d1, 1.), 0., 1.), 1.)
+    test = np.where(crossing[:, None],
+                    before[i] + tau[:, None]*(points[i]-before[i]), points[i])
+    origin = old_p + tau[:, None]*(p-old_p)
+    edge1 = old_q-old_p + tau[:, None]*(u-(old_q-old_p))
+    edge2 = old_r-old_p + tau[:, None]*(v-(old_r-old_p))
+    rel = test-origin
+    aa, ab, bb = (np.sum(edge1*edge1, axis=1), np.sum(edge1*edge2, axis=1), np.sum(edge2*edge2, axis=1))
+    ar, br = np.sum(edge1*rel, axis=1), np.sum(edge2*rel, axis=1)
+    det = np.maximum(aa*bb-ab*ab, 1e-16)
+    alpha, beta = (bb*ar-ab*br)/det, (aa*br-ab*ar)/det
+    hit = ((near | crossing) & (magnitude > 1e-7)
+           & (alpha >= -.025) & (beta >= -.025) & (alpha+beta <= 1.025))
+    delta = np.maximum(0., THICKNESS-side*d1)
+    if search is not None:
+        # Limit corrections between folds of the same moving mesh. Large
+        # stale-plane offsets otherwise pull wrinkles through nearby layers.
+        hit &= np.abs(d0) < .018
+        delta = np.minimum(delta, THICKNESS)
+    hits = np.flatnonzero(hit)
+    # Resolve the strongest plane for each sample instead of accumulating
+    # equivalent contacts on adjacent triangles.
+    hits = hits[np.argsort(-delta[hits])]
+    _, first = np.unique(i[hits], return_index=True)
+    selected = hits[first]
+    points[i[selected]] += (side[selected]*delta[selected])[:, None] * n[selected]
+
+
 class Sheet:
     def __init__(self, clean):
         self.clean = clean
@@ -190,7 +311,7 @@ class Sheet:
         self.started = not clean
         self.body_grasps = {}
 
-    def grip(self, hands, occupied, dt):
+    def grip(self, hands, occupied):
         anchors = {}
         for i, vertex in enumerate(CORNER_I):
             owner = self.grasps[i]
@@ -232,6 +353,15 @@ class Sheet:
                     anchors[TOP_CORNER_I[i]] = TOP_CORNERS[i]
             elif self.folded[i]:
                 anchors[vertex] = CLEAN_FOLD[i]
+        if self.clean:
+            # The hem can pick up tension along a side once both adjoining
+            # corners are seated and the loose edge reaches the mattress.
+            for first, second, vertex, support, shoulder in HEM_SUPPORTS:
+                if self.latched[first] and self.latched[second] and np.linalg.norm(self.xyz[vertex]-support) < .065:
+                    anchors[vertex] = .25*self.xyz[vertex] + .75*np.asarray(support)
+                    top = (TOP_CORNERS[first] + TOP_CORNERS[second]) / 2
+                    if np.linalg.norm(self.xyz[shoulder]-top) < .055:
+                        anchors[shoulder] = .4*self.xyz[shoulder] + .6*top
         if not self.clean and self.started and not bool(np.any(self.latched)):
             candidates = np.array([i for i in range(len(self.xyz)) if i not in CORNER_I], dtype=int)
             for name, hand in hands.items():
@@ -249,58 +379,57 @@ class Sheet:
                     del self.body_grasps[name]
                 else:
                     anchors[vertex] = tip
-        if self.started:
-            self.solve(anchors, dt)
+        return anchors
 
-    def solve(self, anchors, dt):
+    def solve(self, anchors, other, previous_other, dt):
+        if not self.started:
+            return
         indices = np.array(list(anchors), dtype=int)
         values = np.array(list(anchors.values())).reshape(-1, 3)
-        dt = dt/2
+        free = np.ones(len(self.xyz), dtype=bool)
+        free[indices] = False
+        sample_free = SAMPLE_WEIGHTS * free[CONTACT_IDS]
+        weights_sq = np.sum(sample_free**2, axis=1)
         vertices = self.xyz
-        for _ in range(2):
-            before = vertices.copy()
-            vertices += self.velocity * dt
-            vertices[:, 2] -= 7.0*dt*dt
-            for _ in range(10):
-                diffs = vertices[B] - vertices[A]
-                length = np.linalg.norm(diffs, axis=1)
-                strain = length-REST
-                strain = np.maximum(0., strain) + .28*np.minimum(0., strain)
-                correction = (STIFFNESS * strain/np.maximum(length, 1e-8))[:, None]*diffs
-                fixes = np.zeros_like(vertices)
-                np.add.at(fixes, A, correction)
-                np.add.at(fixes, B, -correction)
-                vertices += 1.5*fixes/DEGREE
-                vertices[indices] = values
-                self.collide(vertices, before)
-            self.velocity = (vertices-before) / dt * .79
-            self.velocity[indices] = 0.
-
-    @staticmethod
-    def collide(v, before):
-        # The mattress and the two table pads are unilateral collision surfaces.
-        inside = (v[:, 0] >= X0+.001) & (v[:, 0] <= X1-.001) & (np.abs(v[:, 1]) < Y-.001)
-        reached = inside & (v[:, 2] < ZTOP+.002)
-        from_above = reached & (before[:, 2] >= ZTOP-.011)
-        v[from_above, 2] = ZTOP+.003
-        side = reached & ~from_above
-        for index in np.flatnonzero(side):
-            x, y, z = v[index]
-            distances = [x-X0, X1-x, y+Y, Y-y, ZTOP-z]
-            closest = int(np.argmin(distances))
-            if closest == 0:
-                v[index, 0] = X0-.003
-            elif closest == 1:
-                v[index, 0] = X1+.003
-            elif closest == 2:
-                v[index, 1] = -Y-.003
-            elif closest == 3:
-                v[index, 1] = Y+.003
-            else:
-                v[index, 2] = ZTOP+.003
-        on_shelf = (np.abs(v[:, 0]-.141)<.023) & (np.abs(v[:, 1])<.265)
-        floor = np.where(on_shelf, TOP+.021, np.where(v[:, 0]<LAUNDRY_END, TOP+.007, TOP+.003))
-        v[:, 2] = np.maximum(v[:, 2], floor)
+        before = vertices.copy()
+        vertices += self.velocity * dt
+        vertices[:, 2] -= 7.0*dt*dt
+        before_samples = np.einsum("ni,nij->nj", SAMPLE_WEIGHTS, before[CONTACT_IDS])
+        for iteration in range(10):
+            diffs = vertices[B] - vertices[A]
+            length = np.linalg.norm(diffs, axis=1)
+            strain = length-REST
+            strain = np.maximum(0., strain) + .28*np.minimum(0., strain)
+            correction = (STIFFNESS * strain/np.maximum(length, 1e-8))[:, None]*diffs
+            fixes = np.zeros_like(vertices)
+            np.add.at(fixes, A, correction)
+            np.add.at(fixes, B, -correction)
+            vertices += 1.5*fixes/DEGREE
+            vertices[indices] = values
+            fixture_contact(vertices, before)
+            if iteration % 2 == 1:
+                samples = np.einsum("ni,nij->nj", SAMPLE_WEIGHTS, vertices[CONTACT_IDS])
+                projected = samples.copy()
+                fixture_contact(projected, before_samples)
+                if iteration == 9:
+                    cloth_projected = projected.copy()
+                    face_contact(cloth_projected, before_samples, other.xyz, previous_other)
+                    projected += np.clip(cloth_projected-projected, -.006, .006)
+                change = (projected-samples)/np.maximum(weights_sq[:, None], 1e-8)
+                hit = np.any(change != 0., axis=1) & (weights_sq > 0.)
+                ids = CONTACT_IDS[hit]
+                delta = sample_free[hit, :, None]*change[hit, None, :]
+                fixes.fill(0.)
+                np.add.at(fixes, ids, delta)
+                count = np.bincount(ids.ravel(), minlength=len(vertices))
+                vertices += fixes / np.maximum(count[:, None], 1)
+        free_vertices = vertices[free]
+        face_contact(free_vertices, before[free], other.xyz, previous_other)
+        face_contact(free_vertices, before[free], vertices, before, SELF_CONTACT[free])
+        vertices[free] = free_vertices
+        fixture_contact(vertices, before)
+        self.velocity = (vertices-before) / dt * .84
+        self.velocity[indices] = 0.
 
 
 class State:
@@ -310,13 +439,20 @@ class State:
 
     def advance(self, hands, dt):
         occupied = set(self.old.body_grasps) | {owner for owner in self.old.grasps + self.clean.grasps if owner is not None}
-        self.clean.grip(hands, occupied, dt)
-        self.old.grip(hands, occupied, dt)
+        clean_anchors = self.clean.grip(hands, occupied)
+        old_anchors = self.old.grip(hands, occupied)
+        for _ in range(3):
+            before = self.clean.xyz.copy()
+            self.clean.solve(clean_anchors, self.old, self.old.xyz, dt/3)
+            self.old.solve(old_anchors, self.clean, before, dt/3)
         # The used fabric must have cleared the sleeping surface. Bulk of the
         # fabric must rest in the laundry area, with both arms released.
         old = self.old.xyz
-        old_mattress = ((old[:, 0] >= X0) & (old[:, 0] <= X1)
-                        & (np.abs(old[:, 1]) <= Y) & (old[:, 2] >= ZBOTTOM-.003))
+        surface_samples = np.einsum("ni,nij->nj", SAMPLE_WEIGHTS, old[CONTACT_IDS])
+        cloth_samples = np.concatenate((old, surface_samples))
+        ox, oy, oz = cloth_samples.T
+        old_mattress = ((ox >= X0) & (ox <= X1)
+                        & (np.abs(oy) <= Y) & (oz >= ZBOTTOM-.003))
         laundry = (old[:, 0] < LAUNDRY_END) & (np.abs(old[:, 1]) < .303) & (old[:, 2] < TOP+.035)
         off = not bool(np.any(old_mattress) or np.any(self.old.latched) or any(self.old.grasps) or self.old.body_grasps)
         sorted_old = off and bool(np.mean(laundry) >= .65)
@@ -355,7 +491,7 @@ class State:
 
 # Render a denser fabric surface from the same simulated vertices. The sewn
 # skirt wraps the mattress wherever the adjacent elastic pockets are seated.
-RENDER_X, RENDER_Y = 29, 49
+RENDER_X, RENDER_Y = 25, 49
 U, V = np.meshgrid(np.linspace(0, 1, RENDER_X), np.linspace(0, 1, RENDER_Y), indexing="ij")
 HEM = np.r_[np.arange(RENDER_Y), np.arange(1, RENDER_X) * RENDER_Y + RENDER_Y - 1,
             np.arange(RENDER_Y - 2, -1, -1) + (RENDER_X - 1) * RENDER_Y,
@@ -367,21 +503,17 @@ HEM_FACES = [(i, (i + 1) % len(HEM), (i + 1) % len(HEM) + len(HEM), i + len(HEM)
              for i in range(len(HEM))]
 
 
-def interpolate_axis(vertices, count):
-    """Interpolate with bounded cubic tangents so the folds have soft creases."""
-    t = np.linspace(0, len(vertices) - 1, count)
-    i = np.minimum(t.astype(int), len(vertices) - 2)
-    t = (t - i)[:, None, None]
-    a, b = vertices[i], vertices[i + 1]
-    before = vertices[np.maximum(i - 1, 0)]
-    after = vertices[np.minimum(i + 2, len(vertices) - 1)]
-    bend = .5 * t * (1 - t) * ((1 - t) * (b - before) - t * (after - a))
-    return np.clip(a + t*t*(3-2*t)*(b-a) + bend, np.minimum(a,b), np.maximum(a,b))
-
-
 def fabric_surface(sheet, fitted_corners):
+    # Subdivide the same triangles used by collision. A spline can bow
+    # through the mattress or another layer even if its control grid clears it.
+    x, y = U*(GRID_X-1), V*(GRID_Y-1)
+    i, j = np.minimum(x.astype(int), GRID_X-2), np.minimum(y.astype(int), GRID_Y-2)
+    dx, dy = (x-i)[..., None], (y-j)[..., None]
     xyz = sheet.xyz.reshape(GRID_X, GRID_Y, 3)
-    dense = interpolate_axis(interpolate_axis(xyz, RENDER_X).swapaxes(0, 1), RENDER_Y).swapaxes(0, 1)
+    origin, opposite = xyz[i, j], xyz[i+1, j+1]
+    dense = np.where(dx >= dy,
+                     origin*(1-dx) + xyz[i+1,j]*(dx-dy) + opposite*dy,
+                     origin*(1-dy) + xyz[i,j+1]*(dy-dx) + opposite*dx)
     if not np.any(fitted_corners > .28):
         return dense.reshape(-1, 3)
 
@@ -410,9 +542,9 @@ class View:
         g = self.g = Geometry()
         xmid = (X0 + X1)/2
         g.box("WoodSupport", (xmid, 0, TOP+.007), (X1-X0+.024, 2*Y+.020, .014), (.54,.37,.24))
-        g.box("LaundryBackStripe", (.015, 0, TOP+.007), (.007,.596,.003), (.69,.65,.23))
+        g.box("LaundryBackStripe", (.015, 0, TOP+.0058), (.007,.596,.0014), (.69,.65,.23))
         for j, y in enumerate((-.292, .292)):
-            g.box(f"LaundryEdge{j}", (.093,y,TOP+.007), (.187,.007,.003), (.69,.65,.23))
+            g.box(f"LaundryEdge{j}", (.093,y,TOP+.0058), (.187,.007,.0014), (.69,.65,.23))
         self.sheets = []
         self.hems = []
         self.tags = []
