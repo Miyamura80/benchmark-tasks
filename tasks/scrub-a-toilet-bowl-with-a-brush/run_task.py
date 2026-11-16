@@ -4,30 +4,31 @@ import argparse
 import json
 import os
 import sys
-from dataclasses import dataclass
-from math import atan2
 from pathlib import Path
 
-import numpy as np
-from yam_arena import ik, inspect_embodiment
-from yam_arena.constants import FINGER_OPEN
-from yam_arena.demo import grip_rotation
+from yam_arena import inspect_embodiment
+from yam_arena.urdf import quat_xyzw_to_matrix
 
 import task
 
 
-@dataclass
-class Hand:
-    position: np.ndarray
-    rotation: np.ndarray
-    open_fraction: float
-    yaw: float
-    upright: bool
+from native import Contacts, root_states, substitute_assets
+from fixtures import author
 
 
 def bind(path, directory, setup, case):
     cls = inspect_embodiment.YamArenaEmbodiment
-    original_reset, original_step = cls.reset, cls._task_step
+    original_reset, original_step, control_step = cls.reset, cls._task_step, cls.step
+    native = substitute_assets({"bowl_fixture", "angled_brush"}, lambda: author(directory))
+    native.original = cls._ensure_sim
+    cls._ensure_sim = native
+
+    def control(self, action):
+        if current(self) and hasattr(self, "_fixture_contacts"):
+            self._fixture_contacts.take()
+        return control_step(self, action)
+
+    cls.step = control
 
     def current(instance):
         return instance.task is not None and instance.task.path == path
@@ -36,6 +37,9 @@ def bind(path, directory, setup, case):
         observation = original_reset(self, *args, **kwargs)
         if not current(self):
             return observation
+        if not hasattr(self, "_fixture_contacts"):
+            self._fixture_contacts = Contacts({"BrushBristles", "BrushHandle"})
+        self._fixture_contacts.take()
         self._fixture_state = task.State(case)
         self._fixture_view = task.View(self._fixture_state)
         self._fixture_passes = 0
@@ -57,26 +61,14 @@ def bind(path, directory, setup, case):
             return original_step(self)
         from inspect_robots.types import StepResult
 
-        hands = {}
-        down = grip_rotation()
-        for arm in ("left", "right"):
-            name = arm + "_robot"
-            joint_ids, finger_ids = self._ids[name]
-            joints = self._base.scene[name].data.joint_pos.torch[0]
-            xyz, rotation = ik.tcp_pose(joints[joint_ids].cpu().numpy(), self.rig.bases[arm])
-            spin = rotation @ down.T
-            hands[arm] = Hand(
-                xyz, spin, float(joints[finger_ids].mean().item() / FINGER_OPEN),
-                atan2(spin[1, 0], spin[0, 0]), bool(rotation[:, 2] @ down[:, 2] > 0.96),
-            )
         state = self._fixture_state
-        info = state.advance(hands, self._base.step_dt)
+        brush = root_states(self, ["angled_brush"])["angled_brush"]
+        info = state.advance(brush, quat_xyzw_to_matrix(brush.quat_xyzw),
+                             self._fixture_contacts.take())
         self._fixture_view.update(state)
         self._fixture_passes = self._fixture_passes + 1 if info["score"] == 1.0 else 0
         success = self._fixture_passes >= 5
         info["success"] = success
-        info["hands"] = {key: [*map(float, hand.position), round(hand.open_fraction, 4),
-                                round(hand.yaw, 4), hand.upright] for key, hand in hands.items()}
         self._fixture_trace.write(json.dumps({"t": round(self._t, 4), **info}, allow_nan=False) + "\n")
         self._fixture_trace.flush()
         return StepResult(observation=self._observation(), terminated=success,

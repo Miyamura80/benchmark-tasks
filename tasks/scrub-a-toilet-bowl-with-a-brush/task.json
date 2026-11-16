@@ -1,18 +1,17 @@
 {
-  "title": "Scrub four marks from a toilet bowl with a toilet brush",
+  "title": "Clean two hidden deposits behind an overhanging toilet rim",
   "category": "Societal relatability",
   "keywords": [
-    "cleaning",
-    "toilet brush",
-    "curved-surface contact",
-    "housekeeping"
+    "occluded contact",
+    "recess cleaning",
+    "constrained tool access"
   ],
-  "instruction": "Use the toilet brush to scrub away all four brown marks from inside the bowl, including the marks under the rim. Return the brush to its holder and let go.",
-  "context": "Toilet cleaning requires maintaining contact on a curved surface, including areas that are partly hidden under the rim.",
-  "setup": "A white bench-scale vitreous-china toilet with a tapered pedestal, open seat, and rear cistern. The 386 × 304 mm outer rim is 134 mm above the table. Four brown deposits sit at two levels inside the bowl. The bristle centre is 42 mm below the grip.",
-  "scoring": "1.0 when ≥92% of each of four patches is removed and the brush is released in its holder. Otherwise score 0.20 times the sum of cleaned fractions over the four patches.",
-  "fidelity": "IsaacLab YAM and stock cameras. Geometric brush and holder constraints; swept contact and tangential travel remove pigment from the bowl. No fluid or chemical cleaning model.",
+  "instruction": "Use the angled brush to remove both brown marks from the underside of the rim. Lower the head through the opening and reach behind the ceramic lip. Return the brush upright.",
+  "context": "Cleaning the recessed underside requires inserting a tool through a narrower opening, sweeping behind the lip with bristle contact and withdrawing without striking the fixture.",
+  "setup": "Bench-scale vitreous-china bowl, 386 × 304 mm outer rim, 134 mm above the tabletop. Two deposits on the downward-facing underside. Two wall marks are diagnostic only. Bent toilet brush with a 30 mm head and 31 mm offset on its holder.",
+  "scoring": "Full score when both hidden marks are at least 92% removed and the brush is upright, supported and released in the stand. Otherwise score 0.40 times the sum of both hidden cleaned fractions. Exposed-wall scrubbing earns no credit.",
+  "fidelity": "Rigid contact-enabled angled brush and static concave bowl mesh. Two-sided finger contacts and positive bristle-to-ceramic impulse gate swept deposition. Bristle flex and cleaning chemistry are simplified.",
   "run_limit": "1,400 steps (70 seconds at 20 Hz)",
-  "scores": "For the 134 mm rim revision, offline YAM URDF kinematics and contact tests: scripted nominal 1.0, air pass 0.0, two marks 0.40. Attached IsaacLab evidence is from the original 101 mm rim revision: Dream-1 0 in 1,400 steps, scripted YAM 1.0 in 622 steps.",
-  "media": "M-XCKYR3"
+  "scores": "Revised contact-based task awaits scripted and Dream-1 runs. Previous evidence uses an earlier scorer.",
+  "media": ""
 }
