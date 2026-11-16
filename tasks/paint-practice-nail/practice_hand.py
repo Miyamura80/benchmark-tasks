@@ -69,7 +69,7 @@ def bind(mesh, finish):
 
 
 def build_nail(stage, name, xy, z, scale, yaw, finish):
-    from pxr import UsdGeom, Vt
+    from pxr import UsdGeom, UsdPhysics, Vt
 
     # Radius at the cuticle and at the free edge is sampled independently.
     angles = np.radians(np.arange(0, 360, 5))
@@ -99,6 +99,9 @@ def build_nail(stage, name, xy, z, scale, yaw, finish):
     colors = np.asarray(base_color * (1 - fade) + light_color * fade, dtype=np.float32)
     mesh.CreateDisplayColorPrimvar(UsdGeom.Tokens.vertex).Set(Vt.Vec3fArray.FromNumpy(colors))
     bind(mesh, finish)
+    if name == "MiddleNail":
+        UsdPhysics.CollisionAPI.Apply(mesh.GetPrim())
+        UsdPhysics.MeshCollisionAPI.Apply(mesh.GetPrim()).CreateApproximationAttr("none")
 
 
 def install(stage, task):

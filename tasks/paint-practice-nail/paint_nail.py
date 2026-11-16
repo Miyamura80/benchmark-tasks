@@ -10,7 +10,7 @@ MIDLINE_Y = (BASES["left"][1] + BASES["right"][1]) / 2
 XY = np.array([0.235, MIDLINE_Y])
 SURFACE = TOP + 0.024
 TOOL = Box(
-    "polish_applicator", (0.163, 0.175, TOP + 0.019),
+    "polish_applicator", (0.163, 0.175, TOP + 0.023),
     color=(0.78, 0.04, 0.13), mass=0.023, size=(0.027, 0.024, 0.038),
 )
 def hand_position(dx, dy, height):
@@ -20,7 +20,7 @@ def hand_position(dx, dy, height):
 
 # Simplified colliders under the sculpted silicone shell.
 HAND_COLLIDERS = [
-    Box("middle_finger_proxy", hand_position(0.014, 0, 0.016), size=(0.052, 0.019, 0.016)),
+    Box("middle_finger_proxy", hand_position(0.014, 0, 0.0153), size=(0.052, 0.019, 0.0148)),
     Box("index_finger_proxy", hand_position(0.025, 0.021, 0.015), size=(0.049, 0.017, 0.014)),
     Box("ring_finger_proxy", hand_position(0.025, -0.019, 0.015), size=(0.052, 0.017, 0.014)),
     Box("little_finger_proxy", hand_position(0.034, -0.036, 0.014), size=(0.044, 0.014, 0.012)),
@@ -32,13 +32,17 @@ REST = Box(
     "manicure_rest", hand_position(0.054, 0.009, 0.003),
     color=(0.32, 0.35, 0.39), size=(0.163, 0.113, 0.006),
 )
-OBJECTS = [REST, *HAND_COLLIDERS, TOOL]
+# Fixed stand has two rails under the handle and a slot for the foam tip.
+DOCK = [Box(f"polish_rest_{i}", (TOOL.pos[0], TOOL.pos[1] + dy, TOP + .002),
+            size=(.029, .008, .004), color=(.22, .26, .30))
+        for i, dy in enumerate((-.008, .008))]
+OBJECTS = [REST, *HAND_COLLIDERS, *DOCK, TOOL]
 
 CELL = 0.00075
 RADIUS = 0.0028
 TIP_EXTENSION = 0.004
 TOOL_REACH = TOOL.size[2] / 2 + TIP_EXTENSION
-CONTACT_TOLERANCE = 0.0015
+MIN_CONTACT_IMPULSE_NS = .00001
 COVERAGE = 0.85
 SPILL = 0.02
 SUCCESS_HOLD_S = 0.3

@@ -11,6 +11,7 @@ from yam_arena import ik
 
 
 from practice_hand import install, update_polish
+from native import Contacts, root_states, asset, collider, substitute_assets
 
 
 def stage():
@@ -19,9 +20,43 @@ def stage():
     return omni.usd.get_context().get_stage()
 
 
+def install_applicator_asset(directory):
+    from pxr import Gf, UsdGeom
+
+    path = directory / "polish_applicator.usda"
+    path.unlink(missing_ok=True)
+    model = asset(path, .023)
+    handle = UsdGeom.Cube.Define(model, "/Object/ApplicatorHandle")
+    handle.CreateSizeAttr(1.)
+    handle.AddScaleOp().Set(Gf.Vec3f(.027, .024, .038))
+    handle.CreateDisplayColorAttr([Gf.Vec3f(.78, .04, .13)])
+    collider(handle, friction=1.)
+    foam = UsdGeom.Cylinder.Define(model, "/Object/PolishTip")
+    foam.CreateRadiusAttr(.0028)
+    foam.CreateHeightAttr(.004)
+    foam.AddTranslateOp().Set(Gf.Vec3d(0., 0., -.021))
+    foam.CreateDisplayColorAttr([Gf.Vec3f(.65, .025, .05)])
+    collider(foam)
+    model.GetRootLayer().Save()
+    return {"polish_applicator": path}
+
+
 def enable_paint(task_path):
     cls = inspect_embodiment.YamArenaEmbodiment
-    reset, step = cls.reset, cls._task_step
+    reset, step, control_step = cls.reset, cls._task_step, cls.step
+    import tempfile
+
+    directory = tempfile.TemporaryDirectory(prefix="practice-nail-")
+    ensure = substitute_assets({"polish_applicator"}, lambda: install_applicator_asset(Path(directory.name)))
+    ensure.original = cls._ensure_sim
+    cls._ensure_sim = ensure
+
+    def clear_contacts(self, action):
+        if paint_task(self) is not None and hasattr(self, "_paint_contacts"):
+            self._paint_contacts.take()
+        return control_step(self, action)
+
+    cls.step = clear_contacts
 
     def paint_task(self):
         task = self.task
@@ -36,6 +71,9 @@ def enable_paint(task_path):
             return observation
         module.paint = module.Paint()
         install(stage(), module)
+        if not hasattr(self, "_paint_contacts"):
+            self._paint_contacts = Contacts({"PolishTip"})
+        self._paint_contacts.take()
         # Flush the USD mesh and visibility changes through RTX before reading the
         # reset observation. Rendering alone leaves the camera's cached frame stale.
         for _ in range(8):
@@ -55,9 +93,7 @@ def enable_paint(task_path):
         module = paint_task(self)
         if module is None:
             return step(self)
-        from yam_arena.scene import object_states
-
-        brush = object_states(self._env, [module.TOOL.name])[module.TOOL.name]
+        brush = root_states(self, [module.TOOL.name])[module.TOOL.name]
         qx, qy, qz, qw = brush.quat_xyzw
         axis = np.array([
             2 * (qx * qz + qw * qy),
@@ -74,7 +110,15 @@ def enable_paint(task_path):
             tcp, _ = ik.tcp_pose(joints[arm_ids].cpu().numpy(), base)
             if np.linalg.norm(tcp - brush.pos) < 0.028 and abs(joints[fingers].mean().item()) < 0.030:
                 holding = True
-        contact = upright and holding and abs(tip[2] - module.SURFACE) <= module.CONTACT_TOLERANCE
+        tip_contacts = self._paint_contacts.take()
+        # The practice finger proxy is also paintable so a stroke that
+        # touches adjacent skin can accrue spill. A hovering tip earns zero.
+        target_shapes = {"MiddleNail", "middle_finger_proxy"}
+        collision = any(
+            pair & target_shapes and impulse >= module.MIN_CONTACT_IMPULSE_NS
+            for pair, _, impulse in tip_contacts
+        )
+        contact = upright and holding and collision
         if os.environ.get("NAIL_TRACE") == "1":
             dx, dy = (tip[:2] - module.XY) * 1000
             dz = (tip[2] - module.SURFACE) * 1000
