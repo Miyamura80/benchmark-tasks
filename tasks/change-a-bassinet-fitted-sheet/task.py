@@ -38,14 +38,11 @@ TAB_OFFSETS = np.column_stack((np.zeros(4), SIGNS[:, 1] * .037, np.zeros(4)))
 GRID_X, GRID_Y = 7, 13
 CORNER_I = [0, (GRID_X - 1) * GRID_Y, GRID_X * GRID_Y - 1, GRID_Y - 1]
 LAUNDRY_END = .196
-TOP_CORNER_I = [GRID_Y+1, (GRID_X-2)*GRID_Y+1, (GRID_X-2)*GRID_Y+GRID_Y-2, 2*GRID_Y-2]
-TOP_CORNERS = np.column_stack((CORNERS - SIGNS * (.040, .048), np.full(4, ZTOP + .003)))
-HEM_SUPPORTS = (
-    (0, 1, (GRID_X//2)*GRID_Y, ((X0+X1)/2, -Y-.005, ZTOP-.025), (GRID_X//2)*GRID_Y+1),
-    (1, 2, (GRID_X-1)*GRID_Y+GRID_Y//2, (X1+.005, 0., ZTOP-.025), (GRID_X-2)*GRID_Y+GRID_Y//2),
-    (2, 3, (GRID_X//2+1)*GRID_Y-1, ((X0+X1)/2, Y+.005, ZTOP-.025), (GRID_X//2+1)*GRID_Y-2),
-    (3, 0, GRID_Y//2, (X0-.005, 0., ZTOP-.025), GRID_Y+GRID_Y//2),
-)
+POCKET_ESCAPE_M = .029
+POCKET_CONSTRAINT_GAIN = .43
+PHOTO_SAMPLE_M = .005
+PHOTO_FIT_MIN = .95
+PHOTO_LAUNDRY_MIN = .90
 
 OBJECTS = [
     Box("bassinet_foam_mattress", ((X0 + X1) / 2, 0, (ZTOP + ZBOTTOM) / 2),
@@ -177,6 +174,15 @@ def make_links():
 A, B, STIFFNESS = (np.array(values, dtype=dtype)
                    for values, dtype in zip(make_links(), (int, int, float)))
 REST = np.linalg.norm(make_positions()[B] - make_positions()[A], axis=1)
+# The sewn skirt contributes material at the outside rows, while nominal
+# panel dimensions and all interior rest lengths stay fixed.
+_relaxed = make_positions()
+_border = np.array([(i in (0, GRID_X-1), j in (0, GRID_Y-1))
+                    for i,j in product(range(GRID_X),range(GRID_Y))])
+_relaxed[:, 0] += _border[:, 0] * np.sign(_relaxed[:, 0] - (X0+X1)/2) * .021
+_relaxed[:, 1] += _border[:, 1] * np.sign(_relaxed[:, 1]) * .018
+CLEAN_REST = np.linalg.norm(_relaxed[B] - _relaxed[A], axis=1)
+
 DEGREE = np.bincount(np.concatenate((A, B)), minlength=GRID_X*GRID_Y)[:, None]
 
 
@@ -355,24 +361,13 @@ class Sheet:
             if hand.open_fraction >= .58:
                 self.grasps[i] = None
                 self.threaded[i] = False
-            elif not self.latched[i]:
+            elif self.clean or not self.latched[i]:
                 anchors[vertex] = tip
         for i, vertex in enumerate(CORNER_I):
-            if self.latched[i]:
+            if self.latched[i] and not self.clean:
                 anchors[vertex] = SEAT[i]
-                if self.clean:
-                    anchors[TOP_CORNER_I[i]] = TOP_CORNERS[i]
             elif self.folded[i]:
                 anchors[vertex] = CLEAN_FOLD[i]
-        if self.clean:
-            # The hem can pick up tension along a side once both adjoining
-            # corners are seated and the loose edge reaches the mattress.
-            for first, second, vertex, support, shoulder in HEM_SUPPORTS:
-                if self.latched[first] and self.latched[second] and np.linalg.norm(self.xyz[vertex]-support) < .065:
-                    anchors[vertex] = .25*self.xyz[vertex] + .75*np.asarray(support)
-                    top = (TOP_CORNERS[first] + TOP_CORNERS[second]) / 2
-                    if np.linalg.norm(self.xyz[shoulder]-top) < .055:
-                        anchors[shoulder] = .4*self.xyz[shoulder] + .6*top
         if not self.clean and self.started and not bool(np.any(self.latched)):
             candidates = np.array([i for i in range(len(self.xyz)) if i not in CORNER_I], dtype=int)
             for name, hand in hands.items():
@@ -410,13 +405,25 @@ class Sheet:
         for iteration in range(10):
             diffs = vertices[B] - vertices[A]
             length = np.linalg.norm(diffs, axis=1)
-            strain = length-REST
+            strain = length-(CLEAN_REST if self.clean else REST)
             strain = np.maximum(0., strain) + .28*np.minimum(0., strain)
             correction = (STIFFNESS * strain/np.maximum(length, 1e-8))[:, None]*diffs
             fixes = np.zeros_like(vertices)
             np.add.at(fixes, A, correction)
             np.add.at(fixes, B, -correction)
             vertices += 1.5*fixes/DEGREE
+            # Only the actual elastic hem has a retaining force. Any adjacent
+            # sheet vertex must get there through cloth tension and contact.
+            for i, vertex in enumerate(CORNER_I):
+                if not self.clean or not self.latched[i] or vertex in anchors:
+                    continue
+                displacement = vertices[vertex] - SEAT[i]
+                opening = np.r_[np.maximum(displacement[:2] * SIGNS[i], 0.),
+                                max(displacement[2], 0.)]
+                if np.linalg.norm(opening) > POCKET_ESCAPE_M:
+                    self.latched[i] = self.threaded[i] = False
+                else:
+                    vertices[vertex] -= POCKET_CONSTRAINT_GAIN * displacement
             vertices[indices] = values
             fixture_contact(vertices, before, folded_clean)
             if iteration % 2 == 1:
@@ -444,6 +451,34 @@ class Sheet:
         self.velocity[indices] = 0.
 
 
+def silhouette(vertices, bounds, minimum_height=None):
+    """Rasterize the overhead projection of the actual cloth triangles."""
+    xmin, xmax, ymin, ymax = bounds
+    nx = round((xmax-xmin) / PHOTO_SAMPLE_M)
+    ny = round((ymax-ymin) / PHOTO_SAMPLE_M)
+    pixels = np.zeros((nx, ny), dtype=bool)
+    for triangle in vertices[TRIANGLES]:
+        projected = (triangle[:, :2] - (xmin, ymin)) / PHOTO_SAMPLE_M - .5
+        lo = np.maximum(np.ceil(projected.min(axis=0)).astype(int), 0)
+        hi = np.minimum(np.floor(projected.max(axis=0)).astype(int) + 1, (nx, ny))
+        if np.any(hi <= lo):
+            continue
+        edge1, edge2 = projected[1:] - projected[0]
+        det = edge1[0] * edge2[1] - edge1[1] * edge2[0]
+        if abs(det) < 1e-9:
+            continue
+        xx, yy = np.ogrid[lo[0]:hi[0], lo[1]:hi[1]]
+        xx, yy = xx - projected[0, 0], yy - projected[0, 1]
+        b = (xx * edge2[1] - yy * edge2[0]) / det
+        c = (yy * edge1[0] - xx * edge1[1]) / det
+        visible = (b >= -1e-8) & (c >= -1e-8) & (b+c <= 1 + 1e-8)
+        if minimum_height is not None:
+            z0, z1, z2 = triangle[:, 2]
+            visible &= (z0 + b*(z1-z0) + c*(z2-z0) >= minimum_height)
+        pixels[lo[0]:hi[0], lo[1]:hi[1]] |= visible
+    return pixels
+
+
 class State:
     def __init__(self, case="nominal"):
         self.old = Sheet(clean=False)
@@ -465,16 +500,21 @@ class State:
         ox, oy, oz = cloth_samples.T
         old_mattress = ((ox >= X0) & (ox <= X1)
                         & (np.abs(oy) <= Y) & (oz >= ZBOTTOM-.003))
-        laundry = (old[:, 0] < LAUNDRY_END) & (np.abs(old[:, 1]) < .303) & (old[:, 2] < TOP+.035)
         off = not bool(np.any(old_mattress) or np.any(self.old.latched) or any(self.old.grasps) or self.old.body_grasps)
-        sorted_old = off and bool(np.mean(laundry) >= .65)
+        laundry_fraction = 0.
+        if off:
+            xmin, ymin = np.floor(old[:, :2].min(axis=0) / PHOTO_SAMPLE_M) * PHOTO_SAMPLE_M
+            xmax, ymax = np.ceil(old[:, :2].max(axis=0) / PHOTO_SAMPLE_M) * PHOTO_SAMPLE_M
+            mask = silhouette(old, (xmin, xmax, ymin, ymax))
+            xx = xmin + (np.arange(mask.shape[0])[:, None] + .5) * PHOTO_SAMPLE_M
+            yy = ymin + (np.arange(mask.shape[1])[None, :] + .5) * PHOTO_SAMPLE_M
+            pad = (xx >= -.0135) & (xx <= .1935) & (np.abs(yy) <= .300)
+            laundry_fraction = float(np.count_nonzero(mask & pad) / max(1, np.count_nonzero(mask)))
+        sorted_old = bool(off and laundry_fraction >= PHOTO_LAUNDRY_MIN)
         fit = int(np.sum(self.clean.latched))
         released = not any(self.clean.grasps)
         cloth = self.clean.xyz
-        interior = [i*GRID_Y+j for i in range(1, GRID_X-1) for j in range(1, GRID_Y-1)]
-        panel = cloth[interior]
-        coverage = float(np.mean((panel[:, 2] >= ZTOP-.002) & (panel[:, 2] <= ZTOP+.030)
-                                 & (panel[:, 0] >= X0) & (panel[:, 0] <= X1) & (np.abs(panel[:, 1]) <= Y)))
+        coverage = float(silhouette(cloth, (X0, X1, -Y, Y), ZTOP-.002).mean()) if fit else 0.
         score = 0.
         if off:
             score += .17
@@ -482,12 +522,12 @@ class State:
             score += .08
         if off and released:
             score += .155 * fit
-        if sorted_old and fit == 4 and coverage >= .88 and released:
+        if sorted_old and fit == 4 and coverage >= PHOTO_FIT_MIN and released:
             score = 1.
         return {
             "score": round(score, 4), "used_pockets": int(np.sum(self.old.latched)),
             "clean_pockets": fit, "used_removed": off, "laundry": sorted_old,
-            "laundry_percent": round(float(np.mean(laundry)) * 100, 1),
+            "laundry_percent": round(laundry_fraction * 100, 1),
             "old_centroid": [round(float(v),4) for v in old.mean(axis=0)],
             "old_x_max": round(float(old[:,0].max()),4),
             "old_outliers": [[round(float(v),4) for v in pt] for pt in old[np.argsort(-old[:,0])[:4]]],
@@ -501,8 +541,7 @@ class State:
         }
 
 
-# Render a denser fabric surface from the same simulated vertices. The sewn
-# skirt wraps the mattress wherever the adjacent elastic pockets are seated.
+# Render a denser fabric surface by interpolating the physical triangles.
 RENDER_X, RENDER_Y = 25, 49
 U, V = np.meshgrid(np.linspace(0, 1, RENDER_X), np.linspace(0, 1, RENDER_Y), indexing="ij")
 HEM = np.r_[np.arange(RENDER_Y), np.arange(1, RENDER_X) * RENDER_Y + RENDER_Y - 1,
@@ -515,7 +554,7 @@ HEM_FACES = [(i, (i + 1) % len(HEM), (i + 1) % len(HEM) + len(HEM), i + len(HEM)
              for i in range(len(HEM))]
 
 
-def fabric_surface(sheet, fitted_corners):
+def fabric_surface(sheet):
     # Subdivide the same triangles used by collision. A spline can bow
     # through the mattress or another layer even if its control grid clears it.
     x, y = U*(GRID_X-1), V*(GRID_Y-1)
@@ -526,27 +565,7 @@ def fabric_surface(sheet, fitted_corners):
     dense = np.where(dx >= dy,
                      origin*(1-dx) + xyz[i+1,j]*(dx-dy) + opposite*dy,
                      origin*(1-dy) + xyz[i,j+1]*(dy-dx) + opposite*dx)
-    if not np.any(fitted_corners > .28):
-        return dense.reshape(-1, 3)
-
-    # An elastic mattress skirt is short, while the upper panel stays wide.
-    # Each seated corner only draws in its connected part of the visual mesh.
-    fit = np.stack(((1-U)*(1-V), U*(1-V), U*V, (1-U)*V), axis=-1) @ fitted_corners
-    fit = np.clip((fit-.28)/.65, 0, 1)
-    fit *= fit * (3-2*fit)
-    skirt_x = np.clip(1 - np.minimum(U, 1-U)/.070, 0, 1)
-    skirt_y = np.clip(1 - np.minimum(V, 1-V)/.060, 0, 1)
-    skirt = np.maximum(skirt_x, skirt_y)**1.5
-    # Project the skirt over the top edge and down the side in separate
-    # bands, leaving a rounded shoulder instead of a diagonal plane.
-    x = np.interp(U, [0, .035, .072, .928, .965, 1],
-                  [X0-.008, X0-.006, X0-.002, X1+.002, X1+.006, X1+.008])
-    y = np.interp(V, [0, .03, .061, .939, .97, 1],
-                  [-Y-.008, -Y-.006, -Y-.002, Y+.002, Y+.006, Y+.008])
-    wrinkle = .0012 * np.sin(9*pi*U + 3*pi*V) * np.sin(12*pi*V)
-    z = ZTOP+.003 - (ZTOP+.003-SEAT[0,2])*skirt + wrinkle*(1-skirt)
-    fitted = np.stack((x, y, z), axis=-1)
-    return (dense + fit[..., None] * (fitted-dense)).reshape(-1, 3)
+    return dense.reshape(-1, 3)
 
 
 class View:
@@ -560,14 +579,11 @@ class View:
         self.sheets = []
         self.hems = []
         self.tags = []
-        self.fitted_corners = [sheet.latched.astype(float) for sheet in (state.old, state.clean)]
-        self.visible_points = []
         for i, (sheet, color, seam_color) in enumerate((
             (state.old,(.63,.25,.20),(.52,.18,.15)),
             (state.clean,(.18,.46,.63),(.13,.35,.52)),
         )):
-            points = fabric_surface(sheet, self.fitted_corners[i])
-            self.visible_points.append(points)
+            points = fabric_surface(sheet)
             mesh = g.mesh(f"Fabric{i}", points, grid_faces(RENDER_X, RENDER_Y), color)
             self.sheets.append(mesh)
             hem = g.mesh(f"ElasticHem{i}", self.hem_points(points), HEM_FACES, seam_color)
@@ -599,19 +615,7 @@ class View:
 
     def update(self,state):
         for i,sheet in enumerate((state.old,state.clean)):
-            corners = self.fitted_corners[i]
-            # Let the fabric settle over several physics frames when a corner
-            # catches or releases, instead of snapping the visible panel.
-            corners += .38 * (sheet.latched - corners)
-            points = fabric_surface(sheet, corners)
-            # Keep the finer display samples on the same side of the rigid
-            # fixtures and the stacked clean sheet as the physical samples.
-            # Installed sections are regenerated from the fitted surface on
-            # each update, so they need overlap repair rather than a sweep.
-            # Sweeping them can snag the display surface on the mattress lip.
-            prior = points.copy() if np.any(corners > .28) else self.visible_points[i]
-            fixture_contact(points, prior, not sheet.clean and not state.clean.started)
-            self.visible_points[i] = points
+            points = fabric_surface(sheet)
             self.g.points(self.sheets[i], points)
             self.g.points(self.hems[i], self.hem_points(points))
             for j, tab in enumerate(self.tags[i]):

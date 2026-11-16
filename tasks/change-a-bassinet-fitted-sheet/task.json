@@ -10,9 +10,9 @@
   "instruction": "Change the bassinet sheet. Take the used coral sheet off the mattress and put it in the laundry zone. Fit the clean blue sheet over all four corners, then release it.",
   "context": "Changing fitted sheets requires stripping a used elastic hem and stretching a replacement around multiple corners while handling deformable fabric.",
   "setup": "A 660 × 275 × 44 mm foam bassinet mattress on a 14 mm plywood platform. Two sheets have 37 mm corner pull tabs. The used coral sheet starts on the mattress. The folded clean blue sheet sits on a 45 × 526 × 20 mm shelf behind the mattress. The yellow-edged laundry pad is on the robot side.",
-  "scoring": "1.0 when used fabric is released and completely off the mattress with ≥65% on the laundry pad, all four clean corners are fitted and released, and ≥88% of the clean interior mesh lies on the mattress-height band. Partial credit for removal, laundry placement, and each released clean corner.",
-  "fidelity": "IsaacLab YAM with a mass-point cloth grid, swept fixture contact at vertices and surface samples, and approximate triangular contacts between layers and non-adjacent folds. Stack contact on the clean shelf until pickup. Geometric jaw and elastic-pocket constraints.",
+  "scoring": "Full credit requires the released used sheet fully off the mattress and at least 90% of its overhead silhouette inside the laundry pad, plus four released clean pockets fitted and at least 95% of the visible top covered. Use a fixed overhead photo and four low corner views. Partial credit for removal, laundry placement and each released clean pocket.",
+  "fidelity": "Cloth mass-point grid with cloth and fixture contact. Compliant hem pockets can unseat under tension; no interior vertices are pinned when a pocket seats. Gripper and cloth interactions are simplified.",
   "run_limit": "1,400 steps (70 seconds at 20 Hz)",
-  "scores": "Opposite-side staging layout: 1.0 in a local scripted replay with YAM URDF kinematics and cloth contact. Attached IsaacLab evidence shows the earlier arrangement: Dream-1 0 in 1,400 steps, scripted YAM 1.0 in 987 steps.",
-  "media": "M-6PZP5P"
+  "scores": "Revised model awaits a new two-arm demonstration and model trial. Prior recordings use the previous pocket model.",
+  "media": ""
 }
