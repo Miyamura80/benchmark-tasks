@@ -105,7 +105,7 @@ def connect_slide(stage, fixture, body, origin, stroke, stiffness):
     """Anchor a native vertical slider to the static world before detection."""
     from pxr import Gf, UsdPhysics
 
-    joint = UsdPhysics.PrismaticJoint.Define(stage, f"{fixture}/{body.GetName()}Slide")
+    joint = UsdPhysics.PrismaticJoint.Define(stage, f"{fixture}/{body.name}Slide")
     joint.CreateBody1Rel().SetTargets([body])
     joint.CreateLocalPos0Attr(Gf.Vec3f(*origin))
     joint.CreateAxisAttr("Z")
