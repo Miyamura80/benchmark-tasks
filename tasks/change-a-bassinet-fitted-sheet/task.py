@@ -207,6 +207,7 @@ SOLIDS = (
     ((.1185, -.263, TOP), (.1635, .263, TOP+.020)),
     ((-.0135, -.300, TOP), (.1935, .300, TOP+.006)),
 )
+FOLDED_CLEAN = ((.130, -.244, TOP+.019), (.156, .244, TOP+.045))
 THICKNESS = .002
 FACES = np.array(grid_faces(GRID_X, GRID_Y))
 TRIANGLES = FACES[:, (0, 1, 2, 0, 2, 3)].reshape(-1, 3)
@@ -221,11 +222,13 @@ CONTACT_IDS = np.repeat(FACES, len(CONTACT_WEIGHTS), axis=0)
 SAMPLE_WEIGHTS = np.tile(CONTACT_WEIGHTS, (len(FACES), 1))
 
 
-def fixture_contact(points, before):
+def fixture_contact(points, before, folded_clean=False):
     # Horizontal support surfaces use unilateral height constraints.
     points[:, 2] = np.maximum(points[:, 2], TOP + THICKNESS)
     for lower, upper in SOLIDS:
         project_box(points, before, lower, upper, THICKNESS)
+    if folded_clean:
+        project_box(points, before, *FOLDED_CLEAN, THICKNESS)
 
 
 def face_contact(points, before, vertices, previous, search=None):
@@ -391,6 +394,7 @@ class Sheet:
         sample_free = SAMPLE_WEIGHTS * free[CONTACT_IDS]
         weights_sq = np.sum(sample_free**2, axis=1)
         vertices = self.xyz
+        folded_clean = other.clean and not other.started
         before = vertices.copy()
         vertices += self.velocity * dt
         vertices[:, 2] -= 7.0*dt*dt
@@ -406,11 +410,11 @@ class Sheet:
             np.add.at(fixes, B, -correction)
             vertices += 1.5*fixes/DEGREE
             vertices[indices] = values
-            fixture_contact(vertices, before)
+            fixture_contact(vertices, before, folded_clean)
             if iteration % 2 == 1:
                 samples = np.einsum("ni,nij->nj", SAMPLE_WEIGHTS, vertices[CONTACT_IDS])
                 projected = samples.copy()
-                fixture_contact(projected, before_samples)
+                fixture_contact(projected, before_samples, folded_clean)
                 if iteration == 9:
                     cloth_projected = projected.copy()
                     face_contact(cloth_projected, before_samples, other.xyz, previous_other)
@@ -427,7 +431,7 @@ class Sheet:
         face_contact(free_vertices, before[free], other.xyz, previous_other)
         face_contact(free_vertices, before[free], vertices, before, SELF_CONTACT[free])
         vertices[free] = free_vertices
-        fixture_contact(vertices, before)
+        fixture_contact(vertices, before, folded_clean)
         self.velocity = (vertices-before) / dt * .84
         self.velocity[indices] = 0.
 
@@ -549,11 +553,13 @@ class View:
         self.hems = []
         self.tags = []
         self.fitted_corners = [sheet.latched.astype(float) for sheet in (state.old, state.clean)]
+        self.visible_points = []
         for i, (sheet, color, seam_color) in enumerate((
             (state.old,(.63,.25,.20),(.52,.18,.15)),
             (state.clean,(.18,.46,.63),(.13,.35,.52)),
         )):
             points = fabric_surface(sheet, self.fitted_corners[i])
+            self.visible_points.append(points)
             mesh = g.mesh(f"Fabric{i}", points, grid_faces(RENDER_X, RENDER_Y), color)
             self.sheets.append(mesh)
             hem = g.mesh(f"ElasticHem{i}", self.hem_points(points), HEM_FACES, seam_color)
@@ -590,6 +596,10 @@ class View:
             # catches or releases, instead of snapping the visible panel.
             corners += .38 * (sheet.latched - corners)
             points = fabric_surface(sheet, corners)
+            # Keep the finer display samples on the same side of the rigid
+            # fixtures and the stacked clean sheet as the physical samples.
+            fixture_contact(points, self.visible_points[i], not sheet.clean and not state.clean.started)
+            self.visible_points[i] = points
             self.g.points(self.sheets[i], points)
             self.g.points(self.hems[i], self.hem_points(points))
             for j, tab in enumerate(self.tags[i]):

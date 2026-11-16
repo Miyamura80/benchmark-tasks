@@ -11,8 +11,8 @@
   "context": "Changing fitted sheets requires stripping a used elastic hem and stretching a replacement around multiple corners while handling deformable fabric.",
   "setup": "A 660 × 275 × 44 mm foam bassinet mattress rests on a 14 mm plywood platform. Both sheets have 37 mm fabric pull tabs at their four corner seams. A coral cotton fitted sheet is fitted; a clean blue fitted sheet is folded on a 45 × 526 × 20 mm side shelf. An adjacent yellow-edged pad marks the empty laundry zone. All pieces start in fixed positions described in the README.",
   "scoring": "1.0 when used fabric is released and completely off the mattress with ≥65% on the laundry pad, all four clean corners are fitted and released, and ≥88% of the clean interior mesh lies on the mattress-height band. Partial credit for removal, laundry placement, and each released clean corner.",
-  "fidelity": "IsaacLab YAM with a mass-point cloth grid, swept fixture contact at vertices and surface samples, and approximate triangular contacts between layers and non-adjacent folds. Geometric jaw and elastic-pocket constraints.",
+  "fidelity": "IsaacLab YAM with a mass-point cloth grid, swept fixture contact at vertices and surface samples, and approximate triangular contacts between layers and non-adjacent folds. Stack contact on the clean shelf until pickup. Geometric jaw and elastic-pocket constraints.",
   "run_limit": "1,400 steps (70 seconds at 20 Hz)",
-  "scores": "Attached IsaacLab evidence predates the revised collision solver: Dream-1 0 in 1,400 steps, scripted YAM 1.0 in 987 steps.",
+  "scores": "The revised collision model scored 1.0 locally with recorded YAM endpoints and scripted URDF kinematics. Attached IsaacLab evidence predates the collision revision: Dream-1 0 in 1,400 steps, scripted YAM 1.0 in 987 steps.",
   "media": "M-6PZP5P"
 }
