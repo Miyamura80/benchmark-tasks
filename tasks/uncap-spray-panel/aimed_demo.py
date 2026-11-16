@@ -60,3 +60,62 @@ def register_policy():
  class AimedPolicy(AimedDemo,PolicyBase):pass
  register('policy','spray_aimed_demo')(AimedPolicy)
  return 'spray_aimed_demo'
+
+
+class ClearanceClock(PlaybackClock):
+    """Extend the historical terminal command by a fixed, precomputed retreat."""
+
+    retreat_steps = 60
+    hold_steps = 50
+
+    def __init__(self):
+        from yam_arena import ik, station
+
+        super().__init__()
+        row = self.actions[-1].copy()
+        q = row[7:13].copy()
+        base = station.BASES['right']
+        start, rotation = ik.tcp_pose(q, base)
+        quat = ik.matrix_to_quat_xyzw(rotation)
+        retreat = []
+        for index in range(1, self.retreat_steps + 1):
+            fraction = ik.smoothstep(index / self.retreat_steps)
+            target = start + np.array((.040, -.040, .080)) * fraction
+            q, residual, angular = ik.solve(target, quat, q, base_pos=base, iters=95)
+            if residual > .002 or angular > .025:
+                raise ValueError(f'Clearance retreat unreachable at action {index}: {residual}, {angular}')
+            action = row.copy()
+            action[7:13] = q
+            action[13] = 1.
+            retreat.append(action)
+        self.actions = np.vstack((self.actions, retreat))
+        low, high = self.metadata['action_lower'], self.metadata['action_upper']
+        if not np.isfinite(self.actions).all() or (self.actions < low).any() or (self.actions > high).any():
+            raise ValueError('Clearance motion outside normal action limits')
+
+    def command(self, state_time):
+        index = round(float(state_time) * 20)
+        if not math.isfinite(state_time) or index < 0 or abs(index/20 - state_time) > 1e-6:
+            raise ValueError('Clock must stay on 20 Hz ticks')
+        end = len(self.actions) + self.hold_steps - 1
+        if index > end or (self.last_index is None and index != 0) or (
+                self.last_index is not None and index not in (self.last_index, self.last_index + 1)):
+            raise ValueError('Clock exceeded budget or skipped/reversed an action')
+        self.last_index = index
+        return self.actions[min(index, len(self.actions) - 1)].copy(), index == end
+
+
+def register_clearance_policy():
+    from inspect_robots.policy import PolicyBase, PolicyInfo
+    from inspect_robots.registry import register
+    from inspect_robots_yam.config import action_box
+
+    class ClearancePolicy(AimedDemo, PolicyBase):
+        def __init__(self):
+            self.clock = ClearanceClock()
+            limits = self.clock.metadata
+            self.info = PolicyInfo(name='spray_clearance_demo', action_space=action_box(
+                np.asarray(limits['action_lower']), np.asarray(limits['action_upper'])))
+
+    register('policy', 'spray_clearance_demo')(ClearancePolicy)
+    return 'spray_clearance_demo'

@@ -2,7 +2,7 @@
 
 Remove and park the cap, spray a blue coat on the fixed80mm decorative plaque while protecting its backing, then finish with the can upright and steady in the left gripper, nozzle released and right hand clear. This is a familiar household DIY finishing job in the **Societal relevance** category. No set-down or unsupported suspension is required; the can may still contact the starting riser while gripped.
 
-**Revised native demo:1.0. Completed Dream-1 evaluation:0.0.** Both use the predeclared1,200-control/60-second limit. The demo video explicitly shows an offline visualization of the same native episode. The model video contains actual native RGB; see the limitations below.
+**Historical native demo (previous clearance criterion): 1.0. Historical Dream-1 evaluation: 0.0.** Both use the predeclared1,200-control/60-second limit. The demo video explicitly shows an offline visualization of the same native episode. The model video contains actual native RGB; see the limitations below.
 
 ## Setup and scoring
 
@@ -15,7 +15,7 @@ Coverage and paint outside the plaque use **the same visible-blue criterion**: a
 |0.25|Cap physically detached and parked within45mm horizontally/12mm vertically of its pad target, speed<20mm/s.|
 |0.50|Above, at least50%visible plaque coverage and outside paint<=7.5398cm².|
 |0.75|Above, at least90%coverage.|
-|1.00|Above, plus can within10°upright/speed<20mm/s, valve travel<0.5mm, rightTCP>70mm from can/cap, both opposing left fingertip contacts>=0.1N; all maintained between qualifying endpoints spanning1.0s.|
+|1.00|Above, plus can within10°upright/speed<20mm/s, valve travel<0.5mm, right-gripper envelope ≥30 mm from the can, nozzle and cap surfaces, two opposing left fingertip contacts; all maintained between qualifying endpoints spanning1.0s.|
 
 The episode retains another elapsed1.0s at score1.0 before success termination. Missing/nonfinite/nonmonotonic samples, a can/cap drop>30mm below the table or emitting outside the supported cone/backing/range geometry invalidate all credit. No scorer condition depends on controller phase names.
 
@@ -27,10 +27,9 @@ Use the installed Isaac Lab-Arena/YAM environment pinned in RUNTIME.json: Ubuntu
 
 ```sh
 # Fresh native clock-only demonstration; no actor restore or feedback controller.
-python tasks/uncap-spray-panel/run.py --policy aimed-demo --stage full \
+python tasks/uncap-spray-panel/run.py --policy clearance-demo --stage full \
   --physics-hz 960 --max-steps 1200 --no-video --log-dir /tmp/new-spray-demo
 python tasks/uncap-spray-panel/audit_trial.py /tmp/new-spray-demo
-python tasks/uncap-spray-panel/audit_aimed_demo.py /tmp/new-spray-demo
 
 # Genuine Dream-1 through Inspect Robots, actual RGB/frame recording enabled.
 python tasks/uncap-spray-panel/run.py --policy dream --stage full \
@@ -39,7 +38,7 @@ python tasks/uncap-spray-panel/run.py --policy dream --stage full \
 python -m unittest discover -s tasks/uncap-spray-panel -p 'test*.py'
 ```
 
-Use new output directories and fresh native resets. Both policies get1,200controls/60simulatedseconds at20Hz; native physics is960Hz/48substeps per action, baseline body solver. This limit replaces the previous120-second default and was fixed before the new model outcome. The full demonstration policy is bounded to819controls/40.95s including extra hold. The tested L40S runs took approximately298s(demo) and522s(model), including startup; other hardware/runtime is unmeasured.
+Use new output directories and fresh native resets. Both policies get1,200controls/60simulatedseconds at20Hz; native physics is960Hz/48substeps per action, baseline body solver. This limit replaces the previous120-second default and was fixed before the new model outcome. The revised clock-only candidate appends a right-arm retreat and hold to the historical coating sequence. It must be replayed natively under the revised scorer. The tested L40S runs took approximately298s(demo) and522s(model), including startup; other hardware/runtime is unmeasured.
 
 ## New evidence and limitations
 

@@ -10,6 +10,8 @@ def sample(**changes):
     s=dict(time=0.,can=CAN_START,cap=CAP_START,button_travel=0.,
            nozzle=(TARGET_X-.20,TARGET_CENTER[0],TARGET_CENTER[1]),axis=(1.,0.,0.),
            can_speed=0.,cap_speed=0.,upright=1.,cap_detached=False,hands_clear=False,
+           button=BUTTON_START, **{f'{name}_rotation': ((1,0,0),(0,1,0),(0,0,1))
+                                  for name in ('can','cap','button')},
            hands=[dict(tcp=list(CAN_START)),dict(tcp=[0.,-.305,1.])],
            left_contact_bodies=['tip_left','tip_right'],left_can_contact_matrix=[[[0.,1.,0.]],[[0.,-1.,0.]]])
     s.update(changes)
@@ -138,6 +140,15 @@ class ScoringTests(unittest.TestCase):
             if mode=='right_near_cap':x['hands'][1]['tcp']=list(x['cap'])
             if mode=='right_near_can':x['hands'][1]['tcp']=list(x['can'])
             self.tick(t,x,1);self.assertEqual(t.finish_hold,0.,mode);self.assertLess(t.value,1.,mode)
+
+    def test_right_tcp_above_can_at_nozzle_fails_surface_clearance(self):
+        state = sample()
+        state['hands'][1]['tcp'] = (CAN_START[0], CAN_START[1], CAN_START[2]+.078)
+        self.assertFalse(right_tcp_clear(state))
+        state['hands'][1]['tcp'] = (CAN_START[0], CAN_START[1]-.16, CAN_START[2]+.078)
+        self.assertTrue(right_tcp_clear(state))
+        del state['button_rotation']
+        self.assertFalse(right_tcp_clear(state))
 
     def test_overspray_prevents_coating_credit(self):
         t=SprayScorer()

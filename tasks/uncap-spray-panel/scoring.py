@@ -107,11 +107,30 @@ def opposing_left_can_contacts(sample):
     except (KeyError,TypeError,ValueError,IndexError,AttributeError):return False
 
 
+RIGHT_CLEARANCE = .030
+GRIPPER_ENVELOPE_RADIUS = .040
+
+
+def cylinder_gap(point, center, rotation, radius, low, high):
+    """Distance to the solid cylinder, zero anywhere inside its envelope."""
+    if not all(math.isfinite(value) for value in (*point, *center, *(v for row in rotation for v in row))):
+        return math.nan
+    delta = [p - c for p, c in zip(point, center, strict=True)]
+    x, y, z = (dot(delta, axis) for axis in zip(*rotation, strict=True))
+    return math.hypot(max(0., math.hypot(x, y) - radius), max(0., low - z, z - high))
+
+
 def right_tcp_clear(sample):
     try:
-        tcp=sample['hands'][1]['tcp']
-        return len(tcp)==3 and all(math.isfinite(v) for v in tcp) and all(distance(tcp,sample[name])>.070 for name in ('can','cap'))
-    except (KeyError,TypeError,ValueError,IndexError):return False
+        tcp = sample['hands'][1]['tcp']
+        dimensions = (('can', .026, -.070, .070), ('cap', .033, -.017, .017),
+                      ('button', .010, -.005, .005))
+        gaps = [cylinder_gap(tcp, sample[name], sample[f'{name}_rotation'], radius, low, high)
+                for name, radius, low, high in dimensions]
+        required_gap = RIGHT_CLEARANCE + GRIPPER_ENVELOPE_RADIUS
+        return all(math.isfinite(gap) and gap >= required_gap for gap in gaps)
+    except (KeyError, TypeError, ValueError, IndexError):
+        return False
 
 
 class SprayScorer:
