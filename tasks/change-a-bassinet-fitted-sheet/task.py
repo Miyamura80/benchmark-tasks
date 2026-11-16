@@ -27,8 +27,11 @@ ZTOP, ZBOTTOM = TOP + .059, TOP + .015
 SIGNS = np.array([[-1, -1], [1, -1], [1, 1], [-1, 1]])
 CORNERS = np.array([[X0, -Y], [X1, -Y], [X1, Y], [X0, Y]])
 SEAT = np.column_stack((CORNERS + SIGNS * .008, np.full(4, ZBOTTOM + .004)))
-CLEAN_FOLD = np.array([[.134, -.186, TOP + .022], [.149, -.235, TOP + .036],
-                       [.149, .235, TOP + .036], [.134, .186, TOP + .022]])
+SHELF_X = .518
+SHELF_SIZE = (.045, .526, .020)
+FOLD_START = SHELF_X - .009
+CLEAN_FOLD = np.array([[FOLD_START+.015, -.186, TOP + .022], [FOLD_START, -.235, TOP + .029],
+                       [FOLD_START, .235, TOP + .029], [FOLD_START+.015, .186, TOP + .022]])
 HOVER = TOP + .109
 PAD = .013
 TAB_OFFSETS = np.column_stack((np.zeros(4), SIGNS[:, 1] * .037, np.zeros(4)))
@@ -47,7 +50,7 @@ HEM_SUPPORTS = (
 OBJECTS = [
     Box("bassinet_foam_mattress", ((X0 + X1) / 2, 0, (ZTOP + ZBOTTOM) / 2),
         size=(X1-X0, 2*Y, ZTOP-ZBOTTOM), color=(.81, .82, .82)),
-    Box("clean_sheet_shelf", (.141, 0, TOP + .010), size=(.045, .526, .020),
+    Box("clean_sheet_shelf", (SHELF_X, 0, TOP + .010), size=SHELF_SIZE,
         color=(.17, .31, .32)),
     Box("laundry_zone_pad", (.090, 0, TOP + .003), size=(.207, .600, .006),
         color=(.31, .34, .27)),
@@ -65,10 +68,10 @@ def demo():
     def w(duration, point, grip, name, yaw=0.):
         return Waypoint(duration, tuple(point), grip, name, yaw)
 
-    def approach(path, point, title, yaw=0.):
+    def approach(path, point, title, yaw=0., hover=HOVER):
         opening = .55*o if yaw else o
         path.extend([
-            w(1.35, (*point[:2], HOVER), opening, "approach " + title, yaw),
+            w(1.35, (*point[:2], hover), opening, "approach " + title, yaw),
             w(1.20, point + (0, 0, PAD), opening, "lower to " + title, yaw),
             w(.72, point + (0, 0, PAD), c, "pinch " + title, yaw),
         ])
@@ -90,9 +93,13 @@ def demo():
         dx, dy = SIGNS[index] * .025
         pickup = CLEAN_FOLD[index] + TAB_OFFSETS[index]
         yaw = float(SIGNS[index,1] * pi / 2) if SIGNS[index,0] > 0 else 0.
-        approach(path, pickup, "clean pull tab", yaw)
+        shelf_hover = TOP + .074 if index in (1,2) else TOP + .080
+        approach(path, pickup, "clean pull tab", hover=shelf_hover)
+        path.append(w(.92, (*pickup[:2], shelf_hover), c, "lift clean pocket"))
+        if index in (0,3):
+            path.append(w(1.22, (.360, SIGNS[index,1]*.270, HOVER+.016), c,
+                          "draw clean fabric above the mattress"))
         path.extend([
-            w(.92, (*pickup[:2], HOVER), c, "lift clean pocket", yaw),
             w(1.55, (pocket[0]+dx, pocket[1]+dy, HOVER), c, "stretch clean pocket over corner", yaw),
             w(.94, (pocket[0]+dx, pocket[1]+dy, pocket[2]+PAD), c, "pull hem below mattress top", yaw),
             w(.77, pocket+(0, 0, PAD), c, "draw hem inward under corner", yaw) if not skip else
@@ -114,28 +121,28 @@ def demo():
             ]
             unhook(path, far)
             path += [
-                w(1.80, (.060, sign*.289, HOVER), c, "pull soiled sheet entirely off mattress"),
-                w(1.02, (.059, sign*.272, TOP + .046), c, "lower used sheet onto laundry pad"),
-                w(.90, (.059, sign*.272, TOP + .046), o, "release used sheet into laundry zone"),
-                w(.90, (.059, sign*.272, HOVER), o, "clear laundry zone"),
+                w(1.80, (0.044, sign*.289, HOVER), c, "pull soiled sheet entirely off mattress"),
+                w(1.02, (0.043, sign*.272, TOP + .046), c, "lower used sheet onto laundry pad"),
+                w(.90, (0.043, sign*.272, TOP + .046), o, "release used sheet into laundry zone"),
+                w(.90, (0.043, sign*.272, HOVER), o, "clear laundry zone"),
             ]
             trailing = np.array([.202, sign*.258, TOP+.021])
             approach(path, trailing, "trailing used corners")
             path += [
                 w(.72, (*trailing[:2], HOVER), c, "lift trailing fabric"),
-                w(1.45, (.060, sign*.245, HOVER), c, "clear all used fabric from mattress"),
-                w(.92, (.059, sign*.227, TOP+.030), c, "lay the trailing fabric on the laundry pad"),
-                w(.75, (.059, sign*.227, TOP+.030), o, "release used sheet completely"),
-                w(.92, (.059, sign*.227, HOVER), o, "clear used sheet"),
+                w(1.45, (0.044, sign*.245, HOVER), c, "clear all used fabric from mattress"),
+                w(.92, (0.043, sign*.227, TOP+.030), c, "lay the trailing fabric on the laundry pad"),
+                w(.75, (0.043, sign*.227, TOP+.030), o, "release used sheet completely"),
+                w(.92, (0.043, sign*.227, HOVER), o, "clear used sheet"),
             ]
             drape = np.array([.216, sign*.114, ZTOP+.003])
             approach(path, drape, "remaining used fabric at near edge")
             path += [
                 w(.70, (*drape[:2], HOVER), c, "lift remaining used fabric"),
-                w(1.35, (.073, sign*.130, HOVER), c, "clear mattress edge"),
-                w(.92, (.073, sign*.130, TOP+.031), c, "lay remaining fabric on pad"),
-                w(.70, (.073, sign*.130, TOP+.031), o, "release remaining fabric"),
-                w(.80, (.073, sign*.130, HOVER), o, "clear laundry pad"),
+                w(1.35, (0.025, sign*.130, HOVER), c, "clear mattress edge"),
+                w(.92, (0.025, sign*.130, TOP+.031), c, "lay remaining fabric on pad"),
+                w(.70, (0.025, sign*.130, TOP+.031), o, "release remaining fabric"),
+                w(.80, (0.025, sign*.130, HOVER), o, "clear laundry pad"),
             ]
         install(path, far)
         install(path, near, skip=CASE == "miss-one-pocket" and side == "right")
@@ -204,10 +211,11 @@ def project_box(points, before, lower, upper, margin):
 SOLIDS = (
     ((X0, -Y, ZBOTTOM), (X1, Y, ZTOP)),
     ((X0-.012, -Y-.010, TOP), (X1+.012, Y+.010, TOP+.014)),
-    ((.1185, -.263, TOP), (.1635, .263, TOP+.020)),
+    ((SHELF_X-SHELF_SIZE[0]/2, -.263, TOP),
+     (SHELF_X+SHELF_SIZE[0]/2, .263, TOP+SHELF_SIZE[2])),
     ((-.0135, -.300, TOP), (.1935, .300, TOP+.006)),
 )
-FOLDED_CLEAN = ((.130, -.244, TOP+.019), (.156, .244, TOP+.045))
+FOLDED_CLEAN = ((FOLD_START-.004, -.244, TOP+.019), (FOLD_START+.022, .244, TOP+.045))
 THICKNESS = .002
 FACES = np.array(grid_faces(GRID_X, GRID_Y))
 TRIANGLES = FACES[:, (0, 1, 2, 0, 2, 3)].reshape(-1, 3)
@@ -301,8 +309,8 @@ class Sheet:
                 width = .186 + .049*s
                 for j in range(GRID_Y):
                     y = (j/(GRID_Y-1)*2 - 1)*width
-                    self.xyz[i*GRID_Y+j] = (.134+.015*s+(.004 if i%2 else 0), y,
-                                            TOP+.022+.014*s+.008*(i%2))
+                    self.xyz[i*GRID_Y+j] = (FOLD_START+.015*(1-s)+(.004 if i%2 else 0), y,
+                                            TOP+.022+.007*s+.006*(i%2))
             self.xyz[CORNER_I] = CLEAN_FOLD
         else:
             self.xyz[CORNER_I] = SEAT

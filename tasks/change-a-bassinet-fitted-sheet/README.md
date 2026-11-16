@@ -7,11 +7,11 @@ Strip a used sheet, put it in the laundry zone, and fit a fresh sheet onto all f
 | Part | Material, dimensions and fixed reset |
 | --- | --- |
 | Mattress | Foam, 660 × 275 × 44 mm on a 14 mm plywood platform, 59 mm above tabletop at its top. Long dimension along Y. The near and far X edges are 206 and 481 mm from the arm bases. Side edges are at Y ±330 mm. No infant or bassinet side rails are present. |
-| Used and clean fitted sheets | Two lightweight cotton jersey fitted sheets for this mattress, with sewn elastic hems and 37 mm fabric pull tabs at the four corner seams, so the jaws can pinch outside the foam. Coral begins fully seated under all four corners. The blue sheet is accordion-folded on the narrow shelf ahead of the mattress, with four distinguishable pull tabs at the fixed coordinates in `task.py`. |
-| Clean shelf | 45 × 526 × 20 mm horizontal shelf centred at X = 141 mm. Place the folded blue sheet on top. |
-| Laundry zone | 207 × 600 mm floor pad with yellow edges, centred at X = 90 mm. Leave it empty at reset. |
+| Used and clean fitted sheets | Two lightweight cotton jersey fitted sheets for this mattress, with sewn elastic hems and 37 mm fabric pull tabs at the four corner seams, so the jaws can pinch outside the foam. Coral begins fully seated under all four corners. The blue sheet is accordion-folded on the narrow shelf behind the far edge of the mattress, with four distinguishable pull tabs at the fixed coordinates in `task.py`. |
+| Clean shelf | 45 × 526 × 20 mm horizontal shelf centred at X = 518 mm, beyond the mattress. Place the folded blue sheet on top. |
+| Laundry zone | 207 × 600 mm pad with yellow edges, centred at X = 90 mm on the robot side of the mattress. Leave it empty at reset. |
 
-Coordinates are from the midpoint of the arm bases, +X away from the robot and +Y to its left. Reproduce fabric folds by placing the four hem corners at the listed coordinates.
+Coordinates are from the midpoint of the arm bases, +X away from the robot and +Y to its left. Reproduce fabric folds by placing the four hem corners at the listed coordinates. The mattress separates clean-sheet staging from the laundry pad. Carry the used sheet toward the robot. Unfold the clean sheet from the far edge only after the used sheet is set aside.
 
 ## Run
 
@@ -36,7 +36,7 @@ Cloth uses a mass-point grid with stretch and shear constraints. Swept contacts 
 
 ## Recorded results
 
-The attached IsaacLab recordings and setup image predate the revised collision solver. The revised solver scored 1.0 locally both with recorded YAM endpoints and with scripted endpoints solved from the YAM URDF.
+The attached IsaacLab recordings and setup image show the earlier arrangement, with the clean shelf on the robot side. The opposite-side layout scored 1.0 in a local replay of the scripted motion using the YAM URDF kinematics and cloth solver.
 
 | Trial | Score | Control steps | Runtime including startup |
 | --- | ---: | ---: | ---: |
