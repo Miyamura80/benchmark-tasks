@@ -1,0 +1,18 @@
+{
+  "title": "Scrub four marks from a toilet bowl with a toilet brush",
+  "category": "Societal relatability",
+  "keywords": [
+    "cleaning",
+    "toilet brush",
+    "curved-surface contact",
+    "housekeeping"
+  ],
+  "instruction": "Use the toilet brush to scrub away all four brown marks from inside the bowl, including the marks under the rim. Return the brush to its holder and let go.",
+  "context": "Toilet cleaning requires maintaining contact on a curved surface, including areas that are partly hidden under the rim.",
+  "setup": "A white vitreous-china bowl section sits secured on a bench. Outer rim 386 × 304 mm; 101 mm above the table. Four visibly brown deposits sit in two distinct levels of the inner bowl. A 46 mm nylon-bristle brush starts upright in its holder. See README for the unchanged geometry and reset coordinates.",
+  "scoring": "1.0 when ≥92% of each of four patches is removed and the brush is released in its holder. Otherwise score 0.20 times the sum of cleaned fractions over the four patches.",
+  "fidelity": "IsaacLab YAM and stock cameras. Geometric brush and holder constraints; swept contact and tangential travel remove pigment from the bowl. No fluid or chemical cleaning model.",
+  "run_limit": "1,400 steps (70 seconds at 20 Hz)",
+  "scores": "Dream-1: 0 in 1,400 steps. Scripted YAM: 1.0 in 622 steps. All four final regions read 100%, 100%, 100%, 100% clean, and the brush was released upright in its holder.",
+  "media": "M-XCKYR3"
+}
