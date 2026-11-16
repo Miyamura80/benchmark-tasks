@@ -6,13 +6,13 @@ Remove four brown marks inside the bowl, including two under the rim, then retur
 
 | Part | Material, dimensions and fixed reset |
 | --- | --- |
-| Toilet bowl | Compact white vitreous-china bowl section. Outer rim 386 × 304 mm, opening 294 × 222 mm, 101 mm deep from rim to tabletop. Centred at (263, −124) mm, with rim 101 mm above the table. The ceramic is held in a 340 × 222 mm support. |
+| Toilet bowl | Bench-scale vitreous-china toilet with a tapered pedestal. Outer rim 386 × 304 mm, opening 294 × 222 mm, and rim 134 mm above the table. The bowl is centred at (263, −124) mm. |
 | Toilet trim | The scene includes an open seat ring with hinges and a rear cistern with an overhanging lid and flush button. The cistern is behind the brush working area. |
-| Brush and holder | Nylon bristles on a rounded 46 mm head, round shaft, and 22 mm rubber grip. The robot grasps the low section of a 230 mm brush handle, 64 mm above the bristle centre. Start upright in the holder at (155, −306) mm, grip centre 112 mm above the table. |
+| Brush and holder | Nylon bristles on a rounded 46 mm head, round shaft, and 22 mm rubber grip. The robot grasps the brush handle 42 mm above the bristle centre. Start upright in the holder at (155, −306) mm, grip centre 112 mm above the table. |
 | Stains | Four clusters of five washable brown pigment patches. Two opposite patches near the back-facing lip, 10 mm below the rim, and two on the sloping bowl wall, 18 mm below the rim. Angles and radii are listed in `task.py`. Reset each patch to fully soiled. |
 | Waterline | Fixed visual surface at 75 mm below the rim. Use clean water and washable marks for a bench trial. No cleaners are needed. |
 
-Coordinates are from the midpoint of the arm bases, +X away from the robot and +Y to its left. The bowl section sits open at bench height and can be secured inside a shallow support cradle.
+Coordinates are from the midpoint of the arm bases, +X away from the robot and +Y to its left. The fixture is secured by its pedestal with the seat opening clear.
 
 ## Run
 
@@ -37,7 +37,7 @@ YAM runs in IsaacLab with stock station cameras. The bristles use a swept contac
 
 ## Recorded results
 
-The recorded videos and setup image show the earlier bowl exterior. The seat and cistern revision uses the same bowl contact surface and brush trajectory.
+The attached IsaacLab recordings and setup image are from the original 101 mm rim revision. An offline test of the 134 mm revision with the YAM URDF kinematics and brush contact model scored 1.0 nominal, 0.0 for an air pass, and 0.40 for cleaning only two marks.
 
 | Trial | Score | Control steps | Runtime including startup |
 | --- | ---: | ---: | ---: |

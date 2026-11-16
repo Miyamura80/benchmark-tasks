@@ -21,21 +21,28 @@ CASES = ("nominal", "air-pass", "one-side")
 CASE = os.environ.get("ROBOCURVE_FIXTURE_CASE", "nominal")
 
 CENTER = (.263, -.124)
-RIM = TOP + .101
-BRUSH_LENGTH = .064                 # Grip centre to bristle centre
+RIM = TOP + .134
+BRUSH_LENGTH = .042                 # Grip centre to bristle centre
 BRISTLE_RADIUS = .023
 HOLDER = (.155, -.306, TOP + .112)
-LIFT = RIM + BRUSH_LENGTH + .026
+LIFT = RIM + BRUSH_LENGTH + .034
 # Geometry from waterline to inner lip, followed by the outer ceramic.
 INNER_PROFILE = (
     (.058, .049, RIM - .081), (.064, .055, RIM - .071), (.096, .074, RIM - .058),
     (.119, .094, RIM - .039), (.142, .108, RIM - .018),
     (.154, .118, RIM - .010), (.147, .111, RIM + .002),
 )
+# The vitreous-china shell descends from the rounded rim into a taller,
+# narrow trapway and widens again at its floor mount. Each row includes its
+# centre shift toward the cistern so the front has a clear undercut.
 OUTER_PROFILE = (
-    (.162, .127, RIM + .006), (.179, .140, RIM + .005), (.190, .149, RIM - .003),
-    (.193, .152, RIM - .013), (.177, .140, RIM - .047),
-    (.141, .111, RIM - .078), (.112, .090, RIM - .099),
+    (.164, .128, RIM + .006, 0), (.182, .144, RIM + .004, 0),
+    (.191, .151, RIM - .004, 0), (.193, .152, RIM - .017, 0),
+    (.185, .144, RIM - .030, .004), (.169, .127, RIM - .043, .010),
+    (.145, .106, RIM - .058, .021), (.113, .083, RIM - .076, .045),
+    (.105, .078, RIM - .093, .075), (.108, .078, TOP + .027, .080),
+    (.119, .081, TOP + .017, .082), (.133, .089, TOP + .005, .080),
+    (.136, .090, TOP + .001, .079),
 )
 # Two stains per side, one under the lip and one on the sloping wall.
 STAINS = (
@@ -43,14 +50,12 @@ STAINS = (
 )
 ANGULAR_OFFSETS = (-.15, -.075, 0, .075, .15)
 TARGET = .92
-PORCELAIN = (.91, .90, .85)
+PORCELAIN = (.91, .93, .92)
 SOIL = (.24, .095, .031)
-SEAT_COLOR = (.97, .97, .95)
-TANK_CENTER = (.487, CENTER[1])
+SEAT_COLOR = (.97, .97, .96)
+TANK_CENTER = (.502, CENTER[1])
 
 OBJECTS = [
-    Box("bowl_support", (*CENTER, TOP + .011), size=(.340, .222, .022),
-        color=(.45, .49, .51)),
     Box("holder_pad", (*HOLDER[:2], TOP + .006), size=(.074, .074, .012),
         color=(.15, .27, .32)),
 ]
@@ -178,10 +183,14 @@ class State:
         self.dirt = np.maximum(0., self.dirt - xy_length / .042 * (separation <= BRISTLE_RADIUS + .004))
 
 
-def rings(profiles, count=80):
-    points = [(CENTER[0] + a * cos(i * 2 * pi / count),
-               CENTER[1] + b * sin(i * 2 * pi / count), z)
-              for a, b, z in profiles for i in range(count)]
+def rings(profiles, count=96):
+    points = []
+    for a, b, z, *shift in profiles:
+        offset = shift[0] if shift else 0.
+        for i in range(count):
+            theta = i * 2 * pi / count
+            points.append((CENTER[0] + offset + a*cos(theta),
+                           CENTER[1] + b*sin(theta), z))
     faces = [(row * count + i, row * count + (i + 1) % count,
               (row + 1) * count + (i + 1) % count, (row + 1) * count + i)
              for row in range(len(profiles) - 1) for i in range(count)]
@@ -211,32 +220,37 @@ class View:
     def __init__(self, state):
         g = self.g = Geometry()
         g.mesh("VitreousChinaBowl", *rings(INNER_PROFILE + OUTER_PROFILE), PORCELAIN)
-        seat = ((.151, .115, RIM + .007), (.153, .117, RIM + .014),
-                (.160, .124, RIM + .019), (.175, .137, RIM + .019),
-                (.182, .144, RIM + .014), (.184, .146, RIM + .006))
+        # A thin seat with a narrow shadow gap above the ceramic rim.
+        seat = ((.152, .115, RIM + .008), (.153, .116, RIM + .011),
+                (.158, .122, RIM + .012), (.180, .142, RIM + .012),
+                (.185, .146, RIM + .010), (.185, .146, RIM + .008),
+                (.180, .142, RIM + .008), (.152, .115, RIM + .008))
         g.mesh("OpenSeatRing", *rings(seat), SEAT_COLOR)
         for side in (-1, 1):
-            g.cylinder(f"SeatHinge{side}", (.426, CENTER[1] + side * .069, RIM + .012),
-                       .014, .032, SEAT_COLOR, axis="Y")
-        g.mesh("PorcelainPlinth", *rounded_housing(CENTER, (
-            (TOP, .344, .226, .040), (TOP + .005, .352, .234, .038),
-            (TOP + .023, .352, .234, .038), (TOP + .040, .294, .214, .037),
+            g.cylinder(f"SeatHinge{side}", (.432, CENTER[1] + side*.065, RIM + .009),
+                       .009, .026, SEAT_COLOR, axis="Y")
+            g.sphere(f"BoltCover{side}", (.348, CENTER[1] + side*.073, TOP + .011),
+                     (.010,.007,.004), PORCELAIN)
+        g.mesh("RearDeck", *rounded_housing((.442, CENTER[1]), (
+            (RIM - .096, .067, .114, .025), (RIM - .072, .096, .132, .027),
+            (RIM - .039, .125, .173, .029), (RIM - .012, .144, .209, .027),
+            (RIM + .006, .139, .211, .027),
         )), PORCELAIN)
-        g.box("CisternFoot", (*TANK_CENTER, TOP + .053), (.078, .165, .106), PORCELAIN)
         g.mesh("RearCistern", *rounded_housing(TANK_CENTER, (
-            (TOP + .088, .073, .198, .019), (TOP + .100, .091, .230, .022),
-            (TOP + .196, .097, .245, .023), (TOP + .207, .094, .244, .022),
+            (RIM + .002, .087, .215, .022), (RIM + .015, .105, .253, .026),
+            (RIM + .042, .121, .276, .031), (RIM + .119, .128, .289, .032),
+            (RIM + .174, .128, .289, .030), (RIM + .181, .125, .287, .029),
         )), PORCELAIN)
         g.mesh("CisternLidSeam", *rounded_housing(TANK_CENTER, (
-            (TOP + .207, .094, .244, .022), (TOP + .211, .095, .245, .022),
-        )), (.53, .56, .55))
+            (RIM + .181, .124, .286, .029), (RIM + .183, .125, .287, .029),
+        )), (.61, .64, .63))
         g.mesh("OverhangingCisternLid", *rounded_housing(TANK_CENTER, (
-            (TOP + .211, .102, .252, .024), (TOP + .216, .108, .257, .025),
-            (TOP + .225, .106, .255, .024), (TOP + .232, .095, .243, .021),
+            (RIM + .183, .131, .293, .032), (RIM + .187, .138, .300, .033),
+            (RIM + .193, .136, .298, .033), (RIM + .201, .125, .286, .030),
         )), SEAT_COLOR)
-        g.cylinder("FlushButtonCollar", (*TANK_CENTER, TOP + .233), .013, .003, (.44, .48, .50))
-        g.cylinder("FlushButton", (*TANK_CENTER, TOP + .235), .009, .003, (.74, .77, .78))
-        g.sphere("Water", (*CENTER, RIM - .075), (.059, .050, .002), (.13, .37, .43))
+        g.cylinder("FlushButtonCollar", (*TANK_CENTER, RIM + .202), .015, .003, (.47, .49, .50))
+        g.cylinder("FlushButton", (*TANK_CENTER, RIM + .204), .011, .003, (.75, .78, .79))
+        g.sphere("Water", (*CENTER, RIM - .075), (.059, .050, .002), (.39, .65, .70))
         g.cylinder("BrushStand", (*HOLDER[:2], TOP + .032), .030, .050, (.10, .23, .27))
         g.cylinder("HolderLiner", (*HOLDER[:2], TOP + .058), .026, .006, (.10, .13, .15))
         self.stains = []
@@ -252,11 +266,11 @@ class View:
                 cluster.append(g.mesh(f"Deposit{i}_{j}", points, [(0, 1, 2, 3)], SOIL))
             self.stains.append(cluster)
         self.head = g.group("BrushHead")
-        g.sphere("Bristles", (0, 0, 0), (.023, .023, .026), (.16, .32, .32), self.head)
+        g.sphere("Bristles", (0, 0, 0), (.023, .023, .019), (.16, .32, .32), self.head)
         for i in range(12):
             theta = i * 2 * pi / 12
             g.sphere(f"BristleTuft{i}", (.019 * cos(theta), .019 * sin(theta), 0),
-                     (.006, .006, .019), (.25, .41, .40), self.head)
+                     (.006, .006, .015), (.25, .41, .40), self.head)
         self.grip = g.group("BrushGrip")
         g.cylinder("RubberGrip", (0, 0, .067), .011, .169, (.12, .53, .54), self.grip)
         self.shaft = g.mesh("BrushShaft", [(0, 0, 0)] * 24,
