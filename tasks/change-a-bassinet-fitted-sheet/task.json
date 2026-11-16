@@ -1,0 +1,18 @@
+{
+  "title": "Strip and replace the fitted sheet on a bassinet mattress",
+  "category": "Societal relatability",
+  "keywords": [
+    "bedding",
+    "fitted sheet",
+    "bimanual",
+    "deformable cloth"
+  ],
+  "instruction": "Change the bassinet sheet. Take the used coral sheet off the mattress and put it in the laundry zone. Fit the clean blue sheet over all four corners, then release it.",
+  "context": "Changing fitted sheets requires stripping a used elastic hem and stretching a replacement around multiple corners while handling deformable fabric.",
+  "setup": "A 660 × 275 × 44 mm foam bassinet mattress rests on a 14 mm plywood platform. Both sheets have 37 mm fabric pull tabs at their four corner seams. A coral cotton fitted sheet is fitted; a clean blue fitted sheet is folded on a 45 × 526 × 20 mm side shelf. An adjacent yellow-edged pad marks the empty laundry zone. All pieces start in fixed positions described in the README.",
+  "scoring": "1.0 when used fabric is released and completely off the mattress with ≥65% on the laundry pad, all four clean corners are fitted and released, and ≥88% of the clean interior mesh lies on the mattress-height band. Partial credit for removal, laundry placement, and each released clean corner.",
+  "fidelity": "IsaacLab YAM with a mass-point cloth grid and unilateral mattress contact. Geometric jaw and elastic-pocket constraints. No cloth self-collision or fibre-resolution model.",
+  "run_limit": "1,400 steps (70 seconds at 20 Hz)",
+  "scores": "Dream-1: 0 in 1,400 steps. Scripted YAM: 1.0 in 987 steps. The released used sheet was clear of the mattress with 86.8% of its mesh in the laundry zone. Four clean pockets were fitted, with 90.9% of the clean interior in the mattress surface band.",
+  "media": "M-6PZP5P"
+}
