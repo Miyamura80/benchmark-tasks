@@ -226,10 +226,10 @@ class View:
                 (.185, .146, RIM + .010), (.185, .146, RIM + .008),
                 (.180, .142, RIM + .008), (.152, .115, RIM + .008))
         g.mesh("OpenSeatRing", *rings(seat), SEAT_COLOR)
-        for side in (-1, 1):
-            g.cylinder(f"SeatHinge{side}", (.432, CENTER[1] + side*.065, RIM + .009),
+        for index, side in enumerate((-1, 1)):
+            g.cylinder(f"SeatHinge{index}", (.432, CENTER[1] + side*.065, RIM + .009),
                        .009, .026, SEAT_COLOR, axis="Y")
-            g.sphere(f"BoltCover{side}", (.348, CENTER[1] + side*.073, TOP + .011),
+            g.sphere(f"BoltCover{index}", (.348, CENTER[1] + side*.073, TOP + .011),
                      (.010,.007,.004), PORCELAIN)
         g.mesh("RearDeck", *rounded_housing((.442, CENTER[1]), (
             (RIM - .096, .067, .114, .025), (RIM - .072, .096, .132, .027),
