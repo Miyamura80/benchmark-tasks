@@ -1,0 +1,18 @@
+{
+  "title": "Paint the middle nail on a silicone practice hand",
+  "category": "Impact on jobs",
+  "keywords": [
+    "manicure",
+    "brush control",
+    "surface coverage"
+  ],
+  "instruction": "Paint the middle fingernail on the silicone practice hand red. Keep the silicone around that nail clean.",
+  "context": "Applying a clean coat is a core manicure service. The U.S. Bureau of Labor Statistics counted 152,770 manicurist and pedicurist jobs in May 2025. A fixed silicone hand isolates brush control along the middle fingernail boundary.",
+  "setup": "A fixed five-finger silicone practice hand rests on a dark gray 163 × 113 × 6 mm pad. Its wrist extends in +x, and its fingers point towards −x. The curved 17 × 12 mm middle nail is centred at (235, 0) mm on the centreline between the arm bases. A 23 g red applicator with a 27 × 24 × 38 mm handle and 5.6 mm effective tip starts upright at (163, 175) mm.",
+  "scoring": "A held upright applicator transfers red when its modelled tip is within 1.5 mm of the nail plane while making continuous strokes. Full score requires ≥85% nail coverage and spill on the surrounding skin ≤2% of nail area for 0.3 s. Otherwise score the final nail coverage fraction × max(0, 1 − 4 × spill fraction), capped at 0.99.",
+  "run_limit": "2,400 control steps (120 seconds at 20 Hz)",
+  "reset_notes": "Reset restores the fixed starting pose, returns the applicator upright and clears deposited polish.",
+  "fidelity": "Procedural five-finger silicone hand with curved nail shells, box colliders, and a planar 0.75 mm paint coverage grid around the middle nail. The preloaded compliant foam tip is an analytical 4 mm extension. The model omits bristle flex, drying, pressure-dependent flow and skin deformation.",
+  "scores": "Dream-1: 0.0 after reaching the 2,400-step limit without errors. Scripted joint-target replay: 1.0 in 448 steps, with 85.40% nail coverage and spill equal to 1.10% of nail area.",
+  "media": "M-TB89VG"
+}
