@@ -598,7 +598,11 @@ class View:
             points = fabric_surface(sheet, corners)
             # Keep the finer display samples on the same side of the rigid
             # fixtures and the stacked clean sheet as the physical samples.
-            fixture_contact(points, self.visible_points[i], not sheet.clean and not state.clean.started)
+            # Installed sections are regenerated from the fitted surface on
+            # each update, so they need overlap repair rather than a sweep.
+            # Sweeping them can snag the display surface on the mattress lip.
+            prior = points.copy() if np.any(corners > .28) else self.visible_points[i]
+            fixture_contact(points, prior, not sheet.clean and not state.clean.started)
             self.visible_points[i] = points
             self.g.points(self.sheets[i], points)
             self.g.points(self.hems[i], self.hem_points(points))
