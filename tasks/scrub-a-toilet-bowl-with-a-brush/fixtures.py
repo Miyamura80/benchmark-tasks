@@ -42,6 +42,14 @@ def author(directory):
             (.030,.010,.082), (.13,.28,.31))
         box(model, f"HolderLip{index}", (HOLDER[0]-.004, HOLDER[1]+side*.012, HOLDER[2]-.024),
             (.025,.010,.014), (.15,.30,.31))
+    head_x = HOLDER[0] + BRUSH_OFFSET
+    head_z = HOLDER[2] - BRUSH_LENGTH
+    foot = head_z - BRISTLE_RADIUS
+    box(model, "BristleCupBase", (head_x, HOLDER[1], (TOP + foot)/2),
+        (.043,.044,foot-TOP), (.15,.30,.31))
+    for i, (dx, dy) in enumerate(((.019,0.),(-.019,0.),(0.,.019),(0.,-.019))):
+        size = (.005,.025,.011) if dx else (.025,.005,.011)
+        box(model, f"BristleCupRim{i}", (head_x+dx,HOLDER[1]+dy,foot+.005), size, (.15,.30,.31))
     model.GetRootLayer().Save()
 
     model = asset(brush, .042)
