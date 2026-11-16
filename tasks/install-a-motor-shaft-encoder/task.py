@@ -1,5 +1,5 @@
 """Install and field-check a shaft-end magnetic motor encoder."""
-from math import pi, atan2, cos, sin
+from math import atan2
 import os
 
 import numpy as np
@@ -39,8 +39,13 @@ HOVER = TOP + 0.155
 OBJECTS = [
     Box("test_fixture_base", (0.305, 0, TOP + .006), size=(.265, .205, .012),
         color=(.16, .22, .28)),
-    Box("carrier_dock", (*CAP_HOME[:2], TOP + .007), size=(.050, .046, .014), color=(.18, .25, .29)),
-    Box("encoder_dock", (*HEAD_HOME[:2], TOP + .006), size=(.115, .082, .012), color=(.18, .25, .29)),
+    Box("carrier_dock", (*CAP_HOME[:2], TOP + .0105), size=(.050, .046, .021), color=(.18, .25, .29)),
+    Box("encoder_dock", (*HEAD_HOME[:2], TOP + .008), size=(.115, .082, .016), color=(.18, .25, .29)),
+    Box("encoder_frame", (0.,0.,0.), size=(.01,.01,.01)),
+    Box("magnet_carrier", CAP_HOME, mass=.019, size=(.02,.02,.01)),
+    Box("sensor_bracket", HEAD_HOME, mass=.056, size=(.03,.03,.01)),
+    Box("encoder_catch", (*LATCH_XY,LATCH_OPEN), mass=.019, size=(.02,.02,.01)),
+    Box("field_button", (*TEST_XY,TEST_CAP), mass=.008, size=(.02,.02,.01)),
 ]
 
 
@@ -104,152 +109,64 @@ def demo():
     return {"left": left, "right": right}
 
 
-def near(hand, xyz, radius):
-    return bool(hand.upright and np.linalg.norm(hand.position - xyz) < radius)
-
-
-def key_matches(yaw):
-    return abs(atan2(sin(yaw), cos(yaw))) < .13
-
-
-class Part:
-    def __init__(self, home, seated, tolerance):
-        self.xyz = np.array(home)
-        self.home = np.array(home)
-        self.seat = np.array(seated)
-        self.yaw = 0.0
-        self.held = None
-        self.seated = False
-        self.tolerance = tolerance
-
-    def update(self, hands, excluded, locked, blocker):
-        if self.held is None and not locked:
-            for name, hand in hands.items():
-                if name not in excluded and hand.open_fraction < .32 and near(hand, self.xyz, .011):
-                    self.held = name
-                    break
-        if self.held is None:
-            return
-        hand = hands[self.held]
-        self.xyz = hand.position.copy()
-        self.yaw = hand.yaw
-        self.seated = False
-        aligned = (key_matches(self.yaw) and np.linalg.norm(self.xyz[:2] - self.seat[:2]) <= self.tolerance)
-        if self.xyz[2] <= self.seat[2] and np.linalg.norm(self.xyz[:2] - self.seat[:2]) < .042:
-            self.xyz[2] = self.seat[2] if aligned and not blocker else self.seat[2] + .008
-            self.seated = bool(aligned and not blocker)
-        if hand.open_fraction > .58:
-            self.held = None
-            if self.seated:
-                self.xyz = self.seat.copy()
-                self.yaw = 0
-            elif np.linalg.norm(self.xyz - self.home) < .018:
-                self.xyz = self.home.copy()
-                self.yaw = 0
-            else:
-                self.xyz[2] = max(TOP + .025, self.xyz[2] - .010)
-
-
 class State:
     def __init__(self, case="nominal"):
-        self.carrier = Part(CAP_HOME, CAP_SEAT, .004)
-        self.head = Part(HEAD_HOME, HEAD_SEAT, .005)
         self.latch = False
-        self.test_motion = 0.0
-        self.test_time = 0.0
+        self.test_time = 0.
         self.test_result = None
-        self.ok_time = 0.0
 
-    def advance(self, hands, dt):
-        self.carrier.update(hands, (self.head.held,), self.head.seated, self.head.seated)
-        self.head.update(hands, (self.carrier.held,), self.latch, False)
-        if self.carrier.held or self.head.held:
+    def advance(self, objects, hands, contacts, dt):
+        from yam_arena.urdf import quat_xyzw_to_matrix
+
+        carrier = objects["magnet_carrier"]
+        bracket = objects["sensor_bracket"]
+        catch = objects["encoder_catch"]
+        button = objects["field_button"]
+        carrier_basis = quat_xyzw_to_matrix(carrier.quat_xyzw)
+        bracket_basis = quat_xyzw_to_matrix(bracket.quat_xyzw)
+        yaw = atan2(carrier_basis[1,0], carrier_basis[0,0])
+        carrier_on = bool(np.linalg.norm(carrier.pos - CAP_SEAT) <= .003
+                          and abs(yaw) < .15 and carrier_basis[2,2] > .995
+                          and carrier.resting())
+        bracket_on = bool(np.linalg.norm(bracket.pos - HEAD_SEAT) <= .003
+                          and bracket_basis[2,2] > .995 and bracket_basis[0,0] > .99
+                          and bracket.resting())
+
+        def pressed(shape):
+            fingers = {"tip_left", "tip_right", "gripper"}
+            return any(shape in pair and pair & fingers for pair, _, force in contacts if force > 0.)
+
+        catch_motion = LATCH_OPEN - catch.pos[2]
+        button_motion = TEST_CAP - button.pos[2]
+        if not bracket_on or not carrier_on:
             self.test_result = None
-        if not self.latch and self.head.seated and self.head.held is None:
-            for name, hand in hands.items():
-                if name != self.carrier.held and hand.open_fraction < .40 and near(
-                    hand, (*LATCH_XY, LATCH_OPEN + .013 - LATCH_TRAVEL), .008
-                ):
-                    self.latch = True
-                    break
-        self.test_motion = 0.0
-        for name, hand in hands.items():
-            if name not in (self.carrier.held, self.head.held) and hand.open_fraction < .4 and near(
-                hand, (*TEST_XY, TEST_CAP + .006), .008
-            ):
-                self.test_motion = .006
-        if self.test_motion:
+        if catch_motion >= .010 and pressed("RedCatch"):
+            self.latch = True
+        retained = self.latch and catch_motion >= .009
+        if button_motion >= .0045 and pressed("BlueTestKey"):
             self.test_time += dt
             if self.test_time >= .30:
-                self.test_result = bool(self.carrier.seated and self.head.seated and self.latch
-                                        and self.carrier.held is None and self.head.held is None)
+                self.test_result = bool(carrier_on and bracket_on and retained)
         else:
-            self.test_time = 0.0
+            self.test_time = 0.
         clear = all(hand.position[2] > TOP + .133 or abs(hand.position[1]) > .160 for hand in hands.values())
-        score = 0.0
-        if self.carrier.seated and self.carrier.held is None:
-            score = .25
-        if self.head.seated and self.head.held is None and score:
-            score = .65 if self.latch else .45
-        if score == .65 and self.test_result is True and not self.test_motion and clear:
-            score = 1.0
-        return {
-            "score": score, "carrier": self.carrier.seated, "bracket": self.head.seated,
-            "catch": self.latch, "field_check": self.test_result,
-            "carrier_grasp": self.carrier.held, "bracket_grasp": self.head.held,
-            "air_gap_mm": 1.5 if self.carrier.seated and self.head.seated else None,
-            "caption": (
-                "Field check passed" if self.test_result else
-                "Field check failed" if self.test_result is False else
-                "Press the field-test button" if self.latch else
-                "Close the retaining catch" if self.head.seated else
-                "Seat encoder bracket on both guides" if self.carrier.seated else
-                "Seat the magnet carrier on the shaft"
-            ),
-        }
+        score = .25 if carrier_on else 0.
+        if score and bracket_on:
+            score = .65 if retained else .45
+        if score == .65 and self.test_result is True and button_motion < .001 and clear:
+            score = 1.
+        return dict(score=score, carrier=carrier_on, bracket=bracket_on, catch=bool(retained),
+                    catch_mm=round(float(catch_motion)*1000, 3),
+                    button_mm=round(float(button_motion)*1000, 3), field_check=self.test_result,
+                    caption="Field check passed" if self.test_result else "Install and check the encoder")
 
 
 class View:
     def __init__(self, state):
-        g = self.g = Geometry()
-        x, y = CENTER
-        silver, blue, charcoal = (.62, .67, .72), (.10, .29, .42), (.10, .14, .18)
-        gold, pcb, yellow = (.75, .43, .13), (.09, .34, .27), (.85, .57, .09)
-        g.cylinder("MotorHousing", (x, y, (DECK + MOTOR_TOP) / 2), .040, MOTOR_TOP - DECK, blue)
-        g.cylinder("MotorFace", (x, y, MOTOR_TOP - .002), .039, .006, silver)
-        g.cylinder("MotorShaft", (x, y, (MOTOR_TOP + SHAFT_TOP) / 2), .004, SHAFT_TOP - MOTOR_TOP, silver)
-        g.box("DFlatReference", (x + .0038, y, SHAFT_TOP - .0035), (.001, .005, .005), blue)
-        for i, yoff in enumerate((-.038, .038)):
-            g.cylinder(f"Guide{i}", (x, y + yoff, TOP + .080), .004, .060, silver)
-            g.cylinder(f"Standoff{i}", (x, y + yoff, TOP + .071), .009, .038, charcoal)
-        g.box("LatchStand", (LATCH_XY[0], LATCH_XY[1], TOP + .051), (.022, .034, .082), charcoal)
-        g.box("TestBox", (*TEST_XY, TOP + .022), (.062, .051, .041), charcoal)
-        self.catch = g.group("RetainingCatch")
-        g.box("RedCatch", (0, 0, -.004), (.027, .023, .008), (.65, .10, .08), self.catch)
-        g.box("RetainingTongue", (-.017, .015, -.003), (.040, .010, .006), charcoal, self.catch)
-        self.test = g.group("TestButton")
-        g.cylinder("BlueTestKey", (0, 0, -.004), .009, .008, (.13, .38, .72), self.test)
-        self.light = g.sphere("FieldLED", (TEST_XY[0] - .019, TEST_XY[1] + .012, TOP + .045),
-                              (.008, .008, .004), (.16, .16, .16))
-        self.cap = g.group("MagnetCarrier")
-        g.cylinder("CarrierBody", (0, 0, -.010), .012, .020, gold, self.cap)
-        g.cylinder("DiscMagnet", (0, 0, -.0035), .003, .0025, silver, self.cap)
-        g.box("KeyIndex", (.011, 0, -.004), (.003, .007, .004), charcoal, self.cap)
-        self.head = g.group("EncoderBracket")
-        g.box("Bridge", (0, 0, -.021), (.071, .095, .010), silver, self.head)
-        g.box("CircuitBoard", (0, 0, -.0146), (.047, .045, .0028), pcb, self.head)
-        for i, yoff in enumerate((-.038, .038)):
-            g.cylinder(f"GuideSocket{i}", (0, yoff, -.023), .007, .012, charcoal, self.head)
-        g.box("PinHeader", (-.016, 0, -.009), (.009, .024, .006), charcoal, self.head)
-        g.box("InsulatedGrip", (0, 0, 0), (.026, .025, .017), yellow, self.head)
-        g.box("LocatorMark", (.019, -.015, -.011), (.008, .009, .003), yellow, self.head)
-        self.update(state)
+        self.g = Geometry()
+        self.light = self.g.sphere("FieldLED", (TEST_XY[0]-.019, TEST_XY[1]+.012, TOP+.045),
+                                   (.008,.008,.004), (.16,.16,.16))
 
     def update(self, state):
-        g = self.g
-        g.move(self.cap, state.carrier.xyz, state.carrier.yaw)
-        g.move(self.head, state.head.xyz, state.head.yaw)
-        g.move(self.catch, (*LATCH_XY, LATCH_OPEN - (.012 if state.latch else 0)))
-        g.move(self.test, (*TEST_XY, TEST_CAP - state.test_motion))
-        g.color(self.light, (.05, .75, .22) if state.test_result else
-                (.76, .09, .08) if state.test_result is False else (.16, .16, .16))
+        self.g.color(self.light, (.05,.75,.22) if state.test_result
+                     else (.76,.09,.08) if state.test_result is False else (.16,.16,.16))

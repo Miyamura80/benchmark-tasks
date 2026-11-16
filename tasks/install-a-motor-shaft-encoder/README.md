@@ -30,11 +30,11 @@ The runner uses seed 42, 20 Hz and a 1,400-step (70 s) limit, with zero object j
 
 ## Scoring and fidelity
 
-A seated keyed magnet carrier scores 0.25. A seated sensor bracket on both guides increases the score to 0.45. Closing the catch increases it to 0.65. Full credit requires a green field check after a test press, tools released and both hands clear. The simulated keyed guides require the correct approach, yaw tolerance of 0.13 rad and lateral seat tolerances of 4 mm for the carrier and 5 mm for the bracket. The test button must be pressed for at least 0.30 s. A real inspection checks the bracket position, retention and local diagnostic light.
+A seated keyed magnet carrier scores 0.25. A seated sensor bracket on both guides increases the score to 0.45. Closing the catch increases it to 0.65. Full credit requires a green field check after a test press, tools released and both hands clear. The simulated keyed guides require the correct approach, yaw tolerance of 0.15 rad for the carrier and 3 mm seating tolerances for both parts. The test button must be pressed for at least 0.30 s. A real inspection checks the bracket position, retention and local diagnostic light.
 
-The model uses keyed insertion and catch geometry driven by actual YAM hand poses. Magnetic flux, press-fit friction and electrical faults are simplified. The LED checks the modeled installation geometry and catch, with no claim about angular accuracy, calibration or encoder performance under power. The scripted policy uses fixed robot waypoints.
+The model uses native collisions for grasping, the keyed carrier and the open guide sleeves. Pressing the catch and button moves native prismatic joints. The catch simulates its detent only after measured physical travel. Magnetic flux, press-fit friction and electrical faults are simplified. The LED checks the modeled installation geometry and catch, with no claim about angular accuracy, calibration or encoder performance under power. The scripted policy uses fixed robot waypoints.
 
-## Recorded results
+## Historical results before the collision revision
 
 | Trial | Score | Control steps | Runtime including startup |
 | --- | ---: | ---: | ---: |
@@ -43,3 +43,13 @@ The model uses keyed insertion and catch geometry driven by actual YAM hand pose
 
 The scripted run seated both parts, closed the catch and showed the green diagnostic LED after release. Dream-1 ended at the step limit without seating the carrier. The contact-model controls score 0.45 when the catch is left open and 0.0 with the magnet missing. Both controls fail the field check.
 
+
+## Native-contact revision and physical fixture
+
+Use the dimensions in the task description and the authored collision primitives in `fixtures.py` as the assembly reference. Print or machine the carrier in PETG or acetal with an 8 mm D-bore and a +X flat 3.0 mm from the shaft centre. Chamfer the entry and adjust the test part for a sliding fit on the actual shaft. Add a centred diametrically magnetized 6 × 2.5 mm magnet. The two Ø8 mm vertical pins are 76 mm apart. Print the bracket with Ø9.4 mm guide bores on the same spacing and use the shoulder heights in the fixture source. Place the retaining tongue over the bracket's side tab with at least 3 mm overlap when the catch is at its lower stop. The test button has 6 mm travel and returns on release.
+
+For the physical field check, mount an AS5600 breakout over the magnet with a nominal 1.5 mm measured gap. Connect the [AS5600 breakout](https://www.mouser.com/pdfdocs/AMS_AS5600_Datasheet_EN.PDF) to a 3.3 V microcontroller using I²C and connect the fixture's normally open test button and an LED to GPIO. On a button press, display PASS only if the encoder responds and its STATUS register reports magnet detected with neither the magnet-too-weak nor magnet-too-strong flag. A missing device, missing magnet or out-of-range field must show FAIL. Before each fixture is used for trials, verify both outcomes with the correctly assembled fixture and with the magnet removed, and record the actual board and magnet used. Keep the motor unpowered.
+
+For real scoring, check the seated carrier against a 3 mm tolerance mark, check both guide shoulders with a 3 mm feeler gauge and confirm the catch tongue overlaps the bracket tab. Verify the bracket stays seated when both grippers release. Observe the diagnostic LED during the button test and verify the key returns on release. The model uses geometric fit as a proxy for the field status and does not simulate the sensor circuit.
+
+The earlier scores apply to the pose-driven prototype. The new build requires a native full-score demo and a model trial.

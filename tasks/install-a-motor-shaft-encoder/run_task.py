@@ -14,6 +14,8 @@ from yam_arena.constants import FINGER_OPEN
 from yam_arena.demo import grip_rotation
 
 import task
+from fixtures import PARTS, author, connect_slide
+from native import Contacts, root_states, substitute_assets
 
 
 @dataclass
@@ -27,16 +29,41 @@ class Hand:
 
 def bind(path, directory, setup, case):
     cls = inspect_embodiment.YamArenaEmbodiment
-    original_reset, original_step = cls.reset, cls._task_step
+    original_reset, original_step, original_control = cls.reset, cls._task_step, cls.step
+
+    controls = {}
+
+    def add_slider(spec, prim):
+        if spec.name not in {"encoder_catch", "field_button"}:
+            return
+        stroke, spring = (.012, 100.) if spec.name == "encoder_catch" else (.006, 135.)
+        body = prim.GetPath()
+        controls[spec.name] = connect_slide(prim.GetStage(), str(body), body, spec.pos, stroke, spring)
+
+    build = substitute_assets(PARTS, lambda: author(directory), add_slider)
+    build.original = cls._ensure_sim
+    cls._ensure_sim = build
+
+    def control(self, action):
+        if current(self) and hasattr(self, "_fixture_contacts"):
+            self._fixture_contacts.take()
+        return original_control(self, action)
+
+    cls.step = control
 
     def current(instance):
         return instance.task is not None and instance.task.path == path
 
     def reset(self, *args, **kwargs):
+        if current(self) and "encoder_catch" in controls:
+            controls["encoder_catch"].GetTargetPositionAttr().Set(0.)
         observation = original_reset(self, *args, **kwargs)
         if not current(self):
             return observation
         self._fixture_state = task.State(case)
+        if not hasattr(self, "_fixture_contacts"):
+            self._fixture_contacts = Contacts({"RedCatch", "BlueTestKey"})
+        self._fixture_contacts.take()
         self._fixture_view = task.View(self._fixture_state)
         self._fixture_passes = 0
         self._fixture_trace = (directory / "mechanism.jsonl").open("w", encoding="utf-8")
@@ -70,7 +97,11 @@ def bind(path, directory, setup, case):
                 atan2(spin[1, 0], spin[0, 0]), bool(rotation[:, 2] @ down[:, 2] > 0.96),
             )
         state = self._fixture_state
-        info = state.advance(hands, self._base.step_dt)
+        parts = root_states(self, sorted(PARTS - {"encoder_frame"}))
+        info = state.advance(parts, hands, self._fixture_contacts.take(), self._base.step_dt)
+        if state.latch:
+            # The detent takes over only after measured physical depression.
+            controls["encoder_catch"].GetTargetPositionAttr().Set(-.012)
         self._fixture_view.update(state)
         self._fixture_passes = self._fixture_passes + 1 if info["score"] == 1.0 else 0
         success = self._fixture_passes >= 5
