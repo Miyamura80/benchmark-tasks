@@ -143,6 +143,23 @@ def enable_replay(task_path):
     clip = np.asarray(json.loads(task_path.with_name("scripted_actions.json").read_text()), dtype=np.float64)
     if clip.ndim != 2 or clip.shape[1] != 14 or len(clip) == 0 or not np.isfinite(clip).all():
         raise ValueError("Expected a nonempty sequence of finite 14-axis joint targets")
+    # The new foam-tip dock raises the handle by 4 mm. Move only the
+    # pickup and lift, leaving the existing polish stroke available to tune.
+    from yam_arena import station
+
+    pickup = clip.copy()
+    base = station.BASES["left"]
+    for i in range(42, 105):
+        fraction = min(1., max(0., (i-42)/15), max(0., (104-i)/17))
+        start, rotation = ik.tcp_pose(clip[i,:6], base)
+        q, position_error, rotation_error = ik.solve(
+            start + (0.,0.,.004*ik.smoothstep(fraction)),
+            ik.matrix_to_quat_xyzw(rotation), clip[i,:6], base_pos=base, iters=95,
+        )
+        if position_error > .001 or rotation_error > .025:
+            raise ValueError(f"Applicator pickup misses IK tolerance at action {i}")
+        pickup[i,:6] = q
+    clip = pickup
     reset, act = YamScriptedPolicy.reset, YamScriptedPolicy.act
 
     def is_this_task(policy):
