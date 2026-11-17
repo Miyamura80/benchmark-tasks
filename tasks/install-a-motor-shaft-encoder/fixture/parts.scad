@@ -49,8 +49,8 @@ module catch_carriage() {
     difference() {
         union() {
             block([25,21,8], [0,0,-3]);
-            block([28,14,5], [-10,12,3.5]);
-            block([28,12,8.5], [-10,9,-2]);
+            block([10,14,5], [-6,12,3.5]);
+            block([10,12,8.5], [-6,9,-2]);
             block([30,9,16], [0,-6,-9]);
         }
         for (x = [-8,8])
@@ -60,22 +60,22 @@ module catch_carriage() {
 }
 
 module catch_guide() {
-    // Assembled at (89,-64,107) relative to the shaft's table projection.
-    // Both shoulder screws travel along the same 30 mm by 12 mm incline.
+    // Assembled at (77,-64,116) relative to the shaft's table projection.
+    // Both shoulder screws travel along the same 18 mm by 21 mm incline.
     difference() {
         union() {
-            block([68,6,31], [-13,-15,-6]);
-            block([68,20,6], [-13,-15,-24]);
+            block([56,6,40], [-9,-15,-10.5]);
+            block([56,20,6], [-9,-15,-30]);
         }
         for (x = [-8,8]) {
             hull() {
-                for (end = [[0,0],[-30,-12]])
+                for (end = [[0,0],[-18,-21]])
                     translate([x+end[0],-15,end[1]])
                         rotate([90,0,0]) cylinder(d=3.4, h=10, center=true);
             }
         }
-        for (x = [-38,12])
-            translate([x,-15,-29]) cylinder(d=4, h=10);
+        for (x = [-32,12])
+            translate([x,-15,-35]) cylinder(d=4, h=10);
     }
 }
 
@@ -99,6 +99,6 @@ if (part == "layout") {
     }
     color("orange") translate([0,0,99]) carrier();
     color("lightgray") translate([0,0,122.5]) bracket();
-    color("red") translate([89,-64,118]) catch_carriage();
-    color("gray") translate([89,-64,107]) catch_guide();
+    color("red") translate([77,-64,127]) catch_carriage();
+    color("gray") translate([77,-64,116]) catch_guide();
 }

@@ -98,8 +98,8 @@ def author(directory):
         box(stage, f"CrossbarStop_{i}", (x + shift, y, rail_top - .011),
             (.004, .036, .022), alloy)
     catch_x, catch_y, catch_z = task.CATCH_OPEN
-    box(stage, "CatchHousing", (catch_x-task.CATCH_SHIFT/2, catch_y, catch_z-.043),
-        (.058,.029,.040), alloy)
+    box(stage, "CatchHousing", (catch_x-task.CATCH_SHIFT/2, catch_y, task.CATCH_CLOSED[2]-.031),
+        (.046,.029,.040), alloy)
     box(stage, "ButtonHousing", (*task.TEST_XY,task.TEST_CAP-.036), (.062,.051,.040), (.20,.25,.28))
     stage.GetRootLayer().Save()
 
