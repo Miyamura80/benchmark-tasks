@@ -11,7 +11,7 @@ from yam_arena import ik
 
 
 from practice_hand import install, update_polish
-from native import Contacts, root_states, asset, collider, substitute_assets
+from native import root_states, asset, collider, substitute_assets
 
 
 def stage():
@@ -30,7 +30,7 @@ def install_applicator_asset(directory):
     handle.CreateSizeAttr(1.)
     handle.AddScaleOp().Set(Gf.Vec3f(.027, .024, .038))
     handle.CreateDisplayColorAttr([Gf.Vec3f(.78, .04, .13)])
-    collider(handle, friction=1.)
+    collider(handle, friction=1.8)
     foam = UsdGeom.Cylinder.Define(model, "/Object/PolishTip")
     foam.CreateRadiusAttr(.0028)
     foam.CreateHeightAttr(.004)
@@ -43,20 +43,13 @@ def install_applicator_asset(directory):
 
 def enable_paint(task_path):
     cls = inspect_embodiment.YamArenaEmbodiment
-    reset, step, control_step = cls.reset, cls._task_step, cls.step
+    reset, step = cls.reset, cls._task_step
     import tempfile
 
     directory = tempfile.TemporaryDirectory(prefix="practice-nail-")
     ensure = substitute_assets({"polish_applicator"}, lambda: install_applicator_asset(Path(directory.name)))
     ensure.original = cls._ensure_sim
     cls._ensure_sim = ensure
-
-    def clear_contacts(self, action):
-        if paint_task(self) is not None and hasattr(self, "_paint_contacts"):
-            self._paint_contacts.take()
-        return control_step(self, action)
-
-    cls.step = clear_contacts
 
     def paint_task(self):
         task = self.task
@@ -71,9 +64,23 @@ def enable_paint(task_path):
             return observation
         module.paint = module.Paint()
         install(stage(), module)
-        if not hasattr(self, "_paint_contacts"):
-            self._paint_contacts = Contacts({"PolishTip"})
-        self._paint_contacts.take()
+        from isaaclab_physx.physics.physx_manager import PhysxManager
+
+        from pxr import UsdPhysics
+        for path in ("/World/PracticeHand/MiddleNail", "/World/envs/env_0/middle_finger_proxy"):
+            body = UsdPhysics.RigidBodyAPI.Apply(stage().GetPrimAtPath(path))
+            body.CreateKinematicEnabledAttr(True)
+        for _ in range(2):
+            self._base.sim.step(render=False)
+        sim_view = PhysxManager.get_physics_sim_view()
+        self._paint_view = sim_view.create_rigid_contact_view(
+            "/World/envs/env_0/polish_applicator",
+            filter_patterns=["/World/PracticeHand/MiddleNail",
+                             "/World/envs/env_0/middle_finger_proxy*"],
+            max_contact_data_count=64,
+        )
+        if self._paint_view.sensor_count != 1 or self._paint_view.filter_count != 2:
+            raise RuntimeError("Missing native applicator contact sensors")
         # Flush the USD mesh and visibility changes through RTX before reading the
         # reset observation. Rendering alone leaves the camera's cached frame stale.
         for _ in range(8):
@@ -101,6 +108,7 @@ def enable_paint(task_path):
             1 - 2 * (qx * qx + qy * qy),
         ])
         tip = brush.pos - axis * module.TOOL_REACH
+        module.demo_tip = tip.copy()
         upright = axis[2] >= 0.985
         holding = False
         for arm in ("left", "right"):
@@ -108,16 +116,29 @@ def enable_paint(task_path):
             joints = self._base.scene[arm + "_robot"].data.joint_pos.torch[0]
             base = self.rig.bases[arm]
             tcp, _ = ik.tcp_pose(joints[arm_ids].cpu().numpy(), base)
+            if arm == "left":
+                module.demo_tcp = tcp.copy()
             if np.linalg.norm(tcp - brush.pos) < 0.028 and abs(joints[fingers].mean().item()) < 0.030:
                 holding = True
-        tip_contacts = self._paint_contacts.take()
-        # The practice finger proxy is also paintable so a stroke that
-        # touches adjacent skin can accrue spill. A hovering tip earns zero.
-        target_shapes = {"MiddleNail", "middle_finger_proxy"}
-        collision = any(
-            pair & target_shapes and impulse >= module.MIN_CONTACT_IMPULSE_NS
-            for pair, _, impulse in tip_contacts
-        )
+        def array(value):
+            value = value.torch if hasattr(value, "torch") else value
+            if hasattr(value, "detach"):
+                return value.detach().cpu().numpy()
+            return value.numpy() if hasattr(value, "numpy") else np.asarray(value)
+
+        values = self._paint_view.get_contact_data(dt=1.0)
+        magnitudes, positions, _, _, counts, starts = map(array, values)
+        collision = False
+        for n, start in zip(counts.ravel(), starts.ravel()):
+            for j in range(int(start), min(len(positions), int(start) + int(n))) if n and 0 <= start < len(positions) else ():
+                delta = positions[j] - tip
+                axial = float(delta @ axis)
+                radial = np.linalg.norm(delta - axial * axis)
+                if os.environ.get("NAIL_TRACE") == "1":
+                    print(f"NAIL_FORCE {self._t:.3f} {float(magnitudes[j].item()):.8f} {axial:.6f} {radial:.6f}")
+                collision |= (float(magnitudes[j].item()) >= module.MIN_CONTACT_IMPULSE_NS
+                              and -.001 <= axial <= .003
+                              and radial < module.RADIUS + .0006)
         contact = upright and holding and collision
         if os.environ.get("NAIL_TRACE") == "1":
             dx, dy = (tip[:2] - module.XY) * 1000
@@ -163,7 +184,20 @@ def enable_replay(task_path):
         if position_error > .001 or rotation_error > .025:
             raise ValueError(f"Applicator pose misses IK tolerance at action {i}")
         retargeted[i,:6] = q
-    clip = retargeted
+    clip = retargeted[:200]
+    _, rotation = ik.tcp_pose(clip[-1,:6], base)
+    orientation = ik.matrix_to_quat_xyzw(rotation)
+    from practice_hand import nail_relief
+    path = []
+    current = np.array([0., .9])
+    for x, y, steps in [(-5.25, 3.12, 72), (5.25, 3.12, 110),
+                        (5.25, 0., 45), (-5.25, 0., 110),
+                        (-5.25, -3.12, 45), (5.25, -3.12, 110)]:
+        target = np.array([x, y])
+        for j in range(1, steps + 1):
+            path.append((current + (target-current)*ik.smoothstep(j/steps))/1000.)
+        current = target
+    path += [path[-1]] * 75
     reset, act = YamScriptedPolicy.reset, YamScriptedPolicy.act
 
     def is_this_task(policy):
@@ -180,9 +214,22 @@ def enable_replay(task_path):
             return act(policy, observation)
         index = policy._clip_index
         policy._clip_index += 1
+        vector = clip[min(index, len(clip) - 1)].copy()
+        if index >= len(clip):
+            # Measured tool-pose feedback keeps the foam centred as the gripper
+            # settles during real contact. Only YAM joint targets are commanded.
+            module = policy._task.module
+            path_index = min(index-len(clip), len(path)-1)
+            xy = path[path_index]
+            target = np.r_[module.XY + xy, module.SURFACE + nail_relief(*xy) - .0007]
+            correction = target - module.demo_tip
+            command = module.demo_tcp + np.clip(correction * 1.5, -.003, .003)
+            q, pe, re = ik.solve(command, orientation, vector[:6], base_pos=base, iters=55)
+            if pe <= .001 and re <= .025:
+                vector[:6] = q
         action = Action(
-            data=clip[min(index, len(clip) - 1)],
-            meta={"request_stop": True} if index >= len(clip) + 20 else {},
+            data=vector,
+            meta={"request_stop": True} if index >= len(clip) + len(path) else {},
         )
         return ActionChunk(actions=[action], control_hz=1.0 / policy._dt)
 
