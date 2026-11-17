@@ -40,4 +40,13 @@ The runner uses seed 42, zero object jitter and a 1,400-step limit at 20 Hz.
 
 Native collisions drive grasp, keyed insertion and bracket seating. The simulated detent engages after measured robot contact and physical catch travel. The simulator uses seating and retention to approximate the field check. Flux and sensor electronics are evaluated by the physical circuit.
 
-Native scripted and Dream-1 verification are pending for this revision.
+## Verified simulation runs
+
+| Policy | Score | Control steps | Runtime including startup |
+| --- | ---: | ---: | ---: |
+| Scripted YAM | 1.00 | 601 | 125 s |
+| Dream-1 | 0.00 | 1,400 | 246 s |
+
+The scripted trial seated both parts, moved the catch 27.8 mm with measured finger contact and held the test key at 6.3 mm travel. The catch retained the bracket with 9.4 mm of tongue overlap after release. The field check passed and both hands cleared the fixture. Dream-1 ended at the step limit without seating either part.
+
+The printable parts and diagnostic logic were checked separately. The physical assembly and field circuit still need the bench checks described in the fixture instructions.

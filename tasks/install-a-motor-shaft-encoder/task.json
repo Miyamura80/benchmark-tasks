@@ -13,6 +13,6 @@
   "scoring": "0.25 for the released keyed carrier at the seating datum, 0.45 if the bracket seats on both guides, 0.65 if the physical latch retains it. Full score requires pressing and releasing the field-test key, a passing field check, and both hands clear.",
   "fidelity": "Native rigid-body contacts drive grasping and keyed insertion. An inclined slider carries the catch over the bracket tab after seating, with a detent after measured finger actuation. The test key moves on a vertical slider. The simulated field check verifies the modeled fit. The physical fixture uses AS5600 field diagnostics.",
   "run_limit": "1,400 steps (70 seconds at 20 Hz)",
-  "scores": "Native-contact revision awaits demo and Dream-1 runs.",
-  "media": ""
+  "scores": "Dream-1 run: 0.00 in 1,400 steps. Scripted YAM native-contact demo: 1.00 in 601 steps.",
+  "media": "M-BF9RQ8"
 }
