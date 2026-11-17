@@ -1,0 +1,4 @@
+mujoco==3.3.7
+inspect-robots==1.0.0
+inspect-robots-agent==0.30.0
+Pillow
