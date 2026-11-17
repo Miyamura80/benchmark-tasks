@@ -34,6 +34,18 @@ Full credit requires the used sheet completely clear of the mattress, at least 9
 
 Cloth uses a mass-point grid with stretch and shear constraints. Swept contacts against the mattress, plywood, shelf and pad resolve at vertices, sampled edges and face centres. Triangle contacts resist penetration between the two sheets and between non-adjacent folds of the same sheet. The folded clean stack has a contact volume while it rests on the shelf. The cloth mesh is coarse, so fine folds and some edge-to-edge contacts remain approximate. The fitted hem remains caught until it is stretched clear; installation follows an outside-to-under motion and a release. The loose clean corners are kept in their initial folds until picked, representing tray friction. Jaw pinch and elastic edge retention are geometric approximations; the model omits fibre mechanics and seam damage. A denser visible fabric mesh follows the underlying contact grid. The sewn tabs droop when released. The elastic skirt has extra fabric at the perimeter to wrap down the mattress sides; no geometry is projected onto the mattress at seating. Both arms and their cameras run in IsaacLab. The scripted policy commands fixed robot waypoints.
 
+## Revised native runs
+
+On the revised cloth model and opposite-side clean shelf, the scripted YAM demo
+scored **1.00**. All four clean pockets stayed seated after release, 95.1% of the
+mattress top was covered, and the used sheet was clear of the mattress with
+91.1% of its projected silhouette inside the laundry pad. Dream-1 completed the
+same setup at the 1,400-step limit with a score of **0.00**. Both runs have native
+video and a setup image.
+
+On the L40S, the scripted run took 4m 09s and Dream-1 took 4m 08s,
+including startup.
+
 ## Historical results before the pocket revision
 
 The attached IsaacLab recordings and setup image show the earlier arrangement, with the clean shelf on the robot side. The opposite-side layout scored 1.0 in a local replay of the scripted motion using the YAM URDF kinematics and cloth solver.
