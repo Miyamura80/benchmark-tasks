@@ -106,7 +106,7 @@ def demo():
         # Track the red cap along the inclined slide while the fingertips
         # supply the closing force. The first target takes up clearance.
         catch_start = (*CATCH_OPEN[:2], CATCH_OPEN[2] + .010)
-        catch_end = (*CATCH_CLOSED[:2], CATCH_CLOSED[2] + .007)
+        catch_end = (*CATCH_CLOSED[:2], CATCH_CLOSED[2] + .001)
         right += [
             move(1.0, (*CATCH_OPEN[:2], HOVER + .020), c, "approach bracket catch"),
             move(1.0, catch_start, c, "touch catch"),

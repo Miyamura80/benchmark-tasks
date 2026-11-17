@@ -39,7 +39,7 @@ def bind(path, directory, setup, case):
         body = prim.GetPath()
         if spec.name == "encoder_catch":
             tilt = atan2(task.CATCH_SHIFT, task.CATCH_DROP)
-            stroke, spring = task.CATCH_STROKE, 50.
+            stroke, spring = task.CATCH_STROKE, 35.
         else:
             tilt, stroke, spring = 0., .006, 135.
         controls[spec.name] = connect_slide(prim.GetStage(), str(body), body, spec.pos, stroke, spring, tilt)

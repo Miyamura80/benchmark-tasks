@@ -92,11 +92,11 @@ def author(directory):
         collider(taper)
         UsdPhysics.MeshCollisionAPI.Apply(taper.GetPrim()).CreateApproximationAttr("convexHull")
         cylinder(stage, f"Shoulder_{i}", (x,y+offset,task.HEAD_SEAT[2]-.0525), .009, .037, (.19,.23,.25))
-    # Two rigid stop rails under the lower face of the bracket crossbar.
+    # Support the crossbar outboard of the PCB so the PCB can pass between the rails.
     rail_top = task.HEAD_SEAT[2] - .022
-    for i, shift in enumerate((-.023, .023)):
+    for i, shift in enumerate((-.031, .031)):
         box(stage, f"CrossbarStop_{i}", (x + shift, y, rail_top - .011),
-            (.010, .036, .022), alloy)
+            (.004, .036, .022), alloy)
     catch_x, catch_y, catch_z = task.CATCH_OPEN
     box(stage, "CatchHousing", (catch_x-task.CATCH_SHIFT/2, catch_y, catch_z-.043),
         (.058,.029,.040), alloy)

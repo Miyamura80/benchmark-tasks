@@ -95,7 +95,7 @@ if (part == "layout") {
             translate([0,y,88.5]) cylinder(d=8, h=11);
             translate([0,y,99.5]) cylinder(d1=8, d2=2, h=14);
         }
-        for (x = [-23,23]) block([10,36,22], [x,0,89.5]);
+        for (x = [-31,31]) block([4,36,22], [x,0,89.5]);
     }
     color("orange") translate([0,0,99]) carrier();
     color("lightgray") translate([0,0,122.5]) bracket();
