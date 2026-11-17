@@ -2,7 +2,7 @@
 
 Remove and park the cap, spray a blue coat on the fixed80mm decorative plaque while protecting its backing, then finish with the can upright and steady in the left gripper, nozzle released and right hand clear. This is a familiar household DIY finishing job in the **Societal relevance** category. No set-down or unsupported suspension is required; the can may still contact the starting riser while gripped.
 
-**Historical native demo (previous clearance criterion): 1.0. Historical Dream-1 evaluation: 0.0.** Both use the predeclared1,200-control/60-second limit. The demo video explicitly shows an offline visualization of the same native episode. The model video contains actual native RGB; see the limitations below.
+The revised native demo scored **1.00** with the surface-clearance scorer. The revised Dream-1 run scored **0.00** at the 1,200-action limit. Both recordings use synchronous denoised native RGB.
 
 ## Setup and scoring
 
@@ -38,9 +38,22 @@ python tasks/uncap-spray-panel/run.py --policy dream --stage full \
 python -m unittest discover -s tasks/uncap-spray-panel -p 'test*.py'
 ```
 
-Use new output directories and fresh native resets. Both policies get1,200controls/60simulatedseconds at20Hz; native physics is960Hz/48substeps per action, baseline body solver. This limit replaces the previous120-second default and was fixed before the new model outcome. The revised clock-only candidate appends a right-arm retreat and hold to the historical coating sequence. It must be replayed natively under the revised scorer. The tested L40S runs took approximately298s(demo) and522s(model), including startup; other hardware/runtime is unmeasured.
+Use new output directories and fresh native resets. Both policies get1,200controls/60simulatedseconds at20Hz; native physics is960Hz/48substeps per action, baseline body solver. This limit replaces the previous120-second default and was fixed before the new model outcome. The revised clock-only candidate appends a right-arm retreat and hold to the historical coating sequence.
 
-## New evidence and limitations
+## Revised native runs
+
+The revised scripted run scored **1.00** with 97.45% plaque coverage and 3.02 cm²
+of off-plaque paint. The cap was removed and parked, the left gripper showed
+opposing contact, the right gripper cleared the can and cap, and the final hold
+lasted 2.0 s. The scripted run and Dream-1 run use the same revised setup and
+synchronous denoised native RGB. Dream-1 did not detach the cap and reached the
+1,200-action limit at 0.00. The saved score summary does not record the number
+of Dream-1 session recoveries.
+
+On the L40S, the scripted run took 8m 23s including startup. The Dream-1
+run and video encoding took 9m 44s combined.
+
+## Historical evidence and limitations
 
 Frozen native source56854fb. Fresh demo applied799ordinary commands over39.95s and scored1.0: **97.4479%coverage,3.01736cm²outside paint**, valid opposing contacts/nozzle release and2.0s final physical hold. The last21states span an additional full second continuously at score1.0. Source, actual commands, all21body poses, nozzle geometry, paint dose/color updates and all-sample scoring independently passed audit. TraceSHA256:3db73f7c4787f393ec9d1fe4be0bf8ed5b06918705b9c4a0d4ae1e990bc8a1e9. See AIMED_DEMO_AUDIT.json and AIMED_PLAYBACK_AUDIT.json.
 

@@ -16,6 +16,6 @@
   "run_limit": "1,200 actions (60 seconds at20Hz), shared by model and demo; revised from the previous120-second limit before new model evaluation. Native physics960Hz,48substeps/action.",
   "reset_notes": "Use a fresh native reset with cap seated, button released, zero paint dose, original can/pad/plaque layout and seed0. Do not restore a manipulated episode or reuse painted surface state.",
   "fidelity": "Rigid can/cap/button; uncalibrated springs/contact. Paint uses a 12-degree cone and 10mm dose-tint cells, not CFD; circular boundaries are area-weighted. Unsupported spraying invalidates. The gripped can may contact its riser. Demo is labelled offline rendering of exact native poses/paint, not RTX. Dream uses noisy real RGB with 24 session recoveries. Clock-only commands were generated offline; no online object-state feedback. Details in README.",
-  "scores": "Revised clearance rubric and retreat are awaiting native replay. Previous results are pre-revision.",
+  "scores": "Scripted: 1.00. Coverage 97.4%, off-plaque paint 3.02 cm², and a two-second final hold with the right gripper clear. Dream-1: 0.00 at 1,200 actions. Synchronous denoised native RGB for both runs.",
   "media": ""
 }
