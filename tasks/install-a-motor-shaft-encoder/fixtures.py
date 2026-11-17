@@ -36,15 +36,24 @@ def author(directory):
         shape.CreateDisplayColorAttr([Gf.Vec3f(*color)])
         collider(shape)
 
-    def sleeve(stage, name, center, bore, length, wall, color, keyed=False):
+    def sleeve(stage, name, center, bore, length, wall, color, keyed=False, lead=.002):
         # Twelve convex contact blocks surround an open bore. A single flat
         # mates with the +X shaft flat when the carrier has the correct yaw.
-        for i in range(12):
-            angle = i * pi / 6
-            internal = bore - .001 if keyed and i == 0 else bore
-            radial = internal + wall / 2
-            p = (center[0] + radial*cos(angle), center[1] + radial*sin(angle), center[2])
-            box(stage, f"{name}{i}", p, (wall, 2*radial*.268+.00025, length), color, degrees(angle))
+        # Stack three concentric rings to form a stepped lead-in below the
+        # locating section without changing the seated axial stop.
+        rows = ((.52, .0), (.30, lead / 2), (.18, lead))
+        top = center[2] + length / 2
+        for row, (fraction, extra) in enumerate(rows):
+            depth = length * fraction
+            for i in range(12):
+                angle = i * pi / 6
+                opening = bore + extra
+                internal = opening - .001 if keyed and i == 0 else opening
+                radial = internal + wall / 2
+                p = (center[0] + radial*cos(angle), center[1] + radial*sin(angle), top - depth/2)
+                box(stage, f"{name}{row}_{i}", p, (wall, 2*radial*.268+.00025, depth), color, degrees(angle))
+            top -= depth
+
 
     stage = asset(paths["encoder_frame"])
     x, y = task.CENTER
@@ -65,10 +74,33 @@ def author(directory):
     from pxr import UsdPhysics
     UsdPhysics.MeshCollisionAPI.Apply(shaft.GetPrim()).CreateApproximationAttr("convexHull")
     for i, offset in enumerate(GUIDE_OFFSETS):
-        cylinder(stage, f"Guide_{i}", (x,y+offset,task.TOP+.087), .004, .053, alloy)
+        # Machined lead-in on the exposed end of each steel guide pin.
+        guide_z_top = task.TOP+.1135
+        guide_z_shoulder = guide_z_top-.014
+        cylinder(stage, f"Guide_{i}", (x,y+offset,(task.TOP+.0605+guide_z_shoulder)/2),
+                 .004, guide_z_shoulder-(task.TOP+.0605), alloy)
+        taper = UsdGeom.Mesh.Define(stage, f"/Object/GuideTaper_{i}")
+        rings = [[(x+radius*cos(j*pi/8), y+offset+radius*sin(j*pi/8), z)
+                  for j in range(16)] for radius,z in ((.004,guide_z_shoulder),(.001,guide_z_top))]
+        faces = [tuple(reversed(range(16))), tuple(range(16,32))]
+        faces += [(j,(j+1)%16,(j+1)%16+16,j+16) for j in range(16)]
+        taper.CreatePointsAttr([Gf.Vec3f(*point) for ring in rings for point in ring])
+        taper.CreateFaceVertexCountsAttr([len(face) for face in faces])
+        taper.CreateFaceVertexIndicesAttr([j for face in faces for j in face])
+        taper.CreateDisplayColorAttr([Gf.Vec3f(*alloy)])
+        taper.CreateSubdivisionSchemeAttr("none")
+        collider(taper)
+        UsdPhysics.MeshCollisionAPI.Apply(taper.GetPrim()).CreateApproximationAttr("convexHull")
         cylinder(stage, f"Shoulder_{i}", (x,y+offset,task.HEAD_SEAT[2]-.0525), .009, .037, (.19,.23,.25))
-    box(stage, "CatchHousing", (*task.LATCH_XY,task.LATCH_OPEN-.037), (.028,.029,.040), alloy)
-    box(stage, "ButtonHousing", (*task.TEST_XY,task.TEST_CAP-.029), (.062,.051,.040), (.20,.25,.28))
+    # Two rigid stop rails under the lower face of the bracket crossbar.
+    rail_top = task.HEAD_SEAT[2] - .022
+    for i, shift in enumerate((-.023, .023)):
+        box(stage, f"CrossbarStop_{i}", (x + shift, y, rail_top - .011),
+            (.010, .036, .022), alloy)
+    catch_x, catch_y, catch_z = task.CATCH_OPEN
+    box(stage, "CatchHousing", (catch_x-task.CATCH_SHIFT/2, catch_y, catch_z-.043),
+        (.058,.029,.040), alloy)
+    box(stage, "ButtonHousing", (*task.TEST_XY,task.TEST_CAP-.036), (.062,.051,.040), (.20,.25,.28))
     stage.GetRootLayer().Save()
 
     stage = asset(paths["magnet_carrier"], .019)
@@ -77,7 +109,7 @@ def author(directory):
     # stop face at the shaft tip, and its upper face is the magnet datum.
     box(stage, "CarrierGrip", (0,0,task.CAP_GRIP_Z_OFFSET), (.020,.020,.004),
         (.79,.53,.13), friction=1.1)
-    sleeve(stage, "CarrierBore", (0,0,-.0144), .0045, .0148, .004,
+    sleeve(stage, "CarrierBore", (0,0,-.0144), .0055, .0148, .004,
            (.79,.53,.13), keyed=True)
     stage.GetRootLayer().Save()
 
@@ -85,17 +117,19 @@ def author(directory):
     box(stage, "PCB", (0,0,-.0236), (.047,.043,.0028), bracket)
     box(stage, "Crossbar", (0,0,-.018), (.067,.053,.008), alloy)
     for i, offset in enumerate(GUIDE_OFFSETS):
-        sleeve(stage, f"GuideBore{i}_", (0.,offset,-.025), .0047, .018, .003, alloy)
-        for j, dx in enumerate((-.013,.013)):
+        sleeve(stage, f"GuideBore{i}_", (0.,offset,-.025), .0058, .018, .003, alloy)
+        for j, dx in enumerate((-.016,.016)):
             box(stage, f"BridgeLink{i}_{j}", (dx, offset*.83, -.018), (.015,.039,.008), alloy)
-    # Tab enters the gap beneath the lowered retaining tongue.
-    box(stage, "LatchTab", (.049,-.050,-.019), (.022,.017,.006), alloy)
+    # The open catch sits outboard while this tab descends onto the fixture.
+    box(stage, "TabArm", (.0345, -.049, -.019), (.026, .012, .006), alloy)
+    box(stage, "LatchTab", task.TAB_POS, task.TAB_SIZE, alloy)
+    box(stage, "GripPedestal", (0, 0, -.011), (.020, .020, .008), grip)
     box(stage, "BracketGrip", (0,0,0), (.026,.025,.017), grip, friction=1.1)
     stage.GetRootLayer().Save()
 
     stage = asset(paths["encoder_catch"], CATCH_MASS)
     box(stage, "RedCatch", (0,0,-.003), (.025,.021,.008), (.63,.07,.08))
-    box(stage, "LatchTongue", (-.010,.012,-.005), (.028,.014,.005), (.27,.29,.30))
+    box(stage, "LatchTongue", task.TONGUE_POS, task.TONGUE_SIZE, (.27,.29,.30))
     stage.GetRootLayer().Save()
 
     stage = asset(paths["field_button"], BUTTON_MASS)
@@ -104,14 +138,17 @@ def author(directory):
     return paths
 
 
-def connect_slide(stage, fixture, body, origin, stroke, stiffness):
-    """Anchor a native vertical slider to the static world before detection."""
+def connect_slide(stage, fixture, body, origin, stroke, stiffness, tilt=0.):
+    """Anchor a native slider to the static world before detection."""
     from pxr import Gf, UsdPhysics
 
     joint = UsdPhysics.PrismaticJoint.Define(stage, f"{fixture}/{body.name}Slide")
     joint.CreateBody1Rel().SetTargets([body])
     joint.CreateLocalPos0Attr(Gf.Vec3f(*origin))
     joint.CreateAxisAttr("Z")
+    frame = Gf.Quatf(cos(tilt / 2), Gf.Vec3f(0., sin(tilt / 2), 0.))
+    joint.CreateLocalRot0Attr(frame)
+    joint.CreateLocalRot1Attr(frame)
     joint.CreateLowerLimitAttr(-stroke)
     joint.CreateUpperLimitAttr(0.)
     api = UsdPhysics.DriveAPI.Apply(joint.GetPrim(), "linear")

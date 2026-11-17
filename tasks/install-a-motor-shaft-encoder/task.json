@@ -9,9 +9,9 @@
   ],
   "instruction": "Install the magnetic encoder on the motor shaft. Seat the magnet carrier, lower the sensor bracket onto its guide posts, and close its retaining catch. Press the field-test button, then release the assembly.",
   "context": "Magnetic robot-joint encoders rely on a centred, retained magnet and a fixed gap to a secured sensor. The fit can be checked before powering the motor.",
-  "setup": "An unpowered Ø80 mm motor with an 8 mm keyed steel D-shaft is fixed to a tabletop fixture. The 24 mm magnetic carrier and 71 × 95 mm PCB bracket start separately in docks. Two guide posts set the bracket position and nominal 1.5 mm sensor gap. A red retention catch is open and the field-test LED starts off.",
+  "setup": "An unpowered Ø80 mm motor with an 8 mm keyed steel D-shaft is fixed to a tabletop fixture. The magnetic carrier with a 20 × 20 mm grasp flange and the PCB bracket start separately in docks. Two guide posts 76 mm apart set the bracket position and nominal 1.5 mm sensor gap. A red catch starts outboard of the bracket, and the field-test LED starts off.",
   "scoring": "0.25 for the released keyed carrier at the seating datum, 0.45 if the bracket seats on both guides, 0.65 if the physical latch retains it. Full score requires pressing and releasing the field-test key, a passing field check, and both hands clear.",
-  "fidelity": "Native rigid-body contacts drive grasping and keyed insertion. Two native slider joints move the catch and test key, with a detent after physical catch travel. Field check verifies the modeled fit; the real fixture uses sensor diagnostics.",
+  "fidelity": "Native rigid-body contacts drive grasping and keyed insertion. An inclined slider carries the catch over the bracket tab after seating, with a detent after measured finger actuation. The test key moves on a vertical slider. The simulated field check verifies the modeled fit. The physical fixture uses AS5600 field diagnostics.",
   "run_limit": "1,400 steps (70 seconds at 20 Hz)",
   "scores": "Native-contact revision awaits demo and Dream-1 runs.",
   "media": ""

@@ -36,9 +36,13 @@ def bind(path, directory, setup, case):
     def add_slider(spec, prim):
         if spec.name not in {"encoder_catch", "field_button"}:
             return
-        stroke, spring = (.012, 100.) if spec.name == "encoder_catch" else (.006, 135.)
         body = prim.GetPath()
-        controls[spec.name] = connect_slide(prim.GetStage(), str(body), body, spec.pos, stroke, spring)
+        if spec.name == "encoder_catch":
+            tilt = atan2(task.CATCH_SHIFT, task.CATCH_DROP)
+            stroke, spring = task.CATCH_STROKE, 50.
+        else:
+            tilt, stroke, spring = 0., .006, 135.
+        controls[spec.name] = connect_slide(prim.GetStage(), str(body), body, spec.pos, stroke, spring, tilt)
 
     build = substitute_assets(PARTS, lambda: author(directory), add_slider)
     build.original = cls._ensure_sim
@@ -64,6 +68,22 @@ def bind(path, directory, setup, case):
         if not hasattr(self, "_fixture_contacts"):
             self._fixture_contacts = Contacts({"RedCatch", "BlueTestKey"})
         self._fixture_contacts.take()
+        from isaaclab_physx.physics.physx_manager import PhysxManager
+        from yam_arena.robot import asset_link_paths
+
+        sim_view = PhysxManager.get_physics_sim_view()
+        links = asset_link_paths()
+        fingers = [
+            f"/World/envs/env_0/{arm}Arm{links[part]}"
+            for arm in ("Left", "Right")
+            for part in ("gripper", "tip_left", "tip_right")
+        ]
+        self._press_views = {
+            "encoder_catch": sim_view.create_rigid_contact_view(
+                "/World/envs/env_0/encoder_catch", filter_patterns=fingers, max_contact_data_count=96),
+            "field_button": sim_view.create_rigid_contact_view(
+                "/World/envs/env_0/field_button", filter_patterns=fingers, max_contact_data_count=96),
+        }
         self._fixture_view = task.View(self._fixture_state)
         self._fixture_passes = 0
         self._fixture_trace = (directory / "mechanism.jsonl").open("w", encoding="utf-8")
@@ -98,10 +118,28 @@ def bind(path, directory, setup, case):
             )
         state = self._fixture_state
         parts = root_states(self, sorted(PARTS - {"encoder_frame"}))
-        info = state.advance(parts, hands, self._fixture_contacts.take(), self._base.step_dt)
+        def array(value):
+            value = value.torch if hasattr(value, "torch") else value
+            if hasattr(value, "detach"):
+                return value.detach().cpu().numpy()
+            return value.numpy() if hasattr(value, "numpy") else np.asarray(value)
+
+        contacts = self._fixture_contacts.take()
+        for part_name, actuator_name, axis in (
+            ("encoder_catch", "RedCatch", task.CATCH_AXIS),
+            ("field_button", "BlueTestKey", (0., 0., 1.)),
+        ):
+            # Filtered native impulse on the sliding body, from arm fingers only.
+            # Only force in the direction of actuator travel counts.
+            impulses = array(self._press_views[part_name].get_contact_force_matrix(dt=1.))
+            closing_impulse = float(np.maximum(0., -(impulses @ axis)).sum())
+            if closing_impulse >= .0001:
+                contacts.append((frozenset({actuator_name,"gripper"}),
+                                 parts[part_name].pos, closing_impulse))
+        info = state.advance(parts, hands, contacts, self._base.step_dt)
         if state.latch:
             # The detent takes over only after measured physical depression.
-            controls["encoder_catch"].GetTargetPositionAttr().Set(-.012)
+            controls["encoder_catch"].GetTargetPositionAttr().Set(-task.CATCH_STROKE)
         self._fixture_view.update(state)
         self._fixture_passes = self._fixture_passes + 1 if info["score"] == 1.0 else 0
         success = self._fixture_passes >= 5
