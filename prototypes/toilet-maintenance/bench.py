@@ -15,7 +15,8 @@ STEEL = ".45 .59 .64 1"
 WATER = ".14 .65 .81 .83"
 PAPER = ".95 .90 .79 1"
 WASTE = ".33 .18 .12 1"
-JETS = [(-0.072, 0.054), (-0.072, -0.054), (0.072, 0.054), (0.072, -0.054)]
+# Centres follow the inside edge of the porcelain rim in four quadrants.
+JETS = [(-0.1056, 0.0792), (-0.1056, -0.0792), (0.1056, 0.0792), (0.1056, -0.0792)]
 NAMES = ["Front left", "Front right", "Rear left", "Rear right"]
 PROFILE = [
     (58, 49, -81, 0),
@@ -41,14 +42,19 @@ PROFILE = [
 ]
 RIM = 0.218
 DOCK = (-0.245, -0.144, 0.123)
-LIP = 0.207
+JET_HEIGHT = RIM - 0.007
 JET_STROKE = 0.023
-JET_TILT = math.radians(20)
+JET_TILT = math.radians(58)
 TRAP_STROKE = 0.105
 
 
 def values(sequence):
     return " ".join(f"{number:.9g}" for number in sequence)
+
+
+def jet_axis(outlet):
+    radial = np.asarray(outlet) / np.linalg.norm(outlet)
+    return np.r_[radial * math.sin(JET_TILT), math.cos(JET_TILT)]
 
 
 def geom(name, shape, position, size, color, *, collision=True, extra=""):
@@ -59,7 +65,7 @@ def geom(name, shape, position, size, color, *, collision=True, extra=""):
     )
 
 
-def bowl():
+def bowl(kind):
     """Use the old rim profile as visuals and preserve the opening in the colliders."""
     segments = 48
     vertices = []
@@ -98,10 +104,21 @@ def bowl():
             (0.096, 0.077, 0.161, 0.006),
         )
     ):
-        angles = np.linspace(0, math.tau, 36, endpoint=False)
+        # The thin bands of colliders need an actual passage into each rim bore.
+        # Subdivide the two upper bands so the openings do not remove whole wall panels.
+        has_bores = kind == "rim" and layer < 2
+        count = 120 if has_bores else 36
+        angles = np.linspace(0, math.tau, count, endpoint=False)
+        bores = [math.atan2(y / ry, x / rx) for x, y in JETS] if has_bores else []
         for i, a in enumerate(angles):
             x, y = rx * math.cos(a), ry * math.sin(a)
-            half = 0.5 * math.hypot(rx * math.sin(a), ry * math.cos(a)) * math.tau / 36
+            tangent = math.hypot(rx * math.sin(a), ry * math.cos(a))
+            half = 0.5 * tangent * math.tau / count
+            if any(
+                abs(math.remainder(a - bore, math.tau)) * tangent < 0.007 + half
+                for bore in bores
+            ):
+                continue
             yaw = math.atan2(ry * math.cos(a), -rx * math.sin(a))
             collisions.append(
                 geom(
@@ -351,8 +368,8 @@ def probe():
             geom(
                 f"tine_{side}",
                 "box",
-                (0.041, side * 0.0052, -0.018),
-                (0.014, 0.0016, 0.0018),
+                (0.039, side * 0.0052, -0.018),
+                (0.007, 0.0016, 0.0018),
                 TOOL,
                 extra='mass=".002"',
             )
@@ -364,47 +381,67 @@ def probe():
     )
 
 
+def jet_socket_mesh():
+    angles = np.linspace(0, math.tau, 32, endpoint=False)
+    rings = [
+        [(radius * math.cos(a), radius * math.sin(a), z) for a in angles]
+        for radius, z in (
+            (0.0064, 0.000),
+            (0.0066, 0.004),
+            (0.0038, 0.004),
+            (0.0038, 0.001),
+            (0.0045, 0.000),
+        )
+    ]
+    return loft_mesh("jet_socket", rings, hollow=True)
+
+
 def jet_fixture(blocked):
     objects = []
-    for i, (x, y) in enumerate(JETS):
-        ux, uy = np.array((x, y)) / math.hypot(x, y)
-        axis = values(
-            (ux * math.sin(JET_TILT), uy * math.sin(JET_TILT), math.cos(JET_TILT))
-        )
-        objects.append(
-            geom(
-                f"outlet_{i}",
-                "cylinder",
-                (x, y, LIP + 0.010),
-                (0.010, 0.010),
-                STEEL,
-                collision=False,
-                extra=f'zaxis="{axis}"',
+    for i, outlet in enumerate(JETS):
+        axis = values(jet_axis(outlet))
+        mouth = values((*outlet, JET_HEIGHT))
+        objects.extend(
+            (
+                f'<body name="socket_{i}" pos="{mouth}" zaxis="{axis}">',
+                f'<geom name="outlet_{i}" type="mesh" mesh="jet_socket"'
+                ' rgba=".85 .90 .92 1" contype="0" conaffinity="0"/>',
+                geom(
+                    f"bore_{i}",
+                    "cylinder",
+                    (0, 0, 0.0012),
+                    (0.0038, 0.0003),
+                    ".13 .18 .19 1",
+                    collision=False,
+                ),
             )
         )
-        # A four-sided nozzle leaves a native aperture and a tool-access corridor.
-        for j in (-1, 1):
+        # The contact guide sits inside the ceramic and leaves the bore open.
+        for j in range(4):
+            a = j * math.pi / 2
             objects.append(
                 geom(
                     f"guide_{i}_{j}",
                     "box",
-                    (x, y + j * 0.008, LIP + 0.011),
-                    (0.007, 0.002, 0.008),
-                    STEEL,
+                    (0.0057 * math.cos(a), 0.0057 * math.sin(a), 0.006),
+                    (0.0012, 0.0042, 0.0045),
+                    "0 0 0 0",
+                    extra=f'euler="0 0 {a}"',
                 )
             )
+        objects.append("</body>")
         if i == blocked:
             objects.append(
-                f'<body name="plug" pos="{values((x,y,LIP))}" zaxis="{axis}" gravcomp="1">'
+                f'<body name="plug" pos="{mouth}" zaxis="{axis}" gravcomp="1">'
             )
             objects.append(
                 f'<joint name="plug" type="slide" axis="0 0 -1" range="0 {JET_STROKE}" '
                 'frictionloss=".32" damping=".45"/>'
             )
             for name, offset, radius, height in (
-                ("plug_insert", 0.002, 0.0045, 0.007),
+                ("plug_insert", 0.002, 0.0041, 0.006),
                 ("plug_stem", -0.010, 0.0013, 0.010),
-                ("plug_flange", -0.018, 0.0075, 0.002),
+                ("plug_flange", -0.018, 0.0062, 0.002),
             ):
                 objects.append(
                     geom(
@@ -522,8 +559,9 @@ def trap_fixture():
 
 
 def make_model(kind, blocked):
-    asset, toilet = bowl()
+    asset, toilet = bowl(kind)
     rear_assets, rear_fittings = seat_and_cistern()
+    jet_asset = jet_socket_mesh() if kind == "rim" else ""
     actor, motors = carriage()
     tool, fixture = (
         (probe(), jet_fixture(blocked))
@@ -554,7 +592,7 @@ def make_model(kind, blocked):
  <visual><global offwidth="960" offheight="540"/><map znear=".005"/>
          <quality shadowsize="1024"/></visual>
  <default><geom friction=".85 .02 .003" condim="4" solref=".007 1" margin=".0002"/></default>
- <asset>{asset}{rear_assets}</asset>
+ <asset>{asset}{rear_assets}{jet_asset}</asset>
  <worldbody>
   <light pos="-.45 -.35 .8" dir=".45 .3 -.8" diffuse=".82 .82 .82" castshadow="true"/>
   <light pos=".48 .22 .60" dir="-.45 -.3 -.65" diffuse=".42 .46 .51" castshadow="false"/>
@@ -691,18 +729,20 @@ class Trial:
         inside = outlet - 0.070 * radial
         engaged = (
             outlet
-            - (0.043 + 0.011 * math.sin(JET_TILT)) * radial
+            - (0.040 + 0.011 * math.sin(JET_TILT)) * radial
             + (0.023 * across if control else 0.0)
         )
         extracted = engaged - 0.023 * math.sin(JET_TILT) * radial
+        approach_z = JET_HEIGHT + 0.018
+        extracted_z = approach_z - 0.023 * math.cos(JET_TILT) - 0.004
         self.pick()
         # Lift over the lip, descend inside the bowl and slide the fork around
         # the exposed stem above its flange.
         self.move((*inside, 0.281), 1.05, "Move above the weak outlet", yaw=angle)
-        self.move((*inside, LIP + 0.008), 0.65, "Lower inside the bowl")
-        self.move((*engaged, LIP + 0.008), 0.75, "Engage obstruction")
-        self.move((*extracted, LIP - 0.019), 0.74, "Withdraw obstruction")
-        self.move((*inside, LIP - 0.019), 0.65, "Release the cleared outlet")
+        self.move((*inside, approach_z), 0.65, "Lower inside the bowl")
+        self.move((*engaged, approach_z), 0.75, "Engage obstruction")
+        self.move((*extracted, extracted_z), 0.74, "Withdraw obstruction")
+        self.move((*inside, extracted_z), 0.65, "Release the cleared outlet")
         self.move((*inside, 0.280), 0.65, "Clear the bowl")
         after = self.collect("Retest under the same head")
         passed = (

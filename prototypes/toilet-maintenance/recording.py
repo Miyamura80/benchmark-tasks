@@ -6,7 +6,7 @@ import mujoco as mj
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
-from bench import JETS, LIP, NAMES
+from bench import JETS, JET_HEIGHT, NAMES, jet_axis
 
 BACKGROUND = "#101820"
 PANEL = "#192731"
@@ -71,7 +71,7 @@ class Recording:
         self.detail = mj.Renderer(trial.model, height=184, width=284)
         self.main_cam = camera((0.02, -0.02, 0.244), 0.87, 305, -31)
         self.side_cam = (
-            camera((*JETS[trial.blocked], LIP - 0.006), 0.19, 132, -12)
+            camera((*JETS[trial.blocked], JET_HEIGHT - 0.006), 0.19, 132, -12)
             if trial.kind == "rim"
             else camera((0.065, 0, 0.13), 0.38, 98, -20)
         )
@@ -82,7 +82,7 @@ class Recording:
             "Retest under the same head",
         ):
             return
-        for (x, y), flow in zip(JETS, self.t.rim_flow()):
+        for outlet, flow in zip(JETS, self.t.rim_flow()):
             element = scene.geoms[scene.ngeom]
             mj.mjv_initGeom(
                 element,
@@ -92,12 +92,13 @@ class Recording:
                 np.eye(3).ravel(),
                 np.array([0.14, 0.73, 0.95, 0.68], dtype=np.float32),
             )
+            mouth = np.array([*outlet, JET_HEIGHT])
             mj.mjv_connector(
                 element,
                 mj.mjtGeom.mjGEOM_CAPSULE,
                 0.0006 + 0.0015 * flow / 100.0,
-                np.array([x, y, LIP]),
-                np.array([x * 0.79, y * 0.79, LIP - 0.045 * flow / 100.0]),
+                mouth - jet_axis(outlet) * 0.001,
+                mouth - jet_axis(outlet) * (0.003 + 0.054 * flow / 100.0),
             )
             scene.ngeom += 1
 

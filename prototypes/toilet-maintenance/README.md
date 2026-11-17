@@ -4,7 +4,7 @@ The two tasks share a toilet with an open seat ring, raised lid, rear hinges and
 
 | Task | Scripted behavior | Measured outcome |
 | --- | --- | --- |
-| Rim jet | Compare the four collection volumes, align the fork with the weak outlet, withdraw the obstruction and repeat the rinse. | All four fault locations scored 1.00. The affected outlet rose from about 28 mL to 100 mL in the model. Each misaligned control scored 0.25 because it diagnosed the correct outlet and did not restore enough flow. |
+| Rim jet | Compare the four collection volumes, align the fork with the weak outlet, withdraw the obstruction and repeat the rinse. | All four fault locations scored 1.00. The affected outlet rose from 20 mL to 100 mL in the model. Each misaligned control scored 0.25 because it diagnosed the correct outlet and did not restore enough flow. |
 | Mixed clog | Pick up the plunger, seat the cup, apply pressure strokes and repeat the drain test. | Score 1.00. Modeled water remaining fell from 88.75% to 1.25%. An off-centre plunger did not engage the diaphragm and scored 0.00. |
 
 ## Run
@@ -23,6 +23,6 @@ Rim faults 0–3 are front left, front right, rear left and rear right. Outputs 
 
 ## Physics and verification
 
-- The ceramic shape has segmented collision geometry that leaves the bowl opening clear. The rim obstruction moves along a constrained, counterbalanced slide. The fork engages its shoulder through collision. Flow is a reduced-order function of measured obstruction travel. The cup-volume display represents observed collection for the prototype.
+- The ceramic shape has segmented collision geometry that leaves the bowl opening clear. Four recessed openings sit beneath the porcelain lip and direct the rinse inward and down. The rim obstruction moves along a constrained, counterbalanced slide inside its opening. The fork engages its shoulder through collision. Flow is a reduced-order function of measured obstruction travel. The cup-volume display represents observed collection for the prototype.
 - The plunger moves as a free rigid body. Compression of a diaphragm through cup contact produces a modeled pressure pulse on the clog. Paper and simulated waste form one composite rigid blockage in a straight cutaway section. The drainage rate depends on measured clearance. Flexible paper, waste deformation, water simulation and siphon mechanics need separate validation.
 - The 1.00 scores are local CPU prototype results. Wet calibration, the YAM port, Dream-1 runs and submission media remain pending.
