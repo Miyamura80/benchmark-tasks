@@ -36,4 +36,4 @@ openscad -o bowl.stl fixture/bowl_layout.scad
 
 Reuse the earlier bowl profile as a native static collision mesh and use rigid colliders for the probe and removable obstruction. Use a gripper with normal contact-based grasp and a tool path that is physically constrained by the rim and outlet. Expose measured outlet flow to the robot through visible collection cups. Calibrate any reduced-order flow model against the four separate bench measurements and derive flow from the remaining measured aperture. Trigger a rinse with a physical control. The policy should choose an outlet from the observed rinse, and the scorer should use the last complete rinse plus the recovered obstruction and fixture state.
 
-The fixture is a bench design. Physical measurements, native simulation, and submission evidence are pending.
+See the [CPU contact prototype](../../prototypes/toilet-maintenance/README.md) for the scripted demonstration and four fault cases. The prototype places the outlets slightly inward for probe clearance and uses a captive test obstruction. The physical outlet positions and flow thresholds need wet verification before a YAM submission.
