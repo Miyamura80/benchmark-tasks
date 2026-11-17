@@ -84,7 +84,7 @@ class Recording:
             azimuth = math.degrees(math.atan2(y, x)) % 360
             self.side_cam = camera((x, y, JET_HEIGHT - 0.001), 0.067, azimuth, -29)
         else:
-            self.side_cam = camera((0.131, 0, 0.112), 0.48, 98, -19)
+            self.side_cam = camera((0.081, 0, 0.111), 0.19, 98, -24)
         self.rinse_cam = camera((0, 0, JET_HEIGHT), 0.51, 305, -89)
         self.fade = {trial.model.geom(name).id for name in ("bowl", "seat_ring")}
         self.trap_screen = {
@@ -185,6 +185,11 @@ class Recording:
     def draw(self):
         rim = self.t.kind == "rim"
         rinse = rim and self.t.rinsing
+        if not rim:
+            positions = tuple(self.t.trap_positions().values())
+            first, last = min(positions), max(positions)
+            self.side_cam.lookat[0] = (first + last) / 2
+            self.side_cam.distance = max(0.19, 1.65 * (last - first + 0.048))
         image = Image.new("RGB", (960, 540), BACKGROUND)
         draw = ImageDraw.Draw(image)
         title = "Restore flow through a rim jet" if rim else "Clear a mixed toilet clog"

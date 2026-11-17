@@ -14,7 +14,6 @@ WHITE = ".86 .90 .91 1"
 TOOL = ".99 .55 .14 1"
 STEEL = ".45 .59 .64 1"
 WATER = ".14 .65 .81 .83"
-PAPER = ".95 .90 .79 1"
 WASTE = ".33 .18 .12 1"
 # Centres follow the inside edge of the porcelain rim in four quadrants.
 JETS = [(-0.1056, 0.0792), (-0.1056, -0.0792), (0.1056, 0.0792), (0.1056, -0.0792)]
@@ -59,18 +58,31 @@ class TrapPiece:
     material: str
     x: float
     y: float
+    z: float
     size: tuple[float, float, float]
     friction: float
     damping: float
 
 
 TRAP_PIECES = (
-    TrapPiece("paper_1", "paper", 0.039, -0.003, (0.010, 0.013, 0.013), 0.31, 6.6),
-    TrapPiece("feces_1", "feces", 0.064, 0.001, (0.014, 0.010, 0.010), 0.23, 5.2),
-    TrapPiece("paper_2", "paper", 0.092, 0.003, (0.012, 0.013, 0.014), 0.46, 7.5),
-    TrapPiece("feces_2", "feces", 0.122, -0.002, (0.016, 0.010, 0.009), 0.27, 5.4),
-    TrapPiece("paper_3", "paper", 0.153, -0.001, (0.011, 0.015, 0.012), 0.38, 7.1),
-    TrapPiece("feces_3", "feces", 0.179, 0.002, (0.014, 0.009, 0.009), 0.26, 4.9),
+    TrapPiece(
+        "paper_1", "paper", 0.052, -0.009, 0.114, (0.012, 0.009, 0.008), 0.31, 8.424
+    ),
+    TrapPiece(
+        "feces_1", "feces", 0.060, 0.007, 0.100, (0.014, 0.010, 0.008), 0.23, 5.616
+    ),
+    TrapPiece(
+        "paper_2", "paper", 0.072, 0.009, 0.115, (0.013, 0.009, 0.008), 0.46, 8.10
+    ),
+    TrapPiece(
+        "feces_2", "feces", 0.081, -0.008, 0.100, (0.016, 0.009, 0.008), 0.27, 5.832
+    ),
+    TrapPiece(
+        "paper_3", "paper", 0.087, -0.009, 0.116, (0.012, 0.009, 0.007), 0.38, 7.668
+    ),
+    TrapPiece(
+        "feces_3", "feces", 0.101, 0.007, 0.102, (0.014, 0.008, 0.009), 0.26, 5.292
+    ),
 )
 
 
@@ -543,7 +555,54 @@ def plunger():
     )
 
 
+def folded_sheet(name, size, layer, phase):
+    """A thin, torn sheet with raised creases and an irregular edge."""
+    a, b, c = size
+    n = 17
+    vertices = []
+    for side in (-1, 1):
+        for v in np.linspace(-1, 1, n):
+            for u in np.linspace(-1, 1, n):
+                edge_x = (
+                    0.86 + 0.10 * math.sin(8 * v + phase) + 0.036 * math.cos(21 * v)
+                )
+                edge_y = (
+                    0.79 + 0.13 * math.sin(7 * u + 2 * phase) + 0.039 * math.cos(19 * u)
+                )
+                x = a * (u * edge_x - 0.13 * v * math.sin(phase))
+                y = b * (v * edge_y + 0.16 * u * math.sin(phase))
+                crest = 0.32 * math.sin(3 * u + 1.8 * v + phase)
+                crease = 0.16 * abs(math.sin(5 * u - 4 * v + phase))
+                crinkle = 0.07 * math.sin(13 * u + 10 * v + phase)
+                z = (
+                    c * (layer + crest + crease + crinkle - 0.29 * abs(v))
+                    + side * 0.00017
+                )
+                vertices.append((x, y, z))
+    faces = []
+    top = n * n
+    for j in range(n - 1):
+        for i in range(n - 1):
+            a, b, c, d = j * n + i, j * n + i + 1, (j + 1) * n + i + 1, (j + 1) * n + i
+            faces.extend(
+                (
+                    (a, c, b),
+                    (a, d, c),
+                    (top + a, top + b, top + c),
+                    (top + a, top + c, top + d),
+                )
+            )
+    border = list(range(n)) + [j * n + n - 1 for j in range(1, n)]
+    border += [(n - 1) * n + i for i in range(n - 2, -1, -1)]
+    border += [j * n for j in range(n - 2, 0, -1)]
+    for a, b in zip(border, border[1:] + border[:1]):
+        faces.extend(((a, b, top + b), (a, top + b, top + a)))
+    triangles = " ".join(map(str, np.ravel(faces)))
+    return f'<mesh name="{name}" vertex="{values(np.ravel(vertices))}" face="{triangles}"/>'
+
+
 def trap_fixture():
+    assets = ['<material name="wet_tissue" specular=".18" shininess=".12"/>']
     elements = [
         geom(
             "trap_base",
@@ -574,10 +633,11 @@ def trap_fixture():
         ),
         "</body>",
     ]
-    for p in TRAP_PIECES:
+    for index, p in enumerate(TRAP_PIECES):
+        paper = p.material == "paper"
         elements.extend(
             [
-                f'<body name="{p.name}" pos="{p.x} {p.y} .105">',
+                f'<body name="{p.name}" pos="{p.x} {p.y} {p.z}">',
                 f'<joint name="{p.name}" type="slide" axis="1 0 0" range="0 {0.39-p.x}" '
                 f'frictionloss="{p.friction}" damping="{p.damping}"/>',
                 geom(
@@ -585,19 +645,33 @@ def trap_fixture():
                     "ellipsoid",
                     (0, 0, 0),
                     p.size,
-                    PAPER if p.material == "paper" else WASTE,
+                    "0 0 0 0" if paper else WASTE,
                     extra='mass=".018" contype="2" conaffinity="2"',
                 ),
             ]
         )
-        # Small overlapping lobes distinguish the wet folds and irregular feces.
+        if paper:
+            for layer, (offset, shade) in enumerate(
+                (
+                    (-0.52, ".72 .68 .57 1"),
+                    (-0.03, ".84 .81 .71 1"),
+                    (0.44, ".94 .91 .82 1"),
+                )
+            ):
+                name = f"{p.name}_fold_{layer}"
+                assets.append(
+                    folded_sheet(name, p.size, offset, index * 0.72 + layer * 1.53)
+                )
+                elements.append(
+                    f'<geom name="{name}" type="mesh" mesh="{name}" rgba="{shade}"'
+                    ' material="wet_tissue" contype="0" conaffinity="0" mass="0"/>'
+                )
+            elements.append("</body>")
+            continue
+        # Uneven lobes show the fecal pieces in the cutaway.
         a, b, c = p.size
         lobes = ((-0.22 * a, 0.31 * b, 0.38 * c), (0.28 * a, -0.27 * b, 0.31 * c))
-        shades = (
-            (".82 .76 .62 1", ".96 .92 .83 1")
-            if p.material == "paper"
-            else (".44 .23 .11 1", ".27 .13 .07 1")
-        )
+        shades = (".44 .23 .11 1", ".27 .13 .07 1")
         for i, (pos, shade) in enumerate(zip(lobes, shades)):
             elements.append(
                 geom(
@@ -615,7 +689,7 @@ def trap_fixture():
             geom(
                 f"pipe_side_{side}",
                 "box",
-                (0.098, side * 0.022, 0.103),
+                (0.098, side * 0.024, 0.103),
                 (0.10, 0.004, 0.021),
                 ".18 .45 .54 .32",
                 extra='contype="2" conaffinity="2"',
@@ -626,7 +700,7 @@ def trap_fixture():
             "pipe_lid",
             "box",
             (0.098, 0, 0.126),
-            (0.10, 0.022, 0.002),
+            (0.10, 0.024, 0.002),
             ".20 .48 .58 .24",
             extra='contype="2" conaffinity="2"',
         )
@@ -651,7 +725,7 @@ def trap_fixture():
             collision=False,
         )
     )
-    return "".join(elements)
+    return "".join(assets), "".join(elements)
 
 
 def make_model(kind, blocked):
@@ -672,11 +746,11 @@ def make_model(kind, blocked):
         else ""
     )
     actor, motors = carriage()
-    tool, fixture = (
-        (probe(), jet_fixture(blocked))
-        if kind == "rim"
-        else (plunger(), trap_fixture())
-    )
+    if kind == "rim":
+        tool, fixture_assets, fixture = probe(), "", jet_fixture(blocked)
+    else:
+        tool = plunger()
+        fixture_assets, fixture = trap_fixture()
     stand_z = DOCK[2] - (0.026 if kind == "rim" else 0.048)
     stand = geom(
         "dock",
@@ -701,7 +775,7 @@ def make_model(kind, blocked):
  <visual><global offwidth="960" offheight="540"/><map znear=".005"/>
          <quality shadowsize="1024"/></visual>
  <default><geom friction=".85 .02 .003" condim="4" solref=".007 1" margin=".0002"/></default>
- <asset>{asset}{rear_assets}{jet_asset}</asset>
+ <asset>{asset}{rear_assets}{jet_asset}{fixture_assets}</asset>
  <worldbody>
   <light pos="-.45 -.35 .8" dir=".45 .3 -.8" diffuse=".82 .82 .82" castshadow="true"/>
   <light pos=".48 .22 .60" dir="-.45 -.3 -.65" diffuse=".42 .46 .51" castshadow="false"/>
