@@ -1,6 +1,6 @@
 # Toilet maintenance prototypes
 
-The two tasks share the bowl profile and a four-axis Cartesian gripper. Position actuators command the gripper and its jaws. Free rigid tools move through jaw contact. A fixed camera and a cutaway show the repair in each run.
+The two tasks share a toilet with an open seat ring, raised lid, rear hinges and cistern, plus a four-axis Cartesian gripper. Position actuators command the gripper and its jaws. Free rigid tools move through jaw contact. A fixed camera and a cutaway show the repair in each run.
 
 | Task | Scripted behavior | Measured outcome |
 | --- | --- | --- |

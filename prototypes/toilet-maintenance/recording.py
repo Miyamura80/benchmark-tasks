@@ -69,7 +69,7 @@ class Recording:
         self.t = trial
         self.main = mj.Renderer(trial.model, height=398, width=620)
         self.detail = mj.Renderer(trial.model, height=184, width=284)
-        self.main_cam = camera((-0.043, -0.025, 0.17), 0.76, 155, -35)
+        self.main_cam = camera((0.02, -0.02, 0.244), 0.87, 305, -31)
         self.side_cam = (
             camera((*JETS[trial.blocked], LIP - 0.006), 0.19, 132, -12)
             if trial.kind == "rim"
@@ -119,10 +119,11 @@ class Recording:
 
     def shot(self, renderer, cam, cutaway=False):
         renderer.update_scene(self.t.data, camera=cam)
+        renderer.scene.flags[mj.mjtRndFlag.mjRND_SHADOW] = False
         if cutaway:
-            bowl = self.t.model.geom("bowl").id
+            fade = (self.t.model.geom("bowl").id, self.t.model.geom("seat_ring").id)
             for element in renderer.scene.geoms[: renderer.scene.ngeom]:
-                if element.objid == bowl and element.objtype == mj.mjtObj.mjOBJ_GEOM:
+                if element.objid in fade and element.objtype == mj.mjtObj.mjOBJ_GEOM:
                     element.rgba[3] = 0.12
                     element.transparent = 1
         self.add_streams(renderer.scene)

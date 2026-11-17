@@ -116,6 +116,146 @@ def bowl():
     return asset, visual + "".join(collisions)
 
 
+def loft_mesh(name, rings, hollow=False):
+    """Join equal-length outlines into a closed mesh for the rear fittings."""
+    count = len(rings[0])
+    vertices = [point for ring in rings for point in ring]
+    faces = []
+    for j in range(len(rings) if hollow else len(rings) - 1):
+        k = (j + 1) % len(rings)
+        for i in range(count):
+            nxt = (i + 1) % count
+            a, b, c, d = j * count + i, j * count + nxt, k * count + nxt, k * count + i
+            faces.extend(((a, b, c), (a, c, d)))
+    if not hollow:
+        for offset, ring, reverse in (
+            (0, rings[0], True),
+            ((len(rings) - 1) * count, rings[-1], False),
+        ):
+            centre = len(vertices)
+            vertices.append(np.mean(ring, axis=0))
+            for i in range(count):
+                a, b = offset + i, offset + (i + 1) % count
+                faces.append((centre, b, a) if reverse else (centre, a, b))
+    triangles = " ".join(map(str, np.ravel(faces)))
+    return f'<mesh name="{name}" vertex="{values(np.ravel(vertices))}" face="{triangles}"/>'
+
+
+def rounded_outline(centre, half_x, half_y, radius, z):
+    points = []
+    for i, (sx, sy) in enumerate(((1, 1), (-1, 1), (-1, -1), (1, -1))):
+        for a in np.linspace(i * math.pi / 2, (i + 1) * math.pi / 2, 8):
+            points.append(
+                (
+                    centre + sx * (half_x - radius) + radius * math.cos(a),
+                    sy * (half_y - radius) + radius * math.sin(a),
+                    z,
+                )
+            )
+    return points
+
+
+def seat_and_cistern():
+    """Model an open seat ring, raised lid and close-coupled ceramic tank."""
+    angles = np.linspace(0, math.tau, 48, endpoint=False)
+    seat_sections = (
+        (0.170, 0.131, 0.225),
+        (0.176, 0.137, 0.230),
+        (0.174, 0.135, 0.239),
+        (0.168, 0.129, 0.243),
+        (0.143, 0.109, 0.243),
+        (0.140, 0.106, 0.239),
+        (0.140, 0.106, 0.231),
+        (0.145, 0.111, 0.225),
+    )
+    seat = [
+        [(rx * math.cos(a), ry * math.sin(a), z) for a in angles]
+        for rx, ry, z in seat_sections
+    ]
+    pitch = math.radians(13)
+    raised = []
+    for inset, thickness in (
+        (0.93, -0.008),
+        (1.0, -0.004),
+        (1.0, 0.004),
+        (0.93, 0.008),
+    ):
+        section = []
+        for a in angles:
+            length = max(0.017, 0.150 + 0.150 * inset * math.cos(a))
+            width = 0.118 * inset * math.sin(a)
+            section.append(
+                (
+                    0.158 + length * math.sin(pitch) - thickness * math.cos(pitch),
+                    width,
+                    0.234 + length * math.cos(pitch) + thickness * math.sin(pitch),
+                )
+            )
+        raised.append(section)
+    tank = [
+        rounded_outline(0.264, hx, hy, r, z)
+        for hx, hy, r, z in (
+            (0.044, 0.099, 0.017, 0.236),
+            (0.052, 0.118, 0.022, 0.249),
+            (0.064, 0.132, 0.025, 0.382),
+            (0.062, 0.130, 0.024, 0.400),
+        )
+    ]
+    tank_cover = [
+        rounded_outline(0.264, hx, hy, r, z)
+        for hx, hy, r, z in (
+            (0.064, 0.133, 0.024, 0.401),
+            (0.065, 0.134, 0.024, 0.405),
+            (0.062, 0.131, 0.023, 0.412),
+            (0.057, 0.126, 0.021, 0.416),
+        )
+    ]
+    assets = "".join(
+        (
+            loft_mesh("seat_ring", seat, hollow=True),
+            loft_mesh("raised_lid", raised),
+            loft_mesh("cistern", tank),
+            loft_mesh("cistern_cover", tank_cover),
+        )
+    )
+    objects = [
+        '<geom name="seat_ring" type="mesh" mesh="seat_ring" rgba=".95 .96 .95 1"'
+        ' contype="0" conaffinity="0"/>',
+        '<geom name="raised_lid" type="mesh" mesh="raised_lid" rgba=".95 .96 .95 1"/>',
+        '<geom name="cistern" type="mesh" mesh="cistern" rgba=".86 .90 .91 1"/>',
+        '<geom name="cistern_cover" type="mesh" mesh="cistern_cover" rgba=".94 .96 .95 1"/>',
+        geom("flush_button", "cylinder", (0.267, 0, 0.417), (0.013, 0.002), STEEL),
+        geom("rear_deck", "box", (0.222, 0, 0.225), (0.076, 0.100, 0.011), WHITE),
+        geom("rear_pedestal", "box", (0.241, 0, 0.158), (0.045, 0.085, 0.063), WHITE),
+    ]
+    for i, a in enumerate(angles):
+        rx, ry = 0.158, 0.122
+        yaw = math.atan2(ry * math.cos(a), -rx * math.sin(a))
+        half = math.pi / len(angles) * math.hypot(rx * math.sin(a), ry * math.cos(a))
+        objects.append(
+            geom(
+                f"seat_contact_{i}",
+                "box",
+                (rx * math.cos(a), ry * math.sin(a), 0.234),
+                (half + 0.001, 0.011, 0.008),
+                "0 0 0 0",
+                extra=f'euler="0 0 {yaw}"',
+            )
+        )
+    for side in (-1, 1):
+        objects.append(
+            geom(
+                f"seat_hinge_{side}",
+                "cylinder",
+                (0.160, side * 0.057, 0.244),
+                (0.010, 0.016),
+                STEEL,
+                extra='zaxis="0 1 0"',
+            )
+        )
+    return assets, "".join(objects)
+
+
 def carriage():
     actor = ['<body name="carriage" pos="0 0 0" gravcomp="1">']
     for name, axis in zip("xyz", ("1 0 0", "0 1 0", "0 0 1")):
@@ -383,6 +523,7 @@ def trap_fixture():
 
 def make_model(kind, blocked):
     asset, toilet = bowl()
+    rear_assets, rear_fittings = seat_and_cistern()
     actor, motors = carriage()
     tool, fixture = (
         (probe(), jet_fixture(blocked))
@@ -413,12 +554,12 @@ def make_model(kind, blocked):
  <visual><global offwidth="960" offheight="540"/><map znear=".005"/>
          <quality shadowsize="1024"/></visual>
  <default><geom friction=".85 .02 .003" condim="4" solref=".007 1" margin=".0002"/></default>
- <asset>{asset}</asset>
+ <asset>{asset}{rear_assets}</asset>
  <worldbody>
   <light pos="-.45 -.35 .8" dir=".45 .3 -.8" diffuse=".82 .82 .82" castshadow="true"/>
   <light pos=".48 .22 .60" dir="-.45 -.3 -.65" diffuse=".42 .46 .51" castshadow="false"/>
   <geom name="desk" type="plane" size="1 1 .1" rgba=".10 .16 .20 1"/>
-  {toilet}{stand}{actor}{tool}{fixture}
+  {toilet}{rear_fittings}{stand}{actor}{tool}{fixture}
  </worldbody>
  <actuator>{motors}</actuator>
 </mujoco>
@@ -504,10 +645,10 @@ class Trial:
     def hold(self, seconds, phase, observe=None):
         self.step(self.target.copy(), seconds, phase, observe)
 
-    def pick(self):
+    def pick(self, lift_height=0.291):
         self.move(DOCK, 0.65, "Approach tool")
         self.move(DOCK, 0.35, "Grip tool", True)
-        self.move((*DOCK[:2], 0.291), 0.70, "Lift tool")
+        self.move((*DOCK[:2], lift_height), 0.70, "Lift tool")
 
     def reading(self):
         reading = {
@@ -590,14 +731,16 @@ class Trial:
 
     def run_trap(self, control):
         before = self.drain("Test drainage before repair")
-        self.pick()
+        # The cup hangs below the gripper and must pass above the seat ring.
+        carry_height = 0.325
+        self.pick(carry_height)
         x = 0.050 if control else 0.0
-        self.move((x, 0, 0.285), 0.80, "Centre plunger over the drain")
+        self.move((x, 0, carry_height), 0.80, "Centre plunger over the drain")
         self.move((x, 0, 0.207), 0.60, "Seat cup")
         for _ in range(4):
             self.move((x, 0, 0.177), 0.24, "Compress the sealed cup")
             self.move((x, 0, 0.204), 0.33, "Release stroke")
-        self.move((x, 0, 0.282), 0.70, "Lift cup clear")
+        self.move((x, 0, carry_height), 0.70, "Lift cup clear")
         after = self.drain("Retest drainage")
         passed = (
             before >= 0.70
