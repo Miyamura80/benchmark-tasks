@@ -44,8 +44,9 @@ PROFILE = [
 RIM = 0.218
 DOCK = (-0.245, -0.144, 0.123)
 JET_HEIGHT = RIM - 0.007
-JET_STROKE = 0.023
 JET_TILT = math.radians(58)
+SCALE_OCCLUSION = (0.21, 0.16, 0.24, 0.19)
+SCALE_BREAK_WORK = (0.000075, 0.000015, 0.00020, 0.00004)
 RINSE_SECONDS = 2.0
 JET_OPEN_FLOW = 100.0
 TRAP_EXIT = 0.193
@@ -80,6 +81,54 @@ def values(sequence):
 def jet_axis(outlet):
     radial = np.asarray(outlet) / np.linalg.norm(outlet)
     return np.r_[radial * math.sin(JET_TILT), math.cos(JET_TILT)]
+
+
+def scale_patch(i, outlet):
+    """A rough chip bonded to the bore lining until the scraper rubs it loose."""
+    axis = jet_axis(outlet)
+    across = np.array((-outlet[1], outlet[0], 0.0)) / np.linalg.norm(outlet)
+    across = np.cross(axis, np.cross(across, axis))
+    radial = np.cross(across, axis)
+    angle = math.radians((24, 111, 203, 298)[i])
+    offset = (
+        0.0028 * (math.cos(angle) * radial + math.sin(angle) * across) - 0.0008 * axis
+    )
+    position = np.array([*outlet, JET_HEIGHT]) + offset
+    name = f"scale_{i}"
+    color = (".83 .78 .66 1", ".89 .84 .74 1", ".78 .72 .59 1", ".86 .79 .66 1")[i]
+    size = (
+        (0.0024, 0.0017, 0.0019),
+        (0.0018, 0.0020, 0.0014),
+        (0.0026, 0.0017, 0.0018),
+        (0.0021, 0.0019, 0.0015),
+    )[i]
+    pieces = [
+        f'<body name="{name}" pos="{values(position)}" '
+        f'xyaxes="{values((*radial, *across))}"><freejoint/>',
+        geom(
+            name,
+            "ellipsoid",
+            (0, 0, 0),
+            size,
+            color,
+            extra='mass=".0012" material="scale_finish"',
+        ),
+    ]
+    for j, offset in enumerate(
+        ((-0.50, 0.18, -0.48), (0.31, 0.55, -0.53), (0.44, -0.35, -0.62))
+    ):
+        pieces.append(
+            geom(
+                f"{name}_grain_{j}",
+                "ellipsoid",
+                tuple(o * s for o, s in zip(offset, size)),
+                tuple(0.42 * s for s in size),
+                ".96 .92 .81 1",
+                collision=False,
+                extra='mass="0" material="scale_finish"',
+            )
+        )
+    return "".join(pieces) + "</body>"
 
 
 def geom(name, shape, position, size, color, *, collision=True, extra=""):
@@ -388,17 +437,16 @@ def probe():
             extra='mass=".002"',
         ),
     ]
-    for side in (-1, 1):
-        parts.append(
-            geom(
-                f"tine_{side}",
-                "box",
-                (0.039, side * 0.0052, -0.018),
-                (0.007, 0.0016, 0.0018),
-                TOOL,
-                extra='mass=".002"',
-            )
+    parts.append(
+        geom(
+            "scraper_edge",
+            "box",
+            (0.037, 0, -0.018),
+            (0.008, 0.0045, 0.0015),
+            ".52 .62 .63 1",
+            extra='mass=".004"',
         )
+    )
     return (
         f'<body name="tool" pos="{values(DOCK)}"><freejoint/>'
         + "".join(parts)
@@ -456,29 +504,7 @@ def jet_fixture(blocked):
             )
         objects.append("</body>")
         if i == blocked:
-            objects.append(
-                f'<body name="plug" pos="{mouth}" zaxis="{axis}" gravcomp="1">'
-            )
-            objects.append(
-                f'<joint name="plug" type="slide" axis="0 0 -1" range="0 {JET_STROKE}" '
-                'frictionloss=".32" damping=".45"/>'
-            )
-            for name, offset, radius, height in (
-                ("plug_insert", 0.002, 0.0041, 0.006),
-                ("plug_stem", -0.010, 0.0013, 0.010),
-                ("plug_flange", -0.018, 0.0062, 0.002),
-            ):
-                objects.append(
-                    geom(
-                        name,
-                        "cylinder",
-                        (0, 0, offset),
-                        (radius, height),
-                        WASTE,
-                        extra='mass=".004"',
-                    )
-                )
-            objects.append("</body>")
+            objects.extend(scale_patch(j, outlet) for j in range(len(SCALE_OCCLUSION)))
     return "".join(objects)
 
 
@@ -631,7 +657,20 @@ def trap_fixture():
 def make_model(kind, blocked):
     asset, toilet = bowl(kind)
     rear_assets, rear_fittings = seat_and_cistern()
-    jet_asset = jet_socket_mesh() if kind == "rim" else ""
+    jet_asset = (
+        jet_socket_mesh()
+        + '<material name="scale_finish" specular=".06" shininess=".06"/>'
+        if kind == "rim"
+        else ""
+    )
+    bonds = (
+        "".join(
+            f'<weld name="bond_{i}" body1="scale_{i}" solref=".002 1"/>'
+            for i in range(len(SCALE_OCCLUSION))
+        )
+        if kind == "rim"
+        else ""
+    )
     actor, motors = carriage()
     tool, fixture = (
         (probe(), jet_fixture(blocked))
@@ -670,6 +709,7 @@ def make_model(kind, blocked):
   {toilet}{rear_fittings}{stand}{actor}{tool}{fixture}
  </worldbody>
  <actuator>{motors}</actuator>
+ <equality>{bonds}</equality>
 </mujoco>
 """)
 
@@ -685,6 +725,8 @@ class Trial:
         self.data.ctrl[:] = self.target
         self.rinse = np.zeros(4)
         self.rinsing = False
+        self.scale_work = np.zeros(len(SCALE_OCCLUSION))
+        self.last_edge = None
         self.water_level = 1.0
         self.pressure = 0.0
         self.peak_pressure = 0.0
@@ -721,8 +763,7 @@ class Trial:
         if self.contact({"left_pad", "right_pad"}, {"probe_handle", "plunger_handle"}):
             self.finger_contacts += 1
         if self.kind == "rim":
-            if self.contact({"tine_-1", "tine_1"}, {"plug_flange", "plug_stem"}):
-                self.tool_contacts += 1
+            self.scrape()
         else:
             piston = self.data.joint("diaphragm")
             self.pressure = 0.0
@@ -743,6 +784,42 @@ class Trial:
                     else 0.0
                 )
                 self.data.qfrc_applied[self.model.joint(p.name).dofadr[0]] = force
+
+    def scrape(self):
+        edge = self.data.geom("scraper_edge").xpos.copy()
+        slide = np.zeros(3) if self.last_edge is None else edge - self.last_edge
+        self.last_edge = edge
+        edge_id = self.model.geom("scraper_edge").id
+        touched = False
+        for i, contact in enumerate(self.data.contact):
+            if edge_id not in (contact.geom1, contact.geom2):
+                continue
+            other = contact.geom2 if contact.geom1 == edge_id else contact.geom1
+            name = self.model.geom(other).name
+            if not name.startswith("scale_"):
+                continue
+            touched = True
+            index = int(name.rsplit("_", 1)[1])
+            bond = self.model.equality(f"bond_{index}").id
+            if not self.data.eq_active[bond]:
+                continue
+            normal = contact.frame[:3]
+            rubbing = np.linalg.norm(slide - np.dot(slide, normal) * normal)
+            force = np.zeros(6)
+            mj.mj_contactForce(self.model, self.data, i, force)
+            self.scale_work[index] += max(0.0, force[0] - 0.08) * rubbing
+            if self.scale_work[index] >= SCALE_BREAK_WORK[index]:
+                self.data.eq_active[bond] = False
+        self.tool_contacts += int(touched)
+
+    def scale_remaining(self):
+        mouth = np.array([*JETS[self.blocked], JET_HEIGHT])
+        return [
+            i
+            for i in range(len(SCALE_OCCLUSION))
+            if self.data.eq_active[self.model.equality(f"bond_{i}").id]
+            or np.linalg.norm(self.data.body(f"scale_{i}").xpos - mouth) < 0.007
+        ]
 
     def step(self, goal, seconds, phase, observe=None):
         self.phase = phase
@@ -788,7 +865,8 @@ class Trial:
         }
         if self.kind == "rim":
             reading.update(
-                plug_mm=round(1000 * self.joint("plug"), 2),
+                scale_remaining=len(self.scale_remaining()),
+                scrape_work_mj=np.round(1000 * self.scale_work, 4).tolist(),
                 collected_ml=np.round(self.rinse, 2).tolist(),
                 flow_ml_s=(
                     np.round(self.rim_flow(), 2).tolist() if self.rinsing else [0.0] * 4
@@ -807,7 +885,9 @@ class Trial:
 
     def rim_flow(self):
         flows = np.full(4, JET_OPEN_FLOW)
-        flows[self.blocked] *= 0.2 + 0.8 * np.clip(self.joint("plug") / 0.014, 0.0, 1.0)
+        flows[self.blocked] *= 1.0 - sum(
+            SCALE_OCCLUSION[i] for i in self.scale_remaining()
+        )
         return flows
 
     def collect(self, phase):
@@ -829,29 +909,35 @@ class Trial:
         across = np.array([-radial[1], radial[0]])
         angle = math.atan2(radial[1], radial[0])
         inside = outlet - 0.070 * radial
-        engaged = (
-            outlet
-            - (0.040 + 0.011 * math.sin(JET_TILT)) * radial
-            + (0.023 * across if control else 0.0)
-        )
-        extracted = engaged - 0.023 * math.sin(JET_TILT) * radial
-        approach_z = JET_HEIGHT + 0.018
-        extracted_z = approach_z - 0.023 * math.cos(JET_TILT) - 0.004
+        engaged = outlet - 0.038 * radial + (0.023 * across if control else 0.0)
+        approach_z = JET_HEIGHT + 0.022
         self.pick()
-        # Lift over the lip, descend inside the bowl and slide the fork around
-        # the exposed stem above its flange.
         self.move((*inside, 0.281), 1.05, "Move above the weak outlet", yaw=angle)
         self.move((*inside, approach_z), 0.65, "Lower inside the bowl")
-        self.move((*engaged, approach_z), 0.75, "Engage obstruction")
-        self.move((*extracted, extracted_z), 0.74, "Withdraw obstruction")
-        self.move((*inside, extracted_z), 0.65, "Release the cleared outlet")
+        self.move(
+            (*(engaged - 0.008 * across), approach_z), 0.75, "Set blade under the crust"
+        )
+        for offset, height, depth in (
+            (0.008, 0.0, 0.0),
+            (-0.008, 0.006, 0.0),
+            (0.008, 0.009, 0.0),
+            (-0.008, 0.010, -0.002),
+            (0.008, 0.008, -0.002),
+            (-0.008, 0.005, 0.001),
+        ):
+            self.move(
+                (*(engaged + offset * across + depth * radial), approach_z + height),
+                0.68,
+                "Scrape limescale",
+            )
+        self.move((*inside, approach_z), 0.60, "Withdraw the scraper")
         self.move((*inside, 0.280), 0.65, "Clear the bowl")
         self.move((*DOCK[:2], 0.285), 0.80, "Park the probe clear of the rinse")
         after = self.collect("Second rinse · verify each jet")
         reference = JET_OPEN_FLOW * RINSE_SECONDS
         passed = (
             self.tool_contacts > 0
-            and self.joint("plug") >= 0.016
+            and not self.scale_remaining()
             and np.all((after >= 0.8 * reference) & (after <= 1.2 * reference))
         )
         self.hold(0.65, "Flow restored" if passed else "Outlet remains restricted")
@@ -860,7 +946,8 @@ class Trial:
             "before_ml": before.tolist(),
             "after_ml": after.tolist(),
             "diagnosed": NAMES[selected],
-            "extraction_mm": self.joint("plug") * 1000,
+            "scale_chips_removed": len(SCALE_OCCLUSION) - len(self.scale_remaining()),
+            "scrape_work_mj": np.round(1000 * self.scale_work, 4).tolist(),
         }
 
     def drain(self, phase):

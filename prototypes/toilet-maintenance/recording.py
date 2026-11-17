@@ -1,5 +1,6 @@
 """Record MuJoCo camera frames and measurements to a single H.264 video."""
 
+import math
 import subprocess
 
 import mujoco as mj
@@ -78,11 +79,12 @@ class Recording:
         self.main = mj.Renderer(trial.model, height=398, width=620)
         self.detail = mj.Renderer(trial.model, height=184, width=284)
         self.main_cam = camera((0.02, -0.02, 0.244), 0.87, 305, -31)
-        self.side_cam = (
-            camera((*JETS[trial.blocked], JET_HEIGHT - 0.006), 0.19, 132, -12)
-            if trial.kind == "rim"
-            else camera((0.131, 0, 0.112), 0.48, 98, -19)
-        )
+        if trial.kind == "rim":
+            x, y = JETS[trial.blocked]
+            azimuth = math.degrees(math.atan2(y, x)) % 360
+            self.side_cam = camera((x, y, JET_HEIGHT - 0.001), 0.067, azimuth, -29)
+        else:
+            self.side_cam = camera((0.131, 0, 0.112), 0.48, 98, -19)
         self.rinse_cam = camera((0, 0, JET_HEIGHT), 0.51, 305, -89)
         self.fade = {trial.model.geom(name).id for name in ("bowl", "seat_ring")}
         self.trap_screen = {
@@ -108,8 +110,8 @@ class Recording:
             axis = jet_axis(outlet)
             start = mouth - axis * 0.001
             end = mouth - axis * (0.003 + 0.061 * strength)
-            if index == self.t.blocked:
-                # Deflect the visible stream around the captive obstruction.
+            if index == self.t.blocked and strength < 0.99:
+                # A restricted, uneven bore deflects the visible trickle.
                 sideways = np.array((-axis[1], axis[0], 0.0))
                 bend = mouth - axis * (0.003 + 0.006 * strength) + sideways * 0.006
                 points = (start, bend, end + sideways * 0.010)
@@ -163,7 +165,9 @@ class Recording:
                     element.rgba[3] = 0.0
                     element.transparent = 1
                 elif element.objid in self.fade:
-                    element.rgba[3] = 0.12
+                    element.rgba[3] = (
+                        0.05 if self.t.kind == "rim" and not self.t.rinsing else 0.12
+                    )
                     element.transparent = 1
         self.add_streams(renderer.scene)
         self.add_water_surface(renderer.scene)
@@ -198,7 +202,11 @@ class Recording:
         draw.text(
             (659, 96),
             (
-                ("Overhead view · all four outlets" if rinse else "Outlet cutaway")
+                (
+                    "Overhead view · all four outlets"
+                    if rinse
+                    else "Limescale at the jet"
+                )
                 if rim
                 else "Trapway cutaway"
             ),
@@ -210,8 +218,13 @@ class Recording:
             (654, 120),
         )
         if rim:
+            draw.text((659, 314), "Rinse collection", fill=INK, font=self.fonts[15])
             draw.text(
-                (659, 314), "Rinse collection by outlet", fill=INK, font=self.fonts[15]
+                (933, 314),
+                f"Scale left: {len(self.t.scale_remaining())}/4",
+                fill=MUTED,
+                font=self.fonts[13],
+                anchor="ra",
             )
             for i, (name, value) in enumerate(zip(NAMES, self.t.rinse)):
                 self.bar(

@@ -4,7 +4,7 @@ The two tasks share a toilet with an open seat ring, raised lid, rear hinges and
 
 | Task | Scripted behavior | Measured outcome |
 | --- | --- | --- |
-| Rim jet | Compare the four collection volumes, align the fork with the weak outlet, withdraw the obstruction and repeat the rinse. | All four fault locations scored 1.00. The first two-second rinse delivers 200 mL at each healthy jet and 40 mL at the restricted one. The repaired jet delivers 200 mL on the retest. All misaligned controls scored 0.25. |
+| Rim jet | Compare the four collection volumes, scrape limescale from the weak outlet and repeat the rinse. | All four fault locations scored 1.00. The first two-second rinse delivers 200 mL at each healthy jet and 40 mL at the scaled one. Removing all four deposits restores the scaled jet to 200 mL. Misaligned controls score 0.25. |
 | Mixed clog | Seat the plunger and clear six separate pieces of wet toilet paper and feces. | Eight strokes cleared all six pieces, reducing modeled water remaining from 95% to 1.25%. Seven strokes left a paper wad in the pipe. The off-centre control cleared zero pieces. |
 
 ## Run
@@ -24,6 +24,6 @@ Rim faults 0–3 are front left, front right, rear left and rear right. Outputs 
 
 ## Physics and verification
 
-- The ceramic shape has segmented collision geometry that leaves the bowl opening clear. Four recessed openings sit beneath the porcelain lip and direct the rinse inward and down. Each runs independently during both rinses. The fork engages the captive obstruction through contact, and that outlet's flow depends on the obstruction's measured position. The overhead view shows all four outlets.
+- Four recessed openings sit beneath the porcelain lip and direct the rinse inward and down. Each runs independently during both rinses. Four uneven deposits narrow one outlet. MuJoCo welds each deposit to the ceramic on reset. A bond breaks when the scraper applies enough contact force while moving tangentially. The resulting pieces move in the physics simulation. Modeled flow recovers as pieces clear the mouth. Adhesion and flow parameters are prototype values that need wet calibration.
 - The plunger moves as a free rigid body. Compression of a diaphragm through cup contact produces a modeled pressure pulse. Three paper wads and three fecal pieces have separate positions, contact bodies and resistance. Pressure acts on pieces still in the pipe, and a piece's rear edge must cross the outlet marker before it counts as cleared. The drainage model depends on how many pieces have passed. Flexible paper, fecal deformation, water simulation and siphon mechanics need separate validation.
 - The 1.00 scores are local CPU prototype results. Wet calibration, the YAM port, Dream-1 runs and submission media remain pending.
