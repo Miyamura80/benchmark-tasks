@@ -35,11 +35,18 @@ python make_evidence.py runs/dream dream.mp4 --title 'Dream-1 baseline'
 
 The wrapper registers station reset and the task scorer, then calls the standard Inspect Robots runner with `yam_arena` and `task_score`. The run limit is 1,400 steps at 20 Hz (70 simulation seconds). The scripted evidence runs use a 650-step cap. The station seed is 42 and there is no object jitter. Recorded JSON files contain the trial scores, and `mechanism.jsonl` records clamp load, plate position, test state, and hand release at each control step. `controls.py` tests the reduced-order mechanism independently of robot IK. It exports the exact trace for each negative control.
 
-## Revised demonstration
+## Revised native runs
 
 The revised native scripted demo scored 1.0 in 595 control steps. It recorded
 1.4185 mm on both post-release loads and 0.196 N m of estimated torque per bolt.
-The revision still needs physical calibration of the fixture.
+The two readings showed zero measured drift. The test estimates torque from
+simulated clamp load. The physical fixture still needs calibration.
+
+Dream-1 completed the same revised setup at the 1,400-step limit with a score
+of 0.00. Both runs have native video and a setup image.
+
+On the L40S, the scripted run took 3m 39s and Dream-1 took 3m 13s,
+including startup.
 
 ## Historical trials using the previous scorer
 
