@@ -183,7 +183,7 @@ def main():
     parser.add_argument('--rest-solver',choices=['baseline','32-8'],default='baseline',help='Unscored passive-rest coupon only')
     parser.add_argument('--stage',choices=['cap','press','full'],default='full')
     parser.add_argument('--max-steps',type=int,default=1200)
-    parser.add_argument('--render-sync',action='store_true',help='Use real RGB cameras with FXAA and synchronous rendering for the device-loss mitigation trial')
+    parser.add_argument('--render-sync',action='store_true',help='Capture denoised real RGB frames with synchronous rendering')
     parser.add_argument('--no-video',action='store_true',help='State-only demo engineering run; no camera renderer, images or eligible final media')
     parser.add_argument('--log-dir',type=Path,required=True)
     args=parser.parse_args()
@@ -232,7 +232,7 @@ def main():
             if adapter._APP is None:
                 os.environ.setdefault('OMNI_KIT_ACCEPT_EULA','YES')
                 from isaaclab.app import AppLauncher
-                kit_args='--/rtx/post/aa/op=2 --/app/asyncRendering=false --/omni/replicator/asyncRendering=false --/exts/isaacsim.core.throttling/enable_async=false' if args.render_sync else ''
+                kit_args='--/app/asyncRendering=false --/omni/replicator/asyncRendering=false --/exts/isaacsim.core.throttling/enable_async=false' if args.render_sync else ''
                 adapter._APP=AppLauncher(headless=True,device=self.device,enable_cameras=not args.no_video,kit_args=kit_args).app
                 atexit.register(adapter._close_app_at_exit)
             from yam_arena import scene as sc
@@ -243,7 +243,9 @@ def main():
                 import copy
                 robot_module.RENDERER=copy.deepcopy(original_renderer)
                 settings=robot_module.RENDERER.global_settings
-                settings.antialiasing_mode='FXAA'
+                settings.antialiasing_mode='DLSS'
+                settings.enable_dl_denoiser=True
+                settings.samples_per_pixel=4
                 settings.carb_settings={**(settings.carb_settings or {}),
                     '/app/asyncRendering':False,'/omni/replicator/asyncRendering':False,
                     '/exts/isaacsim.core.throttling/enable_async':False}
@@ -312,7 +314,7 @@ def main():
             if args.render_sync:
                 import carb.settings
                 settings=carb.settings.get_settings()
-                expected={'/rtx/post/aa/op':2,'/app/asyncRendering':False,
+                expected={'/app/asyncRendering':False,
                     '/omni/replicator/asyncRendering':False,'/exts/isaacsim.core.throttling/enable_async':False}
                 actual={key:settings.get(key) for key in expected}
                 (out/'renderer-readback.json').write_text(json.dumps(dict(requested=expected,actual=actual),indent=2))
