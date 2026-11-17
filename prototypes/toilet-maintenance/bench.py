@@ -1,6 +1,7 @@
 """Contact-based CPU prototypes for two independent toilet maintenance tasks."""
 
 import argparse
+from dataclasses import dataclass
 import json
 import math
 from pathlib import Path
@@ -45,7 +46,31 @@ DOCK = (-0.245, -0.144, 0.123)
 JET_HEIGHT = RIM - 0.007
 JET_STROKE = 0.023
 JET_TILT = math.radians(58)
-TRAP_STROKE = 0.105
+RINSE_SECONDS = 2.0
+JET_OPEN_FLOW = 100.0
+TRAP_EXIT = 0.193
+TRAP_STROKES = 8
+
+
+@dataclass(frozen=True)
+class TrapPiece:
+    name: str
+    material: str
+    x: float
+    y: float
+    size: tuple[float, float, float]
+    friction: float
+    damping: float
+
+
+TRAP_PIECES = (
+    TrapPiece("paper_1", "paper", 0.039, -0.003, (0.010, 0.013, 0.013), 0.31, 6.6),
+    TrapPiece("feces_1", "feces", 0.064, 0.001, (0.014, 0.010, 0.010), 0.23, 5.2),
+    TrapPiece("paper_2", "paper", 0.092, 0.003, (0.012, 0.013, 0.014), 0.46, 7.5),
+    TrapPiece("feces_2", "feces", 0.122, -0.002, (0.016, 0.010, 0.009), 0.27, 5.4),
+    TrapPiece("paper_3", "paper", 0.153, -0.001, (0.011, 0.015, 0.012), 0.38, 7.1),
+    TrapPiece("feces_3", "feces", 0.179, 0.002, (0.014, 0.009, 0.009), 0.26, 4.9),
+)
 
 
 def values(sequence):
@@ -522,36 +547,81 @@ def trap_fixture():
             extra='mass=".03"',
         ),
         "</body>",
-        '<body name="clog" pos=".025 0 .105">',
-        f'<joint name="clog" type="slide" axis="1 0 0" range="0 {TRAP_STROKE}" '
-        'frictionloss=".68" damping="3.6"/>',
     ]
-    for name, pos, size, color in (
-        ("waste_a", (0.002, 0, 0), (0.016, 0.013, 0.014), WASTE),
-        ("waste_b", (0.015, 0.003, -0.004), (0.013, 0.009, 0.009), WASTE),
-        ("paper_a", (-0.005, 0, 0.010), (0.013, 0.014, 0.006), PAPER),
-        ("paper_b", (0.006, -0.009, 0.002), (0.008, 0.009, 0.011), PAPER),
-    ):
-        elements.append(geom(name, "ellipsoid", pos, size, color, extra='mass=".009"'))
-    elements.append("</body>")
+    for p in TRAP_PIECES:
+        elements.extend(
+            [
+                f'<body name="{p.name}" pos="{p.x} {p.y} .105">',
+                f'<joint name="{p.name}" type="slide" axis="1 0 0" range="0 {0.39-p.x}" '
+                f'frictionloss="{p.friction}" damping="{p.damping}"/>',
+                geom(
+                    p.name,
+                    "ellipsoid",
+                    (0, 0, 0),
+                    p.size,
+                    PAPER if p.material == "paper" else WASTE,
+                    extra='mass=".018" contype="2" conaffinity="2"',
+                ),
+            ]
+        )
+        # Small overlapping lobes distinguish the wet folds and irregular feces.
+        a, b, c = p.size
+        lobes = ((-0.22 * a, 0.31 * b, 0.38 * c), (0.28 * a, -0.27 * b, 0.31 * c))
+        shades = (
+            (".82 .76 .62 1", ".96 .92 .83 1")
+            if p.material == "paper"
+            else (".44 .23 .11 1", ".27 .13 .07 1")
+        )
+        for i, (pos, shade) in enumerate(zip(lobes, shades)):
+            elements.append(
+                geom(
+                    f"{p.name}_lobe_{i}",
+                    "ellipsoid",
+                    pos,
+                    (0.54 * a, 0.63 * b, 0.61 * c),
+                    shade,
+                    collision=False,
+                )
+            )
+        elements.append("</body>")
     for side in (-1, 1):
         elements.append(
             geom(
                 f"pipe_side_{side}",
                 "box",
-                (0.078, side * 0.020, 0.103),
-                (0.085, 0.004, 0.021),
+                (0.098, side * 0.022, 0.103),
+                (0.10, 0.004, 0.021),
                 ".18 .45 .54 .32",
-                collision=False,
+                extra='contype="2" conaffinity="2"',
             )
         )
     elements.append(
         geom(
             "pipe_lid",
             "box",
-            (0.078, 0, 0.126),
-            (0.085, 0.020, 0.002),
+            (0.098, 0, 0.126),
+            (0.10, 0.022, 0.002),
             ".20 .48 .58 .24",
+            extra='contype="2" conaffinity="2"',
+        )
+    )
+    elements.append(
+        geom(
+            "trap_exit",
+            "box",
+            (TRAP_EXIT, 0, 0.081),
+            (0.0015, 0.023, 0.004),
+            ".34 .78 .65 1",
+            collision=False,
+        )
+    )
+    elements.append(
+        geom(
+            "catch_tray",
+            "box",
+            (0.293, 0, 0.079),
+            (0.105, 0.033, 0.005),
+            ".17 .30 .34 1",
             collision=False,
         )
     )
@@ -614,6 +684,7 @@ class Trial:
         self.data.qpos[:3] = self.target[:3]
         self.data.ctrl[:] = self.target
         self.rinse = np.zeros(4)
+        self.rinsing = False
         self.water_level = 1.0
         self.pressure = 0.0
         self.peak_pressure = 0.0
@@ -637,6 +708,15 @@ class Trial:
     def joint(self, name):
         return float(self.data.joint(name).qpos[0])
 
+    def trap_positions(self):
+        return {p.name: self.data.body(p.name).xpos[0] for p in TRAP_PIECES}
+
+    def trap_cleared(self):
+        positions = self.trap_positions()
+        return [
+            p.name for p in TRAP_PIECES if positions[p.name] - p.size[0] >= TRAP_EXIT
+        ]
+
     def update(self):
         if self.contact({"left_pad", "right_pad"}, {"probe_handle", "plunger_handle"}):
             self.finger_contacts += 1
@@ -651,7 +731,18 @@ class Trial:
                 # Pulse through a filled trap during the actual compression stroke.
                 self.pressure = min(8.0, max(0.0, float(piston.qvel[0])) * 71.0)
                 self.peak_pressure = max(self.pressure, self.peak_pressure)
-            self.data.qfrc_applied[self.model.joint("clog").dofadr[0]] = self.pressure
+            cleared = self.trap_cleared()
+            # The pressure pulse acts on each remaining obstruction in proportion
+            # to its cross-section. Adjacent pieces can also push each other.
+            occupied = [p for p in TRAP_PIECES if p.name not in cleared]
+            section = sum(p.size[1] * p.size[2] for p in occupied)
+            for p in TRAP_PIECES:
+                force = (
+                    self.pressure * p.size[1] * p.size[2] / section
+                    if p in occupied
+                    else 0.0
+                )
+                self.data.qfrc_applied[self.model.joint(p.name).dofadr[0]] = force
 
     def step(self, goal, seconds, phase, observe=None):
         self.phase = phase
@@ -699,28 +790,39 @@ class Trial:
             reading.update(
                 plug_mm=round(1000 * self.joint("plug"), 2),
                 collected_ml=np.round(self.rinse, 2).tolist(),
+                flow_ml_s=(
+                    np.round(self.rim_flow(), 2).tolist() if self.rinsing else [0.0] * 4
+                ),
             )
         else:
             reading.update(
-                clog_mm=round(1000 * self.joint("clog"), 2),
+                clog_x_mm={
+                    name: round(1000 * x, 2)
+                    for name, x in self.trap_positions().items()
+                },
+                cleared_pieces=self.trap_cleared(),
                 water_percent=round(100 * self.water_level, 2),
             )
         return reading
 
     def rim_flow(self):
-        flows = np.full(4, 100.0)
+        flows = np.full(4, JET_OPEN_FLOW)
         flows[self.blocked] *= 0.2 + 0.8 * np.clip(self.joint("plug") / 0.014, 0.0, 1.0)
         return flows
 
     def collect(self, phase):
         self.rinse[:] = 0
+        self.rinsing = True
         self.hold(
-            1.0, phase, lambda: np.add(self.rinse, DT * self.rim_flow(), out=self.rinse)
+            RINSE_SECONDS,
+            phase,
+            lambda: np.add(self.rinse, DT * self.rim_flow(), out=self.rinse),
         )
+        self.rinsing = False
         return self.rinse.copy()
 
     def run_rim(self, control):
-        before = self.collect("Measure each outlet")
+        before = self.collect("First rinse · identify the weak jet")
         selected = int(np.argmin(before))
         outlet = np.array(JETS[selected])
         radial = outlet / np.linalg.norm(outlet)
@@ -744,11 +846,13 @@ class Trial:
         self.move((*extracted, extracted_z), 0.74, "Withdraw obstruction")
         self.move((*inside, extracted_z), 0.65, "Release the cleared outlet")
         self.move((*inside, 0.280), 0.65, "Clear the bowl")
-        after = self.collect("Retest under the same head")
+        self.move((*DOCK[:2], 0.285), 0.80, "Park the probe clear of the rinse")
+        after = self.collect("Second rinse · verify each jet")
+        reference = JET_OPEN_FLOW * RINSE_SECONDS
         passed = (
             self.tool_contacts > 0
             and self.joint("plug") >= 0.016
-            and np.all((after >= 80) & (after <= 120))
+            and np.all((after >= 0.8 * reference) & (after <= 1.2 * reference))
         )
         self.hold(0.65, "Flow restored" if passed else "Outlet remains restricted")
         return {
@@ -763,13 +867,15 @@ class Trial:
         self.water_level = 1.0
 
         def update_level():
-            clear = np.clip((self.joint("clog") - 0.025) / 0.052, 0.0, 1.0)
-            self.water_level = max(0.0, self.water_level - DT * (0.09 + 0.70 * clear))
+            open_fraction = (len(self.trap_cleared()) / len(TRAP_PIECES)) ** 2
+            self.water_level = max(
+                0.0, self.water_level - DT * (0.04 + 0.75 * open_fraction)
+            )
 
         self.hold(1.25, phase, update_level)
         return self.water_level
 
-    def run_trap(self, control):
+    def run_trap(self, control, strokes=TRAP_STROKES):
         before = self.drain("Test drainage before repair")
         # The cup hangs below the gripper and must pass above the seat ring.
         carry_height = 0.325
@@ -777,14 +883,14 @@ class Trial:
         x = 0.050 if control else 0.0
         self.move((x, 0, carry_height), 0.80, "Centre plunger over the drain")
         self.move((x, 0, 0.207), 0.60, "Seat cup")
-        for _ in range(4):
-            self.move((x, 0, 0.177), 0.24, "Compress the sealed cup")
+        for i in range(strokes):
+            self.move((x, 0, 0.177), 0.24, f"Compression stroke {i+1} of {strokes}")
             self.move((x, 0, 0.204), 0.33, "Release stroke")
         self.move((x, 0, carry_height), 0.70, "Lift cup clear")
         after = self.drain("Retest drainage")
         passed = (
             before >= 0.70
-            and self.joint("clog") > 0.075
+            and len(self.trap_cleared()) == len(TRAP_PIECES)
             and after < 0.15
             and self.tool_contacts > 0
         )
@@ -793,7 +899,11 @@ class Trial:
             "score": float(passed),
             "before_water_percent": 100 * before,
             "after_water_percent": 100 * after,
-            "clog_travel_mm": self.joint("clog") * 1000,
+            "cleared_pieces": self.trap_cleared(),
+            "final_x_mm": {
+                name: round(1000 * x, 2) for name, x in self.trap_positions().items()
+            },
+            "strokes": strokes,
             "peak_pressure_force_n": self.peak_pressure,
         }
 
@@ -803,6 +913,9 @@ def main():
     parser.add_argument("kind", choices=("rim", "trap"))
     parser.add_argument("--blocked", type=int, choices=range(4), default=1)
     parser.add_argument("--control", action="store_true")
+    parser.add_argument(
+        "--strokes", type=int, choices=range(1, 16), default=TRAP_STROKES
+    )
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--video", action="store_true")
     args = parser.parse_args()
@@ -813,7 +926,11 @@ def main():
 
         recording = Recording(args.out / "demo.mp4")
     t = Trial(args.kind, args.blocked, recording)
-    result = t.run_rim(args.control) if args.kind == "rim" else t.run_trap(args.control)
+    result = (
+        t.run_rim(args.control)
+        if args.kind == "rim"
+        else t.run_trap(args.control, args.strokes)
+    )
     result.update(
         finger_contact_steps=t.finger_contacts, tool_contact_steps=t.tool_contacts
     )

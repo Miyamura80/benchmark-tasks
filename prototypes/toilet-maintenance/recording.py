@@ -6,7 +6,15 @@ import mujoco as mj
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
-from bench import JETS, JET_HEIGHT, NAMES, jet_axis
+from bench import (
+    JETS,
+    JET_HEIGHT,
+    JET_OPEN_FLOW,
+    NAMES,
+    RINSE_SECONDS,
+    TRAP_PIECES,
+    jet_axis,
+)
 
 BACKGROUND = "#101820"
 PANEL = "#192731"
@@ -73,34 +81,60 @@ class Recording:
         self.side_cam = (
             camera((*JETS[trial.blocked], JET_HEIGHT - 0.006), 0.19, 132, -12)
             if trial.kind == "rim"
-            else camera((0.065, 0, 0.13), 0.38, 98, -20)
+            else camera((0.131, 0, 0.112), 0.48, 98, -19)
         )
+        self.rinse_cam = camera((0, 0, JET_HEIGHT), 0.51, 305, -89)
+        self.fade = {trial.model.geom(name).id for name in ("bowl", "seat_ring")}
+        self.trap_screen = {
+            trial.model.geom(name).id
+            for name in (
+                "cistern",
+                "cistern_cover",
+                "rear_pedestal",
+                "rear_deck",
+                "raised_lid",
+                "flush_button",
+            )
+        }
 
     def add_streams(self, scene):
-        if self.t.kind != "rim" or self.t.phase not in (
-            "Measure each outlet",
-            "Retest under the same head",
-        ):
+        if self.t.kind != "rim" or not self.t.rinsing:
             return
-        for outlet, flow in zip(JETS, self.t.rim_flow()):
-            element = scene.geoms[scene.ngeom]
-            mj.mjv_initGeom(
-                element,
-                mj.mjtGeom.mjGEOM_CAPSULE,
-                np.zeros(3),
-                np.zeros(3),
-                np.eye(3).ravel(),
-                np.array([0.14, 0.73, 0.95, 0.68], dtype=np.float32),
-            )
+        for index, (outlet, flow) in enumerate(zip(JETS, self.t.rim_flow())):
+            strength = flow / JET_OPEN_FLOW
+            if strength <= 0:
+                continue
             mouth = np.array([*outlet, JET_HEIGHT])
-            mj.mjv_connector(
-                element,
-                mj.mjtGeom.mjGEOM_CAPSULE,
-                0.0006 + 0.0015 * flow / 100.0,
-                mouth - jet_axis(outlet) * 0.001,
-                mouth - jet_axis(outlet) * (0.003 + 0.054 * flow / 100.0),
-            )
-            scene.ngeom += 1
+            axis = jet_axis(outlet)
+            start = mouth - axis * 0.001
+            end = mouth - axis * (0.003 + 0.061 * strength)
+            if index == self.t.blocked:
+                # Deflect the visible stream around the captive obstruction.
+                sideways = np.array((-axis[1], axis[0], 0.0))
+                bend = mouth - axis * (0.003 + 0.006 * strength) + sideways * 0.006
+                points = (start, bend, end + sideways * 0.010)
+            else:
+                points = (start, end)
+            for start, end in zip(points, points[1:]):
+                element = scene.geoms[scene.ngeom]
+                mj.mjv_initGeom(
+                    element,
+                    mj.mjtGeom.mjGEOM_CAPSULE,
+                    np.zeros(3),
+                    np.zeros(3),
+                    np.eye(3).ravel(),
+                    np.array(
+                        [0.16, 0.75, 0.98, 0.53 + 0.39 * strength], dtype=np.float32
+                    ),
+                )
+                mj.mjv_connector(
+                    element,
+                    mj.mjtGeom.mjGEOM_CAPSULE,
+                    0.0007 + 0.0023 * strength,
+                    start,
+                    end,
+                )
+                scene.ngeom += 1
 
     def add_water_surface(self, scene):
         if self.t.kind != "trap":
@@ -122,9 +156,13 @@ class Recording:
         renderer.update_scene(self.t.data, camera=cam)
         renderer.scene.flags[mj.mjtRndFlag.mjRND_SHADOW] = False
         if cutaway:
-            fade = (self.t.model.geom("bowl").id, self.t.model.geom("seat_ring").id)
             for element in renderer.scene.geoms[: renderer.scene.ngeom]:
-                if element.objid in fade and element.objtype == mj.mjtObj.mjOBJ_GEOM:
+                if element.objtype != mj.mjtObj.mjOBJ_GEOM:
+                    continue
+                if self.t.kind == "trap" and element.objid in self.trap_screen:
+                    element.rgba[3] = 0.0
+                    element.transparent = 1
+                elif element.objid in self.fade:
                     element.rgba[3] = 0.12
                     element.transparent = 1
         self.add_streams(renderer.scene)
@@ -142,6 +180,7 @@ class Recording:
 
     def draw(self):
         rim = self.t.kind == "rim"
+        rinse = rim and self.t.rinsing
         image = Image.new("RGB", (960, 540), BACKGROUND)
         draw = ImageDraw.Draw(image)
         title = "Restore flow through a rim jet" if rim else "Clear a mixed toilet clog"
@@ -158,40 +197,60 @@ class Recording:
         draw.rounded_rectangle((648, 86, 944, 484), radius=7, fill=PANEL)
         draw.text(
             (659, 96),
-            "Outlet cutaway" if rim else "Trapway cutaway",
+            (
+                ("Overhead view · all four outlets" if rinse else "Outlet cutaway")
+                if rim
+                else "Trapway cutaway"
+            ),
             fill=INK,
             font=self.fonts[15],
         )
-        image.paste(self.shot(self.detail, self.side_cam, True), (654, 120))
+        image.paste(
+            self.shot(self.detail, self.rinse_cam if rinse else self.side_cam, True),
+            (654, 120),
+        )
         if rim:
             draw.text(
                 (659, 314), "Rinse collection by outlet", fill=INK, font=self.fonts[15]
             )
             for i, (name, value) in enumerate(zip(NAMES, self.t.rinse)):
                 self.bar(
-                    draw, 659, 339 + i * 32, 274, value / 100, name, f"{value:.0f} mL"
+                    draw,
+                    659,
+                    339 + i * 32,
+                    274,
+                    value / (JET_OPEN_FLOW * RINSE_SECONDS),
+                    name,
+                    f"{value:.0f} mL",
                 )
         else:
-            draw.text(
-                (659, 314), "Paper and simulated waste", fill=INK, font=self.fonts[15]
-            )
+            cleared = self.t.trap_cleared()
+            for i, (material, label, color) in enumerate(
+                (
+                    ("paper", "Wet paper", "#f3e8c9"),
+                    ("feces", "Feces", "#c3845a"),
+                )
+            ):
+                pieces = [p.name for p in TRAP_PIECES if p.material == material]
+                count = sum(name in cleared for name in pieces)
+                y = 319 + i * 25
+                draw.rounded_rectangle((659, y + 2, 672, y + 15), radius=3, fill=color)
+                draw.text((680, y), label, fill=INK, font=self.fonts[15])
+                draw.text(
+                    (933, y),
+                    f"{count}/{len(pieces)} cleared",
+                    fill=MUTED,
+                    font=self.fonts[15],
+                    anchor="ra",
+                )
             self.bar(
                 draw,
                 659,
-                342,
+                374,
                 274,
                 self.t.water_level,
                 "Water remaining",
                 f"{100*self.t.water_level:.0f}%",
-            )
-            self.bar(
-                draw,
-                659,
-                383,
-                274,
-                self.t.joint("clog") / 0.105,
-                "Clog travel",
-                f"{1000*self.t.joint('clog'):.0f} mm",
             )
             self.bar(
                 draw,
