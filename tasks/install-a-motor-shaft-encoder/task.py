@@ -28,6 +28,7 @@ BOARD_Z = MAGNET_TOP + 0.0015
 CAP_SEAT = (*CENTER, MAGNET_TOP + 0.003)
 HEAD_SEAT = (*CENTER, BOARD_Z + 0.025)
 CAP_HOME = (0.179, -0.148, TOP + 0.044)
+CAP_GRIP_Z_OFFSET = -.005
 HEAD_HOME = (0.269, 0.139, TOP + 0.050)
 LATCH_XY = (0.365, -0.054)
 LATCH_OPEN = TOP + 0.118
@@ -39,7 +40,7 @@ HOVER = TOP + 0.155
 OBJECTS = [
     Box("test_fixture_base", (0.305, 0, TOP + .006), size=(.265, .205, .012),
         color=(.16, .22, .28)),
-    Box("carrier_dock", (*CAP_HOME[:2], TOP + .0105), size=(.050, .046, .021), color=(.18, .25, .29)),
+    Box("carrier_dock", (*CAP_HOME[:2], TOP + .0111), size=(.050, .046, .0222), color=(.18, .25, .29)),
     Box("encoder_dock", (*HEAD_HOME[:2], TOP + .008), size=(.115, .082, .016), color=(.18, .25, .29)),
     Box("encoder_frame", (0.,0.,0.), size=(.01,.01,.01)),
     Box("magnet_carrier", CAP_HOME, mass=.019, size=(.02,.02,.01)),
@@ -79,14 +80,16 @@ def demo():
     if CASE == "missing-magnet":
         right = [move(2, right_park, o, "clear dock"), move(7.7, right_park, o, "leave carrier in dock")]
     else:
+        pickup = (*CAP_HOME[:2], CAP_HOME[2] + CAP_GRIP_Z_OFFSET)
+        seated_grip = (*CENTER, CAP_SEAT[2] + CAP_GRIP_Z_OFFSET - .001)
         right = [
             move(1.8, (*CAP_HOME[:2], HOVER), o, "approach carrier"),
-            move(1.4, CAP_HOME, o, "reach carrier"),
-            move(.85, CAP_HOME, c, "grasp carrier"),
+            move(1.4, pickup, o, "reach carrier"),
+            move(.85, pickup, c, "grasp carrier"),
             move(1.3, (*CAP_HOME[:2], HOVER), c, "lift carrier"),
             move(1.3, (*CENTER, HOVER), c, "align D-flat with shaft"),
-            move(1.4, (*CENTER, CAP_SEAT[2] - .0025), c, "press carrier onto shaft"),
-            move(.75, (*CENTER, CAP_SEAT[2] - .0025), o, "release carrier"),
+            move(1.4, seated_grip, c, "press carrier onto shaft"),
+            move(.75, seated_grip, o, "release carrier"),
             move(.9, (*CENTER, HOVER + .025), o, "clear shaft"),
             move(1.1, right_park, o, "clear motor"),
         ]
@@ -156,6 +159,9 @@ class State:
         if score == .65 and self.test_result is True and button_motion < .001 and clear:
             score = 1.
         return dict(score=score, carrier=carrier_on, bracket=bracket_on, catch=bool(retained),
+                    carrier_position_m=list(map(float, carrier.pos)),
+                    bracket_position_m=list(map(float, bracket.pos)),
+                    carrier_yaw_rad=float(yaw),
                     catch_mm=round(float(catch_motion)*1000, 3),
                     button_mm=round(float(button_motion)*1000, 3), field_check=self.test_result,
                     caption="Field check passed" if self.test_result else "Install and check the encoder")

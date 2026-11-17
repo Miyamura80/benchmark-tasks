@@ -66,20 +66,23 @@ def author(directory):
     UsdPhysics.MeshCollisionAPI.Apply(shaft.GetPrim()).CreateApproximationAttr("convexHull")
     for i, offset in enumerate(GUIDE_OFFSETS):
         cylinder(stage, f"Guide_{i}", (x,y+offset,task.TOP+.087), .004, .053, alloy)
-        cylinder(stage, f"Shoulder_{i}", (x,y+offset,task.HEAD_SEAT[2]-.052), .009, .037, (.19,.23,.25))
+        cylinder(stage, f"Shoulder_{i}", (x,y+offset,task.HEAD_SEAT[2]-.0525), .009, .037, (.19,.23,.25))
     box(stage, "CatchHousing", (*task.LATCH_XY,task.LATCH_OPEN-.037), (.028,.029,.040), alloy)
     box(stage, "ButtonHousing", (*task.TEST_XY,task.TEST_CAP-.029), (.062,.051,.040), (.20,.25,.28))
     stage.GetRootLayer().Save()
 
     stage = asset(paths["magnet_carrier"], .019)
     # Bore ceiling lands on the shaft tip when the magnet is at the right height.
-    box(stage, "CarrierGrip", (0,0,.004), (.020,.020,.006), (.79,.53,.13), friction=1.1)
-    cylinder(stage, "CarrierShoulder", (0,0,-.0045), .009, .005, (.79,.53,.13))
-    sleeve(stage, "CarrierBore", (0,0,-.015), .0045, .016, .004, (.79,.53,.13), keyed=True)
+    # Keep the grasp flange below the sensor plane. Its underside is the
+    # stop face at the shaft tip, and its upper face is the magnet datum.
+    box(stage, "CarrierGrip", (0,0,task.CAP_GRIP_Z_OFFSET), (.020,.020,.004),
+        (.79,.53,.13), friction=1.1)
+    sleeve(stage, "CarrierBore", (0,0,-.0144), .0045, .0148, .004,
+           (.79,.53,.13), keyed=True)
     stage.GetRootLayer().Save()
 
     stage = asset(paths["sensor_bracket"], .056)
-    box(stage, "PCB", (0,0,-.025), (.047,.043,.0028), bracket)
+    box(stage, "PCB", (0,0,-.0236), (.047,.043,.0028), bracket)
     box(stage, "Crossbar", (0,0,-.018), (.067,.053,.008), alloy)
     for i, offset in enumerate(GUIDE_OFFSETS):
         sleeve(stage, f"GuideBore{i}_", (0.,offset,-.025), .0047, .018, .003, alloy)
