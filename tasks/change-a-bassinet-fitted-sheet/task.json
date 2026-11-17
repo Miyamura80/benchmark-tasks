@@ -14,5 +14,5 @@
   "fidelity": "Cloth mass-point grid with cloth and fixture contact. Compliant hem pockets can unseat under tension; no interior vertices are pinned when a pocket seats. Gripper and cloth interactions are simplified.",
   "run_limit": "1,400 steps (70 seconds at 20 Hz)",
   "scores": "Scripted: 1.00. Four clean pockets seated, 95.1% mattress coverage and 91.1% of the used-sheet silhouette on the laundry pad. Dream-1: 0.00 at the 1,400-step limit.",
-  "media": ""
+  "media": "M-JMP7J4"
 }
