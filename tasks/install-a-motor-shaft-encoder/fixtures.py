@@ -97,7 +97,7 @@ def author(directory):
     for i, shift in enumerate((-.031, .031)):
         box(stage, f"CrossbarStop_{i}", (x + shift, y, rail_top - .011),
             (.004, .036, .022), alloy)
-    catch_x, catch_y, catch_z = task.CATCH_OPEN
+    catch_x, catch_y, _ = task.CATCH_OPEN
     box(stage, "CatchHousing", (catch_x-task.CATCH_SHIFT/2, catch_y, task.CATCH_CLOSED[2]-.031),
         (.046,.029,.040), alloy)
     box(stage, "ButtonHousing", (*task.TEST_XY,task.TEST_CAP-.036), (.062,.051,.040), (.20,.25,.28))
@@ -128,7 +128,8 @@ def author(directory):
     stage.GetRootLayer().Save()
 
     stage = asset(paths["encoder_catch"], CATCH_MASS)
-    box(stage, "RedCatch", (0,0,-.003), (.025,.021,.008), (.63,.07,.08))
+    box(stage, "RedCatch", (0,0,-.003), (.025,.021,.008), (.63,.07,.08), friction=.8)
+    box(stage, "TongueArm", (-.006,.0225,.0025), (.010,.035,.006), alloy)
     box(stage, "LatchTongue", task.TONGUE_POS, task.TONGUE_SIZE, (.27,.29,.30))
     stage.GetRootLayer().Save()
 

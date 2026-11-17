@@ -30,14 +30,14 @@ HEAD_SEAT = (*CENTER, BOARD_Z + 0.025)
 CAP_HOME = (0.179, -0.148, TOP + 0.044)
 CAP_GRIP_Z_OFFSET = -.005
 HEAD_HOME = (0.269, 0.139, TOP + 0.050)
-CATCH_OPEN = (0.383, -0.054, TOP + .127)
+CATCH_OPEN = (0.383, -0.082, TOP + .127)
 CATCH_SHIFT = .018
 CATCH_DROP = .021
 CATCH_STROKE = hypot(CATCH_SHIFT, CATCH_DROP)
 CATCH_AXIS = (CATCH_SHIFT / CATCH_STROKE, 0., CATCH_DROP / CATCH_STROKE)
 CATCH_CLOSED = (CATCH_OPEN[0] - CATCH_SHIFT, CATCH_OPEN[1], CATCH_OPEN[2] - CATCH_DROP)
 TAB_POS, TAB_SIZE = (.049, -.050, -.019), (.022, .017, .006)
-TONGUE_POS, TONGUE_SIZE = (-.006, .012, .0035), (.010, .014, .005)
+TONGUE_POS, TONGUE_SIZE = (-.006, .040, .0035), (.010, .014, .005)
 TEST_XY = (0.250, -0.124)
 TEST_CAP = TOP + 0.052
 HOVER = TOP + 0.155
@@ -106,7 +106,7 @@ def demo():
         # Track the red cap along the inclined slide while the fingertips
         # supply the closing force. The first target takes up clearance.
         catch_start = (*CATCH_OPEN[:2], CATCH_OPEN[2] + .010)
-        catch_end = (*CATCH_CLOSED[:2], CATCH_CLOSED[2] + .001)
+        catch_end = (*CATCH_CLOSED[:2], CATCH_CLOSED[2] - .006)
         right += [
             move(1.0, (*CATCH_OPEN[:2], HOVER + .020), c, "approach bracket catch"),
             move(1.0, catch_start, c, "touch catch"),
