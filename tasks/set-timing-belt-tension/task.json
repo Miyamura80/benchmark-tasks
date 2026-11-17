@@ -16,5 +16,5 @@
   "reset_notes": "Release both bolts to a 0.105 mm clamp gap, return motor to 109.25 mm pulley spacing, seat the belt, reset the test pointer, and park the driver at +60 degrees in the cradle.",
   "fidelity": "Reduced-order flexible belt and linear slide, with lead-dependent threaded clamp preload, force–deflection and slip. Custom fixture contacts are geometrically constrained. Belt stiffness, friction, and clamp compliance are unvalidated physical assumptions.",
   "scores": "Scripted: 1.00 in 595 steps. Both post-release readings were 1.4185 mm, with zero measured drift. Dream-1: 0.00 at the 1,400-step limit. Physical fixture calibration is pending.",
-  "media": ""
+  "media": "M-3KMLXG"
 }
