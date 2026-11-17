@@ -37,6 +37,61 @@ def camera(lookat, distance, azimuth, elevation):
     return result
 
 
+def add_streams(trial, scene):
+    if trial.kind != "rim" or not trial.rinsing:
+        return
+    for outlet, flow in zip(JETS, trial.rim_flow()):
+        strength = flow / JET_OPEN_FLOW
+        if strength <= 0:
+            continue
+        mouth = np.array([*outlet, JET_HEIGHT])
+        axis = jet_axis(outlet)
+        start = mouth - axis * 0.001
+        end = mouth - axis * (0.003 + 0.061 * strength)
+        if strength < 0.99:
+            # A restricted, uneven bore deflects the visible trickle.
+            sideways = np.array((-axis[1], axis[0], 0.0))
+            bend = mouth - axis * (0.003 + 0.006 * strength) + sideways * 0.006
+            points = (start, bend, end + sideways * 0.010)
+        else:
+            points = (start, end)
+        for start, end in zip(points, points[1:]):
+            element = scene.geoms[scene.ngeom]
+            mj.mjv_initGeom(
+                element,
+                mj.mjtGeom.mjGEOM_CAPSULE,
+                np.zeros(3),
+                np.zeros(3),
+                np.eye(3).ravel(),
+                np.array([0.16, 0.75, 0.98, 0.53 + 0.39 * strength], dtype=np.float32),
+            )
+            mj.mjv_connector(
+                element,
+                mj.mjtGeom.mjGEOM_CAPSULE,
+                0.0007 + 0.0023 * strength,
+                start,
+                end,
+            )
+            scene.ngeom += 1
+
+
+def add_water_surface(trial, scene):
+    if trial.kind != "trap":
+        return
+    level = trial.water_level
+    element = scene.geoms[scene.ngeom]
+    mj.mjv_initGeom(
+        element,
+        mj.mjtGeom.mjGEOM_ELLIPSOID,
+        np.array([0.018 + 0.060 * level, 0.014 + 0.049 * level, 0.0015]),
+        np.array([0.0, 0.0, 0.138 + 0.024 * level]),
+        np.eye(3).ravel(),
+        np.array([0.13, 0.62, 0.81, 0.50], dtype=np.float32),
+    )
+    element.transparent = 1
+    scene.ngeom += 1
+
+
 class Recording:
     def __init__(self, path):
         self.path = path
@@ -99,61 +154,6 @@ class Recording:
             )
         }
 
-    def add_streams(self, scene):
-        if self.t.kind != "rim" or not self.t.rinsing:
-            return
-        for index, (outlet, flow) in enumerate(zip(JETS, self.t.rim_flow())):
-            strength = flow / JET_OPEN_FLOW
-            if strength <= 0:
-                continue
-            mouth = np.array([*outlet, JET_HEIGHT])
-            axis = jet_axis(outlet)
-            start = mouth - axis * 0.001
-            end = mouth - axis * (0.003 + 0.061 * strength)
-            if index == self.t.blocked and strength < 0.99:
-                # A restricted, uneven bore deflects the visible trickle.
-                sideways = np.array((-axis[1], axis[0], 0.0))
-                bend = mouth - axis * (0.003 + 0.006 * strength) + sideways * 0.006
-                points = (start, bend, end + sideways * 0.010)
-            else:
-                points = (start, end)
-            for start, end in zip(points, points[1:]):
-                element = scene.geoms[scene.ngeom]
-                mj.mjv_initGeom(
-                    element,
-                    mj.mjtGeom.mjGEOM_CAPSULE,
-                    np.zeros(3),
-                    np.zeros(3),
-                    np.eye(3).ravel(),
-                    np.array(
-                        [0.16, 0.75, 0.98, 0.53 + 0.39 * strength], dtype=np.float32
-                    ),
-                )
-                mj.mjv_connector(
-                    element,
-                    mj.mjtGeom.mjGEOM_CAPSULE,
-                    0.0007 + 0.0023 * strength,
-                    start,
-                    end,
-                )
-                scene.ngeom += 1
-
-    def add_water_surface(self, scene):
-        if self.t.kind != "trap":
-            return
-        level = self.t.water_level
-        element = scene.geoms[scene.ngeom]
-        mj.mjv_initGeom(
-            element,
-            mj.mjtGeom.mjGEOM_ELLIPSOID,
-            np.array([0.018 + 0.060 * level, 0.014 + 0.049 * level, 0.0015]),
-            np.array([0.0, 0.0, 0.138 + 0.024 * level]),
-            np.eye(3).ravel(),
-            np.array([0.13, 0.62, 0.81, 0.50], dtype=np.float32),
-        )
-        element.transparent = 1
-        scene.ngeom += 1
-
     def shot(self, renderer, cam, cutaway=False):
         renderer.update_scene(self.t.data, camera=cam)
         renderer.scene.flags[mj.mjtRndFlag.mjRND_SHADOW] = False
@@ -169,8 +169,8 @@ class Recording:
                         0.05 if self.t.kind == "rim" and not self.t.rinsing else 0.12
                     )
                     element.transparent = 1
-        self.add_streams(renderer.scene)
-        self.add_water_surface(renderer.scene)
+        add_streams(self.t, renderer.scene)
+        add_water_surface(self.t, renderer.scene)
         return Image.fromarray(renderer.render())
 
     def bar(self, draw, x, y, w, ratio, label, amount):
