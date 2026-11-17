@@ -13,5 +13,6 @@
   "run_limit": "2,400 control steps (120 seconds at 20 Hz)",
   "reset_notes": "Reset restores the fixed starting pose, returns the applicator upright and clears deposited polish.",
   "fidelity": "Native colliding applicator and nail surface. Deposited area uses a 0.75 mm grid and a swept foam footprint gated by tip contact. Foam flex, drying and pressure-dependent flow are simplified.",
-  "scores": "Scripted: 1.00 in 663 steps with 86.2% coverage and 1.1% spill. Dream-1: 0.00 (completed at 2,400 steps)."
+  "scores": "Scripted: 1.00 in 663 steps with 86.2% coverage and 1.1% spill. Dream-1: 0.00 (completed at 2,400 steps).",
+  "media": "M-Y88CQL"
 }
