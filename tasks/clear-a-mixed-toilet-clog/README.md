@@ -4,7 +4,7 @@ Test drainage, seat and pump the plunger, then verify that the trapway drains af
 
 ## Starting layout
 
-Use the central drain as the origin in X and Y and the floor as Z = 0. The ceramic-look bowl has a raised hinged seat ring and lid, and a cistern. The model drain sits over a 34 mm spring-loaded diaphragm. The plunger has a rigid handle and a 38 mm rubber-cup contact body. It starts upright at (−245, −144, 123) mm, measured at the grip. The Cartesian gripper starts open at (−245, −144, 265) mm. A fixed drain gauge reports water remaining after a 1.25-second test.
+Use the central drain as the origin in X and Y and the floor as Z = 0. The ceramic-look bowl has a raised hinged seat ring and lid, and a cistern. The model drain sits over a 34 mm spring-loaded diaphragm. The plunger has a rigid handle and a 38 mm rubber-cup contact body. It starts upright at (−245, −144, 123) mm, measured at the grip. A fixed drain gauge reports water remaining after a 1.25-second test.
 
 The six pieces start as a tight staggered plug downstream. Centres and full bounding dimensions are in millimetres.
 
@@ -19,20 +19,25 @@ The six pieces start as a tight staggered plug downstream. Centres and full boun
 
 ## Reproduce and score
 
-Use Python 3.12, FFmpeg, EGL and the DejaVu Sans fonts. Install the dependencies with `python -m pip install -r requirements.txt`.
+Two I2RT YAM arms with stock parallel jaws sit on bases at (−250, ±305, 175) mm. Both start with grippers open. The overhead camera and both wrist cameras feed Dream-1. The blue spring-loaded test switch sits at (−160, 212, 231) mm. Finger contact and at least 10 mm of physical switch travel trigger each measurement. The tool must remain clear of the bowl while the test runs.
+
+Use Python 3.12, FFmpeg, EGL and DejaVu Sans. Install the robot scene, evaluator and Dream client.
 
 ```sh
-MUJOCO_GL=egl python bench.py trap --video --out runs/scripted
-python bench.py trap --strokes 7 --out runs/seven-strokes
-python bench.py trap --control --out runs/off-centre
-MUJOCO_GL=egl python inspect_trial.py trap --smoke --out runs/smoke
-MUJOCO_GL=egl python inspect_trial.py trap --model "$MODEL_ID" --out runs/model
-inspect-robots video runs/model/toilet-trap_*.json --out runs/model-video
+python -m pip install -r requirements.txt
+python -m pip install --no-deps 'dreamlabs==1.0.23'
+
+MUJOCO_GL=egl python yam_trial.py trap --video --out runs/scripted
+MUJOCO_GL=egl python yam_trial.py trap --control --out runs/control
+MUJOCO_GL=egl python yam_eval.py trap --out runs/dream
+inspect-robots video runs/dream/toilet-yam-trap_*.json --out runs/dream-video
 ```
 
-Use the model provider's environment credential. For an OpenAI-compatible endpoint, add `--base-url "$MODEL_BASE_URL" --api-key-env NAME_OF_KEY_VARIABLE`. The Inspect Robots seed is 0 and the scene reset is deterministic. Local runs produce `result.json`, a 25 Hz trace, and optional H.264 video. The scripted trial lasts about 11.5 seconds of simulated time. Each model trial is bounded by 60 seconds of physical simulation and 100 model calls. Wall time depends on inference and rendering.
+Set the Dream API credential in the authorised environment before running the model. Both runs use the same workcell and scorer. The model uses seed 0 with a deterministic reset and 1,200 control steps at 20 Hz. The scripted demo takes 26.6 seconds of simulated time. Wall time varies with rendering and inference.
 
-Full credit requires at least 70% retained water before repair, cup contact and compression, the rear edge of every piece crossing X = 193 mm, and at most 15% retained water in the final test with the tool clear. The scripted run starts with 95% retained water, ends at 1.25%, and clears all six pieces in eight strokes. See [scripted measurements](evidence/scripted.json). Seven strokes leave a paper wad and score zero. An off-centre plunger clears zero pieces. The no-contact Inspect Robots smoke should score zero.
+Full credit requires at least 70% retained water before repair, cup contact and compression, the rear edge of each piece crossing X = 193 mm, and at most 15% retained water in the final test. The scripted run starts at 95%, ends at 1.25%, and clears all six pieces. An off-centre control clears no pieces and scores zero. See the [scripted result](evidence/scripted.json) and [off-centre control](evidence/control.json).
+
+The [Dream-1 baseline](evidence/dream.json) scored 0.00 after 1,200 steps. It used 25 model requests in 103.3 seconds of wall time. The baseline and scripted video are both supplied.
 
 ## Physical reset and measurement
 

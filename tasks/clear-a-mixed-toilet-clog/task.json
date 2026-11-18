@@ -8,13 +8,13 @@
     "drainage",
     "toilet paper"
   ],
-  "instruction": "Test drainage, then use a plunger to clear the wet toilet-paper and fecal-simulant clog. Lift the plunger clear and repeat the drain test.",
+  "instruction": "Press the blue test switch. Test drainage, then use a plunger to clear the wet toilet-paper and fecal-simulant clog. Lift the plunger clear and repeat the drain test. Use the same switch for the final measurement.",
   "context": "A mixed clog can retain water in the bowl until pressure pulses move the entire obstruction through the trapway.",
-  "setup": "Use a ceramic-look toilet workcell with raised hinged seat and lid, a model trapway and a 34 mm diaphragm at the central drain. Three folded paper wads (24–26 mm long) and three simulated fecal pieces (28–32 mm long) form a staggered plug downstream. A plunger with a 38 mm rubber cup sits upright at the front-left dock. The gripper starts open above the handle. A timed drain gauge gives retained water fraction. Exact layout in README.",
+  "setup": "Use a ceramic-look toilet workcell with raised hinged seat and lid, a model trapway and a 34 mm diaphragm at the central drain. Three folded paper wads (24–26 mm long) and three simulated fecal pieces (28–32 mm long) form a staggered plug downstream. A plunger with a 38 mm rubber cup sits upright at the front-left dock. Both YAM arms start in open-gripper ready poses. A blue spring-loaded switch starts a 1.25-second test. A gauge measures the water fraction remaining. Exact layout in README.",
   "scoring": "Score 1.00 if ≥70% of the water remains after the initial timed drain test, the plunger compresses the drain diaphragm, all six pieces pass downstream of the exit marker and ≤15% remains after the final test with the plunger clear. Otherwise score 0.00.",
-  "run_limit": "At most 100 model calls and 1,200 control steps (60 seconds at 20 Hz).",
+  "run_limit": "1,200 control steps (60 seconds at 20 Hz).",
   "reset_notes": "Repack the three wet paper wads and three fecal-simulant pieces in the documented staggered layout. Return the plunger and gripper to their starting positions.",
   "fidelity": "MuJoCo simulates the grasp, cup contact and resistance of six individual pieces. The paper has folded geometry and rigid contact bodies. Contact-driven pressure and drainage approximate the process. The simulation omits deformation, bulk water and siphoning. A clean wet-bench protocol is documented for calibration.",
-  "scores": "Scripted MuJoCo demo: 1.00. Official Inspect Robots LLM run pending.",
-  "media": ""
+  "scores": "Dream-1 beta: 0.00 (1,200 control steps). Scripted dual-YAM demo: 1.00.",
+  "media": "M-N97DS5"
 }

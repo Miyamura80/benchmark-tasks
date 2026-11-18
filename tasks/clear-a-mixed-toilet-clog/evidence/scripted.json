@@ -1,25 +1,15 @@
 {
   "score": 1.0,
-  "before_water_percent": 95.00000000000193,
-  "after_water_percent": 1.249999999998801,
-  "cleared_pieces": [
-    "paper_1",
-    "feces_1",
-    "paper_2",
-    "feces_2",
-    "paper_3",
-    "feces_3"
+  "test_readings": [
+    [
+      0.9500000000000194
+    ],
+    [
+      0.01249999999998801
+    ]
   ],
-  "final_x_mm": {
-    "paper_1": 207.9,
-    "feces_1": 207.67,
-    "paper_2": 217.56,
-    "feces_2": 226.78,
-    "paper_3": 232.05,
-    "feces_3": 241.14
-  },
-  "strokes": 8,
-  "peak_pressure_force_n": 8.0,
-  "finger_contact_steps": 4683,
-  "tool_contact_steps": 1716
+  "finger_contact_steps": 8436,
+  "tool_contact_steps": 2486,
+  "remaining": 0,
+  "seconds": 26.599999999996136
 }

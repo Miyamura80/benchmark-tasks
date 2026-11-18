@@ -1,0 +1,15 @@
+{
+  "score": 0.0,
+  "test_readings": [
+    [
+      0.9500000000000194
+    ],
+    [
+      0.9500000000000194
+    ]
+  ],
+  "finger_contact_steps": 8436,
+  "tool_contact_steps": 0,
+  "remaining": 6,
+  "seconds": 26.599999999996136
+}

@@ -728,7 +728,7 @@ def trap_fixture():
     return "".join(assets), "".join(elements)
 
 
-def make_model(kind, blocked):
+def model_xml(kind, blocked):
     asset, toilet = bowl(kind)
     rear_assets, rear_fittings = seat_and_cistern()
     jet_asset = (
@@ -768,7 +768,7 @@ def make_model(kind, blocked):
             (0.046, 0.020, 0.005),
             ".20 .32 .38 1",
         )
-    return mj.MjModel.from_xml_string(f"""
+    return f"""
 <mujoco model="toilet-maintenance">
  <compiler angle="radian"/>
  <option timestep="{DT}" integrator="implicitfast" cone="elliptic" iterations="65"/>
@@ -785,7 +785,11 @@ def make_model(kind, blocked):
  <actuator>{motors}</actuator>
  <equality>{bonds}</equality>
 </mujoco>
-""")
+"""
+
+
+def make_model(kind, blocked):
+    return mj.MjModel.from_xml_string(model_xml(kind, blocked))
 
 
 class Trial:
@@ -797,6 +801,9 @@ class Trial:
         self.target = np.array([DOCK[0], DOCK[1], 0.265, 0.0, 0.0, 0.0])
         self.data.qpos[:3] = self.target[:3]
         self.data.ctrl[:] = self.target
+        self.reset_fixture(recording)
+
+    def reset_fixture(self, recording):
         self.rinse = np.zeros(4)
         self.rinsing = False
         self.scale_work = np.zeros(len(SCALE_OCCLUSION))
@@ -806,6 +813,7 @@ class Trial:
         self.peak_pressure = 0.0
         self.finger_contacts = 0
         self.tool_contacts = 0
+        self.finger_geoms = {"left_pad", "right_pad"}
         self.phase = "Start"
         self.frames = recording
         self.trace = []
@@ -834,7 +842,7 @@ class Trial:
         ]
 
     def update(self):
-        if self.contact({"left_pad", "right_pad"}, {"probe_handle", "plunger_handle"}):
+        if self.contact(self.finger_geoms, {"probe_handle", "plunger_handle"}):
             self.finger_contacts += 1
         if self.kind == "rim":
             self.scrape()
