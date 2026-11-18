@@ -1,0 +1,18 @@
+{
+  "title": "Clear a thermal label printer jam",
+  "category": "Societal relatability",
+  "keywords": [
+    "printer",
+    "pinch roller",
+    "jam clearing"
+  ],
+  "instruction": "Raise the platen, pull out the trapped backing, seat the platen, and press feed to advance a fresh label.",
+  "context": "Thermal label printers are familiar to small shops and people shipping parcels from home. Clearing the backing from the opened platen and feeding fresh stock tests that the label path works again.",
+  "setup": "A 208 × 254 mm clamshell label-printer model with the cover open, a roll of 126 mm wide stock, a rubber platen with a left-side bearing and one folded backing strip caught in the feed path. A teal feed button is on the right edge of the front housing. Stock is already routed to the inlet.",
+  "scoring": "0.5 for lifting the platen over 27 mm and pulling the scrap over 66 mm. Full credit also requires the platen to return within 12 mm of its seat, fresh stock to advance over 74 mm on the feed button, and the platen to turn over 5.5 rad.",
+  "run_limit": "1,200 actions (60 seconds at 20 Hz)",
+  "reset_notes": "Lower the platen to its start, put the folded strip in the pinch path, and reset stock travel and feed-button state to zero.",
+  "fidelity": "The backed paper flexes visually with the extractor displacement and curls as it feeds past the tear bar. A compliant actuator couples the platen rotation to the advancing stock. Paper contact uses a rigid guided proxy, with the roll prethreaded and no label sensor.",
+  "scores": "Dream-1 beta: 0.00 in 1,200 steps. Scripted dual-YAM demo: 1.00 in 297 steps.",
+  "media": "M-XBK7SE"
+}

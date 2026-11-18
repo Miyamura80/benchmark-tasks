@@ -1,0 +1,17 @@
+{
+  "step": 246,
+  "seconds": 12.3,
+  "phase": "Release the seated platen",
+  "score": 0.5,
+  "backing_mm": 73.5,
+  "platen_mm": -0.7,
+  "feed_mm": 0.0,
+  "platen_deg": 1.3,
+  "grips": 2,
+  "title": "Clear a thermal label printer jam",
+  "variant": 0,
+  "mode": "specific failure control",
+  "simulator": "MuJoCo dual YAM",
+  "control_hz": 20,
+  "error": null
+}

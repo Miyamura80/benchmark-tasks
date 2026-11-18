@@ -1,0 +1,17 @@
+{
+  "step": 297,
+  "seconds": 14.85,
+  "phase": "Watch one label advance",
+  "score": 1.0,
+  "backing_mm": 73.5,
+  "platen_mm": -0.7,
+  "feed_mm": 82.7,
+  "platen_deg": -364.5,
+  "grips": 2,
+  "title": "Clear a thermal label printer jam",
+  "variant": 0,
+  "mode": "scripted",
+  "simulator": "MuJoCo dual YAM",
+  "control_hz": 20,
+  "error": null
+}
