@@ -1,0 +1,17 @@
+{
+  "step": 401,
+  "seconds": 20.05,
+  "phase": "Replaying recorded robot commands",
+  "score": 1.0,
+  "lateral_error_mm": 1.1,
+  "crank_deg": -65.0,
+  "rear_deg": -104.2,
+  "seat_mm": 5.7,
+  "engaged": true,
+  "title": "Reseat a dropped bicycle chain",
+  "variant": 0,
+  "mode": "replay",
+  "simulator": "MuJoCo dual YAM",
+  "control_hz": 20,
+  "error": null
+}

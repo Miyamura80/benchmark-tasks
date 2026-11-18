@@ -1,0 +1,13 @@
+{
+  "model": "dreamlabs/dream-1-beta",
+  "model_requests": 25,
+  "step": 1200,
+  "seconds": 60,
+  "phase": "Dream-1 policy",
+  "score": 0,
+  "lateral_error_mm": 28,
+  "crank_deg": 0,
+  "rear_deg": 0,
+  "seat_mm": 0,
+  "engaged": false
+}

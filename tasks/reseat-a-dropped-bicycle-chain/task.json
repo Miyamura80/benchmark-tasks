@@ -1,0 +1,19 @@
+{
+  "title": "Reseat a dropped bicycle chain",
+  "category": "Societal relatability",
+  "keywords": [
+    "bicycle",
+    "chainring",
+    "crank",
+    "drivetrain"
+  ],
+  "instruction": "Guide the dropped chain sideways onto the chainring, then turn the crank to check that the chain drives the rear sprocket.",
+  "context": "A dropped bicycle chain can be restored by guiding its upper run back into the tooth plane while turning the crank.",
+  "setup": "A bench-scale bicycle drivetrain with 26 front teeth, 16 rear teeth, a crank and pedal, and a loose upper chain run starting 28 mm outboard of its target plane.",
+  "scoring": "0.5 once lateral travel exceeds 21 mm towards the tooth plane. Full credit once the engaged upper run has settled by more than 5 mm and the rear sprocket rotates over 1.40 rad.",
+  "run_limit": "1,200 actions (60 seconds at 20 Hz)",
+  "reset_notes": "Shift the upper chain run outboard and reset crank angle, sprocket angle and the engagement state.",
+  "fidelity": "The visible chain is a continuous moving loop. Contact still uses a guided upper-run proxy. Engaged rotation transfers load through a compliant 26:16 coupling with backlash. The script verifies a partial turn and does not model tooth-by-tooth chain contact.",
+  "scores": "Dream-1 beta: 0.00 in 1,200 steps. Scripted dual-YAM demo: 1.00 in 401 steps.",
+  "media": "M-EMVECS"
+}
