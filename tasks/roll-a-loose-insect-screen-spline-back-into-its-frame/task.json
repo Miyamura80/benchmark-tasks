@@ -1,0 +1,18 @@
+{
+  "title": "Roll a loose insect-screen spline back into its frame",
+  "category": "Societal relatability",
+  "keywords": [
+    "spline roller",
+    "mesh tension",
+    "window screen"
+  ],
+  "instruction": "Pull the loose mesh square, press the rubber spline into the groove with the roller, and seat the whole loose section.",
+  "context": "Repairing a local spline failure can restore insect screening without replacing the full frame.",
+  "setup": "A flat aluminum-profile screen frame, a locally slack mesh sheet, a 96 mm loose spline section divided into seven modeled segments, and a 38 mm diameter grooved roller in line with the frame channel.",
+  "scoring": "Score the fraction of seven segments pressed at least 9 mm while mesh take-up exceeds 14 mm and still retained at the end.",
+  "run_limit": "1,200 actions (60 seconds at 20 Hz)",
+  "reset_notes": "Return the roller to the start of its path, relax the mesh edge, and reset all seven spline segments to the loose height.",
+  "fidelity": "The roller is constrained to the local groove plane. Its wheel spins passively and the seating load follows local rim compression. The visible mesh deforms along fixed boundaries, with one physical tension degree of freedom. Seven separate contact joints control the continuous-looking spline.",
+  "scores": "Dream-1 beta: 0.00 in 1,200 steps. Scripted dual-YAM demo: 1.00 in 297 steps.",
+  "media": "M-YWUXCR"
+}

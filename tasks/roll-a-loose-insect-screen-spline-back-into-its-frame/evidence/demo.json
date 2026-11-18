@@ -1,0 +1,26 @@
+{
+  "step": 297,
+  "seconds": 14.85,
+  "phase": "Check the spline stays seated",
+  "score": 1.0,
+  "seated_segments": 7,
+  "mesh_mm": 3.1,
+  "roller_mm": 138.9,
+  "wheel_deg": -317.7,
+  "press_mm": 12.0,
+  "depths_mm": [
+    13.3,
+    13.4,
+    13.4,
+    13.4,
+    13.4,
+    13.2,
+    13.4
+  ],
+  "title": "Roll a loose insect-screen spline back into its frame",
+  "variant": 0,
+  "mode": "scripted",
+  "simulator": "MuJoCo dual YAM",
+  "control_hz": 20,
+  "error": null
+}

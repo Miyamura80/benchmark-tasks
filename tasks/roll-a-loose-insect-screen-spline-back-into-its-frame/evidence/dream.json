@@ -1,0 +1,22 @@
+{
+  "model": "dreamlabs/dream-1-beta",
+  "model_requests": 25,
+  "step": 1200,
+  "seconds": 60,
+  "phase": "Dream-1 policy",
+  "score": 0,
+  "seated_segments": 0,
+  "mesh_mm": 0,
+  "roller_mm": 0,
+  "wheel_deg": 0,
+  "press_mm": 12,
+  "depths_mm": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "step": 129,
+  "seconds": 6.45,
+  "phase": "Leave the fault unchanged",
+  "score": 0.0,
+  "seated_segments": 0,
+  "mesh_mm": 0.0,
+  "roller_mm": 0.0,
+  "wheel_deg": 0.0,
+  "press_mm": 12.0,
+  "depths_mm": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "title": "Roll a loose insect-screen spline back into its frame",
+  "variant": 0,
+  "mode": "inactivity control",
+  "simulator": "MuJoCo dual YAM",
+  "control_hz": 20,
+  "error": null
+}
