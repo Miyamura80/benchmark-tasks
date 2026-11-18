@@ -37,16 +37,12 @@ The wrapper registers station reset and the task scorer, then calls the standard
 
 ## Revised native runs
 
-The revised native scripted demo scored 1.0 in 595 control steps. It recorded
-1.4185 mm on both post-release loads and 0.196 N m of estimated torque per bolt.
-The two readings showed zero measured drift. The test estimates torque from
-simulated clamp load. The physical fixture still needs calibration.
-
-Dream-1 completed the same revised setup at the 1,400-step limit with a score
-of 0.00. Both runs have native video and a setup image.
-
-On the L40S, the scripted run took 3m 39s and Dream-1 took 3m 13s,
-including startup.
+The force-loaded scripted demo on an L40S scored 1.00 in 596 steps. Both
+post-release readings were 1.7241 mm at 2.50 N, with zero measured drift.
+Final bolt torques were 0.195 and 0.196 N m. Peak handle reaction was
+17.34 N during the pull and averaged 11.52 N over the two-second hold
+sample. Dream-1 completed the same fixture in 1,400 steps and scored 0.00.
+Both runs have native video. Physical fixture calibration remains open.
 
 ## Historical trials using the previous scorer
 
@@ -78,6 +74,12 @@ Use a low-range calibrated torque driver with a 7 mm socket. Both M4 bolts must 
 
 ## Fidelity limits and bench measurements to collect
 
-The belt is a deforming loop with a reduced-order axial law and midpoint geometry, rather than finite-element rubber or individual tooth contact. Tightening an aligned, seated hex driver rotates each bolt. A 0.7 mm thread lead and 0.105 mm gap convert angular travel to clamp compression, with a 1.9 kN/mm effective stack stiffness. Clamp preload increases friction on the plate. A single bolt can be insufficient under the belt’s axial load. The simulated driver, handle, bolt and probe interactions are geometric contact constraints. The stock fixture's linear rail fixes pulley alignment. The off-pulley and misaligned controls start in injected fault states. Native YAM links collide with the table and base, but collision and contact forces for the custom fixture parts are simplified.
+The belt uses a reduced-order axial law and midpoint geometry. Thread lead and the bolt gap convert socket rotation to clamp compression. Clamp preload increases carriage friction, so a single bolt can be insufficient under the belt’s axial load. Geometric engagement couples the handle, socket and gauge to the appropriate gripper. The YAM articulation receives the resulting reaction as a world-frame force or torque on the gripper body at every physics step until the next control update:
+
+- The lever applies the carriage drive divided by 8 to the gripping hand, capped at 25 N. Its effective handle stiffness is 1 N/mm, with a 0.20 s load settling time.
+- The engaged socket applies a 0.7 N upward seating reaction and opposes shaft rotation with 0.012–0.196 N m from the thread and clamp law. The load direction follows the measured gripper turn.
+- The gauge cap resists depression with a spring law that reaches 2.50 N at 8.5 mm. The load holds at 2.50 N for the remainder of the measurement travel. The trace records each reaction and the achieved tool motion.
+
+These are native gripper loads derived from a reduced-order fixture. The geometric engagement does not resolve individual hex facets, belt teeth or finger–tool friction. The stock fixture's linear rail fixes pulley alignment. The off-pulley and misaligned controls start from injected fault states.
 
 No physical bench measurements were available. Before using this as a hardware specification, sweep centre distance from 109.25 to 110.61 mm, record the probe deflection at 2.5 N, measure the pull force at each held position, and check the plate with a dial indicator through one-bolt, two-bolt and no-bolt release. Compare these measurements with the CSVs from `controls.py`. The assumed 100 N/mm effective span stiffness, clamp stiffness, and 0.29 friction coefficient remain unvalidated.

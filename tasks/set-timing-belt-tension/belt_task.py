@@ -30,7 +30,8 @@ GAUGE_CAP_Z = TOP + 0.086
 GAUGE_TRAVEL = 0.010
 GAUGE_CONTACT = 0.0085
 HOVER = TOP + 0.131
-TARGET_SPAN = 0.11038
+PULL_END_X = 0.325  # unloaded command compensates YAM gripper deflection under load
+GAUGE_PRESS_Z = GAUGE_CAP_Z - 0.005  # compensate for gripper deflection at the detent
 INSTRUCTION = (
     "Set the timing belt to the specified tension and secure the motor mount. "
     "Leave the belt seated on both pulleys, then release the mount and take two midpoint gauge readings. Put down the tools."
@@ -53,13 +54,13 @@ def demo():
     end_yaw = -1.077
     x, y, z = PULL_HOME
     case = os.environ.get("BELT_CONTROL", "nominal")
-    target = {"slack": 0.10975, "overtight": 0.11061}.get(case, TARGET_SPAN)
-    pull_x = x + (target - START_SPAN) * PULL_RATIO
+    target = {"slack": 0.10975, "overtight": 0.11061}.get(case)
+    pull_x = PULL_END_X if target is None else x + (target - START_SPAN) * PULL_RATIO
     left = [
         Waypoint(2.0, (x, y, HOVER), o, "pull-tab approach"),
         Waypoint(1.5, (x, y, z), o, "lower to pull tab"),
         Waypoint(0.9, (x, y, z), c, "grip pull tab"),
-        Waypoint(1.4, (pull_x, y, z), c, "set span"),
+        Waypoint(2.2, (pull_x, y, z), c, "set span"),
     ]
     tool_x, tool_y, tool_z = DRIVER_HOME
     right = [
@@ -94,12 +95,12 @@ def demo():
     ])
     left.extend([
         Waypoint(1.1, (*GAUGE_XY, HOVER), c, "approach gauge"),
-        Waypoint(1.2, (*GAUGE_XY, GAUGE_CAP_Z + 0.013 - GAUGE_TRAVEL), c, "apply gauge to detent"),
-        Waypoint(1.15, (*GAUGE_XY, GAUGE_CAP_Z + 0.013 - GAUGE_TRAVEL), c, "read 2.5 N test"),
+        Waypoint(1.2, (*GAUGE_XY, GAUGE_PRESS_Z), c, "apply gauge to detent"),
+        Waypoint(1.15, (*GAUGE_XY, GAUGE_PRESS_Z), c, "read 2.5 N test"),
         Waypoint(1.25, (*GAUGE_XY, HOVER + 0.025), o, "remove hand from gauge"),
         Waypoint(1.2, (*GAUGE_XY, HOVER + 0.025), c, "wait with gauge reset"),
-        Waypoint(1.2, (*GAUGE_XY, GAUGE_CAP_Z + 0.013 - GAUGE_TRAVEL), c, "apply second test"),
-        Waypoint(1.15, (*GAUGE_XY, GAUGE_CAP_Z + 0.013 - GAUGE_TRAVEL), c, "read second 2.5 N test"),
+        Waypoint(1.2, (*GAUGE_XY, GAUGE_PRESS_Z), c, "apply second test"),
+        Waypoint(1.15, (*GAUGE_XY, GAUGE_PRESS_Z), c, "read second 2.5 N test"),
         Waypoint(1.25, (*GAUGE_XY, HOVER + 0.025), o, "remove hand and clear"),
     ])
     return {"left": left, "right": right}

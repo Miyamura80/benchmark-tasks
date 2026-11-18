@@ -32,6 +32,8 @@ MAX_LOAD = 245.0
 MAX_ANGLE = (CLAMP_GAP + MAX_LOAD / CLAMP_STIFFNESS) * (2 * pi) / BOLT_PITCH
 STATIC_FRICTION = 0.29
 SLIDE_DAMPING = 3500.0
+LEVER_COUPLING_STIFFNESS = 64_000.0  # 1 N/mm at the 8:1 handle
+LEVER_SETTLING_S = 0.20
 
 
 def span_tension(span, deflection=0.0):
@@ -77,6 +79,7 @@ class Rig:
     check_count: int = 0
     slip: float = 0.0
     peak_tension_span: float = START_SPAN
+    pull_reaction_n: float = field(default=0.0, init=False)
 
     @property
     def clamp(self):
@@ -124,11 +127,13 @@ class Rig:
             # The back-drivable 8:1 pull fixture sets displacement while the operator
             # holds it. Its available 25 N input limits carriage force to 200 N.
             target = min(MAX_SPAN, max(MIN_SPAN, pull))
-            drive = max(-200.0, min(200.0, (target - before) * 950_000.0 + restoring))
+            drive = max(-200.0, min(200.0, (target - before) * LEVER_COUPLING_STIFFNESS + restoring))
+            reaction = -drive / PULL_RATIO
+            self.pull_reaction_n += (reaction - self.pull_reaction_n) * (1 - exp(-dt / LEVER_SETTLING_S))
             net = drive - restoring
             if abs(net) > friction:
                 direction = 1 if net > 0 else -1
-                delta = direction * (abs(net) - friction) / (950_000.0) * (1 - exp(-dt / 0.055))
+                delta = direction * (abs(net) - friction) / LEVER_COUPLING_STIFFNESS * (1 - exp(-dt / 0.055))
                 self.span = min(MAX_SPAN, max(MIN_SPAN, before + delta))
         elif restoring > friction:
             # Backward movement reduces restoring force. Limit a discrete step to
@@ -145,6 +150,8 @@ class Rig:
                     high = q
             self.span = max(low, before - (restoring - friction) * dt / SLIDE_DAMPING)
             self.slip += before - self.span
+        if not self.held:
+            self.pull_reaction_n = 0.0
         self.peak_tension_span = max(self.span, self.peak_tension_span)
 
         if self.gauge_loaded and not self.held:

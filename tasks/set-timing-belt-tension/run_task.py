@@ -13,7 +13,7 @@ from yam_arena.constants import FINGER_OPEN, PAD_TIP_PAST_TCP
 from yam_arena.demo import grip_rotation
 
 import belt_task as task
-from mechanics import PULL_RATIO, Rig, START_SPAN, angle_delta
+from mechanics import PULL_RATIO, Rig, START_SPAN, TEST_FORCE, angle_delta
 
 
 @dataclass
@@ -39,6 +39,8 @@ class Contacts:
         self.socket = None
         self.engagement_yaw = 0.0
         self.gauge_travel = 0.0
+        self.gauge_owner = None
+        self.wrenches = {}
 
     @property
     def pull_xyz(self):
@@ -86,8 +88,9 @@ class Contacts:
             tip = self.driver_xyz - (0, 0, task.DRIVER_LENGTH)
             for i, bx in enumerate(task.BOLT_X):
                 drop = self.rig.bolts[i] * 0.00070 / (2 * pi)
+                axial_fit = 0.0034 if self.socket == i else 0.0026
                 if (np.linalg.norm(tip[:2] - (bx, task.BOLT_Y)) <= 0.0035
-                        and abs(tip[2] - (task.BOLT_Z - drop)) <= 0.0026):
+                        and abs(tip[2] - (task.BOLT_Z - drop)) <= axial_fit):
                     phase = (self.driver_yaw + self.rig.bolts[i] + pi / 6) % (pi / 3) - pi / 6
                     if self.socket == i or abs(phase) <= 0.24:
                         bolt = i
@@ -98,14 +101,34 @@ class Contacts:
         self.engagement_yaw = self.driver_yaw
 
         self.gauge_travel = 0.0
+        self.gauge_owner = None
         for name, hand in hands.items():
             tip_z = hand.position[2] - PAD_TIP_PAST_TCP
             if (name not in (self.driver_owner, self.pull_owner) and hand.downward and hand.grip < 0.40
                     and np.linalg.norm(hand.position[:2] - task.GAUGE_XY) < 0.010
                     and task.GAUGE_CAP_Z - 0.024 < tip_z < task.GAUGE_CAP_Z):
-                self.gauge_travel = min(task.GAUGE_TRAVEL, task.GAUGE_CAP_Z - tip_z)
+                travel = min(task.GAUGE_TRAVEL, float(task.GAUGE_CAP_Z - tip_z))
+                if travel > self.gauge_travel:
+                    self.gauge_travel = travel
+                    self.gauge_owner = name
 
-        self.rig.step(dt=dt, pull=pull, bolt=bolt, clockwise=turn, gauge=bool(self.gauge_travel >= task.GAUGE_CONTACT))
+        self.rig.step(dt=dt, pull=pull, bolt=bolt, clockwise=turn,
+                      gauge=self.gauge_travel >= task.GAUGE_CONTACT)
+        self.wrenches = {arm: [np.zeros(3), np.zeros(3)] for arm in hands}
+        if self.pull_owner is not None:
+            self.wrenches[self.pull_owner][0][0] = self.rig.pull_reaction_n
+        if bolt is not None:
+            # The seated bit takes an axial preload. Thread resistance rises with
+            # clamp compression and opposes the actual direction of rotation.
+            self.wrenches[self.driver_owner][0][2] += 0.7
+            if abs(turn) > 1e-5:
+                torque = max(.012, self.rig.torque_nm[bolt])
+                self.wrenches[self.driver_owner][1][2] = float(np.copysign(torque, turn))
+        if self.gauge_owner is not None:
+            # Load increases to the test force at engagement, then stays there
+            # through the gauge's constant-force measurement stroke.
+            self.wrenches[self.gauge_owner][0][2] += TEST_FORCE * min(
+                1., self.gauge_travel / task.GAUGE_CONTACT)
         hands_clear = all(
             h.position[2] > task.TOP + 0.110 or h.position[1] < -0.108 or h.position[1] > 0.115
             for h in hands.values()
@@ -128,6 +151,9 @@ class Contacts:
             retention_difference_mm=self.rig.retention_mm,
             bolt_torque_nm=list(self.rig.torque_nm),
             slip_mm=round(self.rig.slip * 1000, 5),
+            pull_reaction_n=self.rig.pull_reaction_n,
+            socket_reaction_nm=0. if self.socket is None else self.wrenches[self.driver_owner][1][2],
+            gauge_reaction_n=TEST_FORCE * min(1., self.gauge_travel / task.GAUGE_CONTACT),
             score=score,
         )
 
@@ -146,6 +172,10 @@ def bind_task(path, case, output):
         from rig_view import FixtureView
 
         self._belt = Contacts(case)
+        self._belt_grippers = {
+            arm: self._base.scene[arm + "_robot"].find_bodies("gripper")[0][0]
+            for arm in ("left", "right")
+        }
         self._belt_view = FixtureView(self._belt)
         self._belt_pass_steps = 0
         self._belt_trace = (output / "mechanism.jsonl").open("w", encoding="utf-8")
@@ -166,6 +196,7 @@ def bind_task(path, case, output):
         if not is_this(self):
             return advance(self)
         from inspect_robots.types import StepResult
+        import torch
 
         hands = {}
         down = grip_rotation()
@@ -179,6 +210,13 @@ def bind_task(path, case, output):
                               atan2(spin[1, 0], spin[0, 0]),
                               acos(float(np.clip(rot[:, 2] @ down[:, 2], -1, 1))) < 0.22)
         grade = self._belt.advance(hands, self._base.step_dt)
+        for arm, (force, torque) in self._belt.wrenches.items():
+            robot = self._base.scene[arm + "_robot"]
+            wrench = torch.as_tensor(np.array([[force, torque]]), dtype=torch.float32, device=self._base.device)
+            robot.permanent_wrench_composer.set_forces_and_torques_index(
+                forces=wrench[:, :1, :].contiguous(), torques=wrench[:, 1:, :].contiguous(),
+                body_ids=[self._belt_grippers[arm]], is_global=True,
+            )
         self._belt_view.update(self._belt)
         self._belt_pass_steps = self._belt_pass_steps + 1 if grade == 1 else 0
         complete = self._belt_pass_steps >= 5

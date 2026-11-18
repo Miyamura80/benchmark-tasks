@@ -14,7 +14,7 @@
   "scoring": "Tighten both M4 bolts to at least 0.15 N m. Release the pull fixture. Two separate 2.5 N midpoint deflection readings must agree within 0.20 mm and both be within 1.40–1.95 mm. Full score also requires aligned, seated pulleys, a parked driver and clear hands. Score 0.25 for a retained, torqued assembly with a repeatable out-of-band reading. Otherwise 0.",
   "run_limit": "1,400 control steps (70 seconds of simulation at 20 Hz)",
   "reset_notes": "Release both bolts to a 0.105 mm clamp gap, return motor to 109.25 mm pulley spacing, seat the belt, reset the test pointer, and park the driver at +60 degrees in the cradle.",
-  "fidelity": "Reduced-order flexible belt and linear slide, with lead-dependent threaded clamp preload, force–deflection and slip. Custom fixture contacts are geometrically constrained. Belt stiffness, friction, and clamp compliance are unvalidated physical assumptions.",
-  "scores": "Scripted: 1.00 in 595 steps. Both post-release readings were 1.4185 mm, with zero measured drift. Dream-1: 0.00 at the 1,400-step limit. Physical fixture calibration is pending.",
-  "media": "M-3KMLXG"
+  "fidelity": "Reduced-order belt stretch, carriage friction, threaded clamp and force-deflection gauge. Engaged tools transmit reaction force and torque to the simulated YAM gripper bodies. The lever is capped at 25 N, the driver resists up to 0.196 N m and the cap reaches 2.5 N. Individual hex facets, belt teeth and finger–tool friction are approximated. Physical bench calibration remains open.",
+  "scores": "Dream-1: 0.00 in 1,400 steps. Scripted YAM: 1.00 in 596 steps.",
+  "media": "M-W2PXQ5"
 }
