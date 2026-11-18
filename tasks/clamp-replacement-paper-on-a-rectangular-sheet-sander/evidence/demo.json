@@ -1,0 +1,17 @@
+{
+  "step": 236,
+  "seconds": 11.8,
+  "phase": "Leave both ends of the sheet clamped",
+  "score": 1.0,
+  "tension_mm": 24.9,
+  "clamp_mm": 22.6,
+  "pull_test_ms": 1224,
+  "proof_load_n": 29.1,
+  "grips": 2,
+  "title": "Clamp replacement paper on a rectangular sheet sander",
+  "variant": 0,
+  "mode": "scripted",
+  "simulator": "MuJoCo dual YAM",
+  "control_hz": 20,
+  "error": null
+}
