@@ -1,0 +1,18 @@
+{
+  "title": "Clear tangled thread from a sewing-machine bobbin",
+  "category": "Impact on jobs",
+  "keywords": [
+    "sewing machine",
+    "bobbin",
+    "thread jam"
+  ],
+  "instruction": "Lift the bobbin, remove the trapped thread, reseat the bobbin, and turn the handwheel to check that the needle moves.",
+  "context": "Recovering the lower thread path involves work below the needle plate before the machine can be restarted.",
+  "setup": "A domestic sewing-machine mock-up with the cover removed, a 38 mm diameter bobbin in its well, trapped blue thread, a raised foot and a handwheel coupled to a moving needle. The mock-up handwheel turns in the horizontal plane.",
+  "scoring": "0.5 for lifting the bobbin over 33 mm and drawing the thread bundle over 33 mm out of the path. Full credit when the bobbin is back within 11 mm of its seat and the needle strokes over 4 mm in the handwheel check.",
+  "run_limit": "1,200 actions (60 seconds at 20 Hz)",
+  "reset_notes": "Seat the bobbin, restore the trapped thread and reset the handwheel and needle travel.",
+  "fidelity": "The visible thread is loose and changes shape as it is extracted. Its physical guide uses lift-dependent resistance to approximate the pinch. A slider-crank models the needle drive. The proof verifies needle movement, without stitch formation or bobbin thread pickup.",
+  "scores": "Dream-1 beta: 0.00 in 1,200 steps. Scripted dual-YAM demo: 1.00 in 345 steps.",
+  "media": "M-34LPSL"
+}

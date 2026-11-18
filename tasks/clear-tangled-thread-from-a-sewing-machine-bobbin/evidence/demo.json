@@ -1,0 +1,17 @@
+{
+  "step": 345,
+  "seconds": 17.25,
+  "phase": "Release the handwheel",
+  "score": 1.0,
+  "clear_mm": 39.0,
+  "bobbin_seated": true,
+  "needle_stroke_mm": 6.7,
+  "handwheel_deg": -56.5,
+  "grips": 3,
+  "title": "Clear tangled thread from a sewing-machine bobbin",
+  "variant": 0,
+  "mode": "scripted",
+  "simulator": "MuJoCo dual YAM",
+  "control_hz": 20,
+  "error": null
+}
