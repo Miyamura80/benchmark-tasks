@@ -1,0 +1,18 @@
+{
+  "title": "Pull a seized compression olive off a copper pipe",
+  "category": "Impact on jobs",
+  "keywords": [
+    "plumbing",
+    "compression fitting",
+    "screw extractor"
+  ],
+  "instruction": "Turn the fitted olive puller to free the brass ring, lift it clear, and slide the spare ring onto the pipe to check the fit.",
+  "context": "When servicing a compression fitting, removing the old olive allows the pipe stub to be retained.",
+  "setup": "A copper tube model stands vertically from a base with a brass olive retained at its end. A crossbar puller is already coaxially engaged. A spare brass ring rests on a staging peg beside the pipe. The robot can lift and park the extractor and old ring away from the original tube.",
+  "scoring": "0.5 when the extractor breaks the old olive free and parks it clear of the original tube. Full credit when the spare ring is aligned to within 2 mm of that same tube and inserted over 22 mm.",
+  "run_limit": "1,200 actions (60 seconds at 20 Hz)",
+  "reset_notes": "Return the extractor, both ring positions and the transfer guides to their initial positions. Leave the spare ring on its staging peg.",
+  "fidelity": "The screw-lead constraint transmits the crossbar rotation to the spent olive. The tool begins pre-engaged. Contact-gated guides constrain the extractor and replacement-ring transfer, and the spare ring has physical clearance around the original tube.",
+  "scores": "Dream-1 beta: 0.00 in 1,200 steps. Scripted dual-YAM demo: 1.00 in 867 steps.",
+  "media": "M-X2VV8P"
+}

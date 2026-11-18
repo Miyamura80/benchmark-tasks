@@ -1,0 +1,15 @@
+{
+  "model": "dreamlabs/dream-1-beta",
+  "model_requests": 25,
+  "step": 1200,
+  "seconds": 60,
+  "phase": "Dream-1 policy",
+  "score": 0,
+  "extraction_mm": 0,
+  "screw_deg": 3.1,
+  "parked_mm": 0.1,
+  "grips": 0,
+  "puller_clearance_mm": -0.5,
+  "ring_offset_mm": 149.4,
+  "fit_mm": -7.2
+}
