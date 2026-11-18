@@ -11,14 +11,41 @@ module carrier() {
         union() {
             block([20,20,4], [0,0,-5]);
             translate([0,0,-21.8]) cylinder(d=19, h=15);
+            block([4,8,7], [-10,0,-12]);
         }
-        // Tune the sliding clearance to the measured shaft before use.
+        // Keyed locating land and a wider tapered lead-in at the mouth.
         intersection() {
-            translate([0,0,-22]) cylinder(d=8.4, h=15);
-            translate([-10,-10,-22]) cube([13.2,20,15]);
+            union() {
+                translate([0,0,-22]) cylinder(d1=12.5, d2=8.50, h=7.3);
+                translate([0,0,-14.71]) cylinder(d=8.50, h=7.71);
+            }
+            union() {
+                hull() {
+                    translate([-10,-10,-22]) cube([15.25,20,.01]);
+                    translate([-10,-10,-14.71]) cube([13.25,20,.02]);
+                }
+                translate([-10,-10,-14.71]) cube([13.25,20,7.71]);
+            }
         }
+        translate([-12.1,0,-12]) rotate([0,90,0]) cylinder(d=3.3, h=8.1);
         translate([0,0,-5.5]) cylinder(d=6.15, h=2.6);
     }
+}
+
+module shaft_section(z, height, r1, r2, flat=3) {
+    intersection() {
+        translate([0,0,z]) cylinder(r1=r1, r2=r2, h=height);
+        translate([-5,-5,z]) cube([5+flat,10,height]);
+    }
+}
+
+module shaft() {
+    shaft_section(77,8.6,4,4);
+    shaft_section(85.6,.7,4,3.45);
+    shaft_section(86.3,1.4,3.45,3.45);
+    shaft_section(87.7,.7,3.45,4);
+    shaft_section(88.4,2.1,4,4);
+    shaft_section(90.5,1.5,4,3.15);
 }
 
 module bracket() {
@@ -89,7 +116,7 @@ if (part == "layout") {
     color("slategray") block([265,205,12], [-1,-10,6]);
     color("steelblue") translate([0,0,13]) cylinder(d=80, h=64);
     color("silver") {
-        translate([0,0,77]) cylinder(d=8, h=15);
+        shaft();
         for (y = [-38,38]) {
             translate([0,y,52]) cylinder(d=18, h=36.5);
             translate([0,y,88.5]) cylinder(d=8, h=11);

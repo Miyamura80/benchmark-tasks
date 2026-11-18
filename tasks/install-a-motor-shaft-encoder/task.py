@@ -17,7 +17,7 @@ INSTRUCTION = (
     "lower the sensor bracket onto its guide posts, and close its retaining catch. "
     "Press the field-test button, then release the assembly."
 )
-CASES = ("nominal", "skip-catch", "missing-magnet")
+CASES = ("nominal", "skip-catch", "missing-magnet", "wrong-yaw", "no-detent")
 CASE = os.environ.get("ROBOCURVE_FIXTURE_CASE", "nominal")
 CENTER = (0.306, 0.010)
 DECK = TOP + 0.013
@@ -41,6 +41,12 @@ TONGUE_POS, TONGUE_SIZE = (-.006, .040, .0035), (.010, .014, .005)
 TEST_XY = (0.250, -0.124)
 TEST_CAP = TOP + 0.052
 HOVER = TOP + 0.155
+PROOF_FORCE_N = 2.0
+PROOF_DURATION_S = .30
+PROOF_LIFT_M = .00050
+DETENT_HOLD_N = 3.2
+DETENT_RELEASE_M = .0014
+SEATED_YAW_TOL_RAD = .20
 
 OBJECTS = [
     Box("test_fixture_base", (0.305, 0, TOP + .006), size=(.265, .205, .012),
@@ -66,7 +72,7 @@ def demo():
     def move(duration, position, grip, name, yaw=0.0):
         return Waypoint(duration, position, grip, name, yaw)
 
-    carrier_xy = (CENTER[0] + .004, CENTER[1] + .004)
+    carrier_xy = (CENTER[0] + .0026, CENTER[1] + .0022)
     bracket_xy = (CENTER[0] + .006, CENTER[1] - .004)
     left_park = (0.275, 0.175, HOVER + .018)
     left = [move(2.7, left_park, o, "clear motor"),
@@ -89,14 +95,16 @@ def demo():
     else:
         pickup = (*CAP_HOME[:2], CAP_HOME[2] + CAP_GRIP_Z_OFFSET)
         seated_grip = (*carrier_xy, CAP_SEAT[2] + CAP_GRIP_Z_OFFSET - .001)
+        yaw = .85 if CASE == "wrong-yaw" else -.05
         right = [
             move(1.8, (*CAP_HOME[:2], HOVER), o, "approach carrier"),
             move(1.4, pickup, o, "reach carrier"),
             move(.85, pickup, c, "grasp carrier"),
             move(1.3, (*CAP_HOME[:2], HOVER), c, "lift carrier"),
-            move(1.3, (*carrier_xy, HOVER), c, "align D-flat with shaft"),
-            move(1.4, seated_grip, c, "press carrier onto shaft", -.05),
-            move(.75, seated_grip, o, "release carrier", -.05),
+            move(1.5, (*carrier_xy, HOVER), c, "align D-flat with shaft", yaw),
+            move(1.6, seated_grip, c, "press carrier onto shaft", yaw),
+            move(.50, seated_grip, c, "settle carrier", yaw),
+            move(.75, seated_grip, o, "release carrier", yaw),
             move(.9, (*CENTER, HOVER + .025), o, "clear shaft"),
             move(1.1, right_park, o, "clear motor"),
         ]
@@ -129,6 +137,15 @@ class State:
         self.latch = False
         self.test_time = 0.
         self.test_result = None
+        self.detent_enabled = case != "no-detent"
+        self.detent_engaged = False
+        self.detent_ready = True
+        self.proof_elapsed = 0.
+        self.proof_origin = None
+        self.proof_max_lift = 0.
+        self.proof_pass = None
+        self.proof_force = 0.
+        self.detent_force = 0.
 
     def advance(self, objects, hands, contacts, dt):
         from yam_arena.urdf import quat_xyzw_to_matrix
@@ -140,9 +157,32 @@ class State:
         carrier_basis = quat_xyzw_to_matrix(carrier.quat_xyzw)
         bracket_basis = quat_xyzw_to_matrix(bracket.quat_xyzw)
         yaw = atan2(carrier_basis[1,0], carrier_basis[0,0])
-        carrier_on = bool(np.linalg.norm(carrier.pos - CAP_SEAT) <= .003
-                          and abs(yaw) < .15 and carrier_basis[2,2] > .995
-                          and carrier.resting())
+        radial_error = np.linalg.norm(carrier.pos[:2] - CENTER)
+        lift = float(carrier.pos[2] - CAP_SEAT[2])
+        aligned = radial_error <= .0010 and abs(yaw) <= SEATED_YAW_TOL_RAD and carrier_basis[2,2] > .995
+        seated = aligned and abs(lift) <= .00065
+        carrier_released = all(np.linalg.norm(hand.position - carrier.pos) > .030 for hand in hands.values())
+        carrier_on = bool(seated and carrier_released)
+        # The plunger enters its groove as the free, keyed body reaches the
+        # stop. A preloaded flank resists extraction up to the ramp travel.
+        if self.detent_engaged and (lift > DETENT_RELEASE_M or not aligned):
+            self.detent_engaged = False
+        if lift > .004 or radial_error > .010:
+            self.detent_ready = True
+        if self.detent_enabled and self.detent_ready and seated and lift <= .00030:
+            self.detent_engaged = True
+            self.detent_ready = False
+        self.detent_force = -DETENT_HOLD_N if self.detent_engaged else 0.
+
+        if self.proof_force:
+            self.proof_elapsed += dt
+            self.proof_max_lift = max(self.proof_max_lift, float(carrier.pos[2] - self.proof_origin))
+            if self.proof_max_lift > PROOF_LIFT_M or self.proof_elapsed >= PROOF_DURATION_S - 1e-6:
+                self.proof_pass = bool(self.proof_max_lift <= PROOF_LIFT_M and aligned)
+                self.proof_force = 0.
+        if not seated and not self.proof_force and self.proof_pass:
+            self.proof_pass = None
+            self.proof_origin = None
         bracket_on = bool(np.linalg.norm(bracket.pos - HEAD_SEAT) <= .003
                           and bracket_basis[2,2] > .995 and bracket_basis[0,0] > .99
                           and bracket.resting())
@@ -170,13 +210,18 @@ class State:
             self.test_time += dt
             if self.test_time >= .30:
                 self.test_result = bool(carrier_on and bracket_on and retained)
+                if self.test_result and self.proof_origin is None:
+                    self.proof_origin = float(carrier.pos[2])
+                    self.proof_elapsed = self.proof_max_lift = 0.
+                    self.proof_force = PROOF_FORCE_N
         else:
             self.test_time = 0.
         clear = all(hand.position[2] > TOP + .133 or abs(hand.position[1]) > .160 for hand in hands.values())
         score = .25 if carrier_on else 0.
         if score and bracket_on:
             score = .65 if retained else .45
-        if score == .65 and self.test_result is True and button_motion < .001 and clear:
+        if (score == .65 and self.test_result is True and self.proof_pass is True
+                and button_motion < .001 and clear):
             score = 1.
         return dict(score=score, carrier=carrier_on, bracket=bracket_on, catch=bool(retained),
                     carrier_position_m=list(map(float, carrier.pos)),
@@ -184,11 +229,18 @@ class State:
                     bracket_local_z=bracket_basis[:,2].tolist(),
                     measured_actuations=[pressed("RedCatch"), pressed("BlueTestKey")],
                     carrier_yaw_rad=float(yaw),
+                    carrier_lift_mm=round(lift * 1000, 4),
+                    detent_engaged=self.detent_engaged,
+                    detent_force_n=self.detent_force,
+                    proof_force_n=self.proof_force,
+                    proof_max_lift_mm=round(self.proof_max_lift * 1000, 4),
+                    proof_pass=self.proof_pass,
                     catch_tab_overlap_mm=round(float(min(overlap[:2])) * 1000, 3),
                     catch_tab_clearance_mm=round(float(tongue_clearance) * 1000, 3),
                     catch_mm=round(float(catch_motion)*1000, 3),
                     button_mm=round(float(button_motion)*1000, 3), field_check=self.test_result,
-                    caption="Field check passed" if self.test_result else "Install and check the encoder")
+                    caption="Field and retention checks passed" if self.test_result and self.proof_pass
+                    else "Install and check the encoder")
 
 
 class View:

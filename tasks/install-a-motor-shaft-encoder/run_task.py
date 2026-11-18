@@ -103,6 +103,7 @@ def bind(path, directory, setup, case):
         if not current(self):
             return original_step(self)
         from inspect_robots.types import StepResult
+        import torch
 
         hands = {}
         down = grip_rotation()
@@ -137,6 +138,11 @@ def bind(path, directory, setup, case):
                 contacts.append((frozenset({actuator_name,"gripper"}),
                                  parts[part_name].pos, closing_impulse))
         info = state.advance(parts, hands, contacts, self._base.step_dt)
+        carrier = self._base.scene["magnet_carrier"]
+        force = torch.tensor([[[0., 0., state.detent_force + state.proof_force]]],
+                             dtype=torch.float32, device=self._base.device)
+        carrier.permanent_wrench_composer.set_forces_and_torques_index(
+            forces=force, torques=torch.zeros_like(force), is_global=True)
         if state.latch:
             # The detent takes over only after measured physical depression.
             controls["encoder_catch"].GetTargetPositionAttr().Set(-task.CATCH_STROKE)

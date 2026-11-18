@@ -74,14 +74,14 @@ def asset(path, mass=None):
     return stage
 
 
-def collider(shape, friction=None):
+def collider(shape, friction=None, contact_offset=.0005):
     from pxr import PhysxSchema, UsdPhysics, UsdShade
     from pxr import Sdf
 
     prim = shape.GetPrim()
     UsdPhysics.CollisionAPI.Apply(prim)
     api = PhysxSchema.PhysxCollisionAPI.Apply(prim)
-    api.CreateContactOffsetAttr(.0005)
+    api.CreateContactOffsetAttr(contact_offset)
     api.CreateRestOffsetAttr(0.)
     if friction is not None:
         stage = prim.GetStage()

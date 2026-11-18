@@ -9,10 +9,10 @@
   ],
   "instruction": "Install the magnetic encoder on the motor shaft. Seat the magnet carrier, lower the sensor bracket onto its guide posts, and close its retaining catch. Press the field-test button, then release the assembly.",
   "context": "Magnetic robot-joint encoders rely on a centred, retained magnet and a fixed gap to a secured sensor. The fit can be checked before powering the motor.",
-  "setup": "An unpowered Ø80 mm motor with an 8 mm keyed steel D-shaft is fixed to a tabletop fixture. The magnetic carrier with a 20 × 20 mm grasp flange and the PCB bracket start separately in docks. Two guide posts 76 mm apart set the bracket position and nominal 1.5 mm sensor gap. A red catch starts outboard of the bracket, and the field-test LED starts off.",
-  "scoring": "0.25 for the released keyed carrier at the seating datum, 0.45 if the bracket seats on both guides, 0.65 if the physical latch retains it. Full score requires pressing and releasing the field-test key, a passing field check, and both hands clear.",
-  "fidelity": "Native rigid-body contacts drive grasping and keyed insertion. An inclined slider carries the catch over the bracket tab after seating, with a detent after measured finger actuation. The test key moves on a vertical slider. The simulated field check verifies the modeled fit. The physical fixture uses AS5600 field diagnostics.",
+  "setup": "An unpowered Ø80 mm motor with an 8 mm steel D-shaft with an axial detent groove is fixed to a tabletop fixture. The magnetic carrier with a 20 × 20 mm grasp flange, keyed bore and spring ball plunger and the PCB bracket start separately in docks. Two guide posts 76 mm apart set the bracket position and nominal 1.5 mm sensor gap. A red catch starts outboard of the bracket, and the field-test LED starts off.",
+  "scoring": "0.25 for the released keyed carrier within 0.65 mm of its datum and 11.5° of the flat. 0.45 if the bracket seats on both guides, 0.65 if its catch retains it. Full score requires the field check and key release, both hands clear, and at most 0.50 mm of carrier lift under a 2.0 N axial proof load for 0.30 s.",
+  "fidelity": "Native rigid-body collisions drive grasping and insertion against the D-flat. A reduced-order spring plunger engages the shaft groove. A 2.0 N upward proof load acts on the native carrier body and the scorer measures its displacement. The catch and field key use native sliders. The simulated field check uses measured fit. The physical fixture uses an AS5600 diagnostic and a spring scale.",
   "run_limit": "1,400 steps (70 seconds at 20 Hz)",
-  "scores": "Dream-1 run: 0.00 in 1,400 steps. Scripted YAM native-contact demo: 1.00 in 601 steps.",
-  "media": "M-BF9RQ8"
+  "scores": "Dream-1: 0.00 in 1,400 steps. Scripted YAM: 1.00 in 601 steps.",
+  "media": "M-SV9S2N"
 }

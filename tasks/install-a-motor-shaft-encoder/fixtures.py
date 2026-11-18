@@ -19,14 +19,14 @@ def author(directory):
 
     alloy, bracket, grip = (.61,.65,.70), (.16,.39,.27), (.85,.57,.09)
 
-    def box(stage, name, center, size, color, angle=0., friction=None):
+    def box(stage, name, center, size, color, angle=0., friction=None, contact_offset=.0005):
         shape = UsdGeom.Cube.Define(stage, f"/Object/{name}")
         shape.CreateSizeAttr(1.)
         shape.AddTranslateOp().Set(Gf.Vec3d(*center))
         shape.AddRotateZOp().Set(angle)
         shape.AddScaleOp().Set(Gf.Vec3f(*size))
         shape.CreateDisplayColorAttr([Gf.Vec3f(*color)])
-        collider(shape, friction)
+        collider(shape, friction, contact_offset)
 
     def cylinder(stage, name, center, radius, height, color):
         shape = UsdGeom.Cylinder.Define(stage, f"/Object/{name}")
@@ -51,28 +51,40 @@ def author(directory):
                 internal = opening - .001 if keyed and i == 0 else opening
                 radial = internal + wall / 2
                 p = (center[0] + radial*cos(angle), center[1] + radial*sin(angle), top - depth/2)
-                box(stage, f"{name}{row}_{i}", p, (wall, 2*radial*.268+.00025, depth), color, degrees(angle))
+                box(stage, f"{name}{row}_{i}", p, (wall, 2*radial*.268+.00025, depth),
+                    color, degrees(angle), contact_offset=.00010 if keyed else .00050)
             top -= depth
 
+    def shaft_section(stage, name, bottom, top, lower, upper):
+        # Each section is a convex D-profile extrusion or frustum. Keep the
+        # groove open by using separate convex shapes, rather than one hull.
+        mesh = UsdGeom.Mesh.Define(stage, f"/Object/{name}")
+        points = []
+        for z, (radius, flat) in ((bottom, lower), (top, upper)):
+            points.extend((x + min(flat, radius*cos(i*pi/12)), y + radius*sin(i*pi/12), z)
+                          for i in range(24))
+        faces = [tuple(reversed(range(24))), tuple(range(24,48))]
+        faces.extend((i, (i+1)%24, (i+1)%24+24, i+24) for i in range(24))
+        mesh.CreatePointsAttr([Gf.Vec3f(*v) for v in points])
+        mesh.CreateFaceVertexCountsAttr([len(f) for f in faces])
+        mesh.CreateFaceVertexIndicesAttr([i for f in faces for i in f])
+        mesh.CreateDisplayColorAttr([Gf.Vec3f(*alloy)])
+        mesh.CreateSubdivisionSchemeAttr("none")
+        collider(mesh, contact_offset=.00010)
+        UsdPhysics.MeshCollisionAPI.Apply(mesh.GetPrim()).CreateApproximationAttr("convexHull")
 
     stage = asset(paths["encoder_frame"])
     x, y = task.CENTER
     cylinder(stage, "MotorHousing", (x,y,(task.DECK+task.MOTOR_TOP)/2), .040, task.MOTOR_TOP-task.DECK, (.10,.29,.42))
-    # Polygonal D shaft with a true flattened face and thickness contacts.
-    shaft = UsdGeom.Mesh.Define(stage, "/Object/KeyedShaft")
-    radius, flat = .004, .003
-    rim = [(x+min(flat,radius*cos(i*pi/12)), y+radius*sin(i*pi/12)) for i in range(24)]
-    points = [(a,b,z) for z in (task.MOTOR_TOP,task.SHAFT_TOP) for a,b in rim]
-    faces = [tuple(reversed(range(24))), tuple(range(24,48))]
-    faces.extend((i, (i+1)%24, (i+1)%24+24, i+24) for i in range(24))
-    shaft.CreatePointsAttr([Gf.Vec3f(*v) for v in points])
-    shaft.CreateFaceVertexCountsAttr([len(f) for f in faces])
-    shaft.CreateFaceVertexIndicesAttr([i for f in faces for i in f])
-    shaft.CreateDisplayColorAttr([Gf.Vec3f(*alloy)])
-    shaft.CreateSubdivisionSchemeAttr("none")
-    collider(shaft)
     from pxr import UsdPhysics
-    UsdPhysics.MeshCollisionAPI.Apply(shaft.GetPrim()).CreateApproximationAttr("convexHull")
+
+    key, groove, lead = (.004, .003), (.00345, .003), (.00315, .00260)
+    heights = (task.MOTOR_TOP, task.SHAFT_TOP-.0064, task.SHAFT_TOP-.0057,
+               task.SHAFT_TOP-.0043, task.SHAFT_TOP-.0036, task.SHAFT_TOP-.0015,
+               task.SHAFT_TOP)
+    sections = (key, key, groove, groove, key, key, lead)
+    for i, (bottom, top) in enumerate(zip(heights, heights[1:])):
+        shaft_section(stage, f"KeyedShaftSection{i}", bottom, top, sections[i], sections[i+1])
     for i, offset in enumerate(GUIDE_OFFSETS):
         # Machined lead-in on the exposed end of each steel guide pin.
         guide_z_top = task.TOP+.1135
@@ -109,8 +121,9 @@ def author(directory):
     # stop face at the shaft tip, and its upper face is the magnet datum.
     box(stage, "CarrierGrip", (0,0,task.CAP_GRIP_Z_OFFSET), (.020,.020,.004),
         (.79,.53,.13), friction=1.1)
-    sleeve(stage, "CarrierBore", (0,0,-.0144), .0055, .0148, .004,
+    sleeve(stage, "CarrierBore", (0,0,-.0144), .00425, .0148, .004,
            (.79,.53,.13), keyed=True)
+    box(stage, "DetentHousing", (-.0083,0,-.0118), (.004,.006,.005), alloy)
     stage.GetRootLayer().Save()
 
     stage = asset(paths["sensor_bracket"], .056)
