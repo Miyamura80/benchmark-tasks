@@ -7,13 +7,13 @@
     "flow measurement",
     "limescale"
   ],
-  "instruction": "Measure the flow from the four toilet rim jets. Use the scraper to clear the restricted jet and run the same rinse again to verify restored flow.",
+  "instruction": "Press the blue test switch. Measure the flow from the four toilet rim jets. Use the scraper to clear the restricted jet and run the same rinse again to verify restored flow. Use the same switch for the final measurement.",
   "context": "Limescale can restrict an individual rim jet and reduce water coverage on one side of the bowl.",
-  "setup": "Use a ceramic-look toilet workcell with a raised hinged seat and lid. Four 7.6 mm outlets sit just below the lip. Four rigid limescale surrogate chips, 3–5 mm across, narrow the front-right outlet in the nominal reset. A scraper with a steel edge starts in a fixed dock at the front left. The gripper starts open above the handle. A timed switch and four collection volume readings provide the rinse test. Exact layout in README.",
-  "scoring": "Require a first rinse with one outlet at ≤40% of its open-flow reference and three at 80–120%. Score 1.00 if the scraper contacts and frees all four chips, the tool is clear and the final rinse puts all four jets within 80–120%. Score 0.25 for contacting the weak outlet and completing the final rinse with the tool clear. Otherwise score 0.",
-  "run_limit": "At most 100 model calls and 1,200 control steps (60 seconds at 20 Hz).",
+  "setup": "Use a ceramic-look toilet workcell with a raised hinged seat and lid. Four 7.6 mm outlets sit just below the lip. Four rigid limescale surrogate chips, 3–5 mm across, narrow the front-right outlet in the nominal reset. A scraper with a steel edge starts in a fixed dock at the front centre. Both YAM arms start in open-gripper ready poses. A blue spring-loaded switch starts a two-second rinse. Four volume readings measure outlet flow. Exact layout in README.",
+  "scoring": "Require an initial rinse with exactly one outlet at ≤40% of its reference and each other outlet at 80–120%. Score 1.00 if tool contact frees all four deposits and all outlets reach 80–120% in the final rinse with the tool clear. Score 0.25 for measured contact with the weak outlet between two valid rinses with the tool clear. Otherwise score 0.00.",
+  "run_limit": "1,200 control steps (60 seconds at 20 Hz).",
   "reset_notes": "Return all four chips to the bonded state, clear the collectors and return the scraper and gripper to their starting positions.",
   "fidelity": "MuJoCo simulates the grasp, tool contacts and detached fragments. A contact-work threshold approximates limescale adhesion. Individual outlet flow is derived from remaining deposit occlusion; streams are visualised rather than fluid simulated. The physical rig, scale adhesion and thresholds are specified for wet calibration.",
-  "scores": "Scripted MuJoCo demo: 1.00. Official Inspect Robots LLM run pending.",
-  "media": ""
+  "scores": "Dream-1 beta: 0.00 (1,200 control steps). Scripted dual-YAM demo: 1.00.",
+  "media": "M-859WBS"
 }

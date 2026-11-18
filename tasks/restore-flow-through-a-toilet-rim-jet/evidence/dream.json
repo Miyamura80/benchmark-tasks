@@ -1,0 +1,15 @@
+{
+  "source_sha": "4c682f3a9427e0e63f16b564c80c75fb1e532f2a",
+  "model": "dreamlabs/dream-1-beta",
+  "score": 0,
+  "status": "success",
+  "requests": 25,
+  "control_hz": 20,
+  "frames_per_camera": 1201,
+  "steps": 1200,
+  "wall_seconds": 101.4,
+  "run_log": "toilet-yam-rim_f959c907.json",
+  "sample": {
+    "status": "success"
+  }
+}

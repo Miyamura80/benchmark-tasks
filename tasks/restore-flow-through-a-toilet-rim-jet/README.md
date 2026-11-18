@@ -6,23 +6,29 @@ Run a rinse, identify the weak outlet from the four collections, scrape away the
 
 The fixture has a ceramic-look bowl, a hinged polymer seat ring and raised lid, and a cistern. Use the bowl centre as the origin in X and Y. The floor is Z = 0. Four independent outlets sit at Z = 211 mm with X and Y coordinates ±105.6 mm and ±79.2 mm. In reading order they are front left (−X, +Y), front right (−X, −Y), rear left (+X, +Y), and rear right (+X, −Y). The outlet mouths are 7.6 mm across and point inward and downward.
 
-The front-right outlet starts with four rough bonded chips. A steel-edged hand scraper rests at the front-left dock and the single Cartesian gripper starts open above it. The scraper handle centre is (−245, −144, 123) mm. The gripper starts at (−245, −144, 265) mm. The model code defines the remaining geometry and material approximations. A complete two-second rinse updates the four volume readings. The alternate resets put the same obstruction in one of the other outlets. The policy receives the test readings and workcell camera. The reset's fault index is private.
+The front-right outlet starts with four rough bonded chips. A steel-edged scraper rests in the centreline dock with its handle at (−245, 0, 123) mm. The model code defines the remaining geometry and material approximations. A complete two-second rinse updates the four volume readings. The reset's fault index is private. The observations include the three YAM camera views and joint state.
 
 ## Reproduce and score
 
-Use Python 3.12, FFmpeg, EGL and the DejaVu Sans fonts. Install the dependencies with `python -m pip install -r requirements.txt`.
+Two I2RT YAM arms with stock parallel jaws sit on bases at (−250, ±305, 175) mm. Both start with grippers open. The overhead camera and both wrist cameras feed Dream-1. The blue spring-loaded test switch sits at (−160, 212, 231) mm. Finger contact and at least 10 mm of physical switch travel trigger each measurement. The tool must remain clear of the bowl while the test runs.
+
+Use Python 3.12, FFmpeg, EGL and DejaVu Sans. Install the robot scene, evaluator and Dream client.
 
 ```sh
-MUJOCO_GL=egl python bench.py rim --blocked 1 --video --out runs/scripted
-python bench.py rim --blocked 1 --control --out runs/off-target
-MUJOCO_GL=egl python inspect_trial.py rim --blocked 1 --smoke --out runs/smoke
-MUJOCO_GL=egl python inspect_trial.py rim --blocked 1 --model "$MODEL_ID" --out runs/model
-inspect-robots video runs/model/toilet-rim_*.json --out runs/model-video
+python -m pip install -r requirements.txt
+python -m pip install --no-deps 'dreamlabs==1.0.23'
+
+MUJOCO_GL=egl python yam_trial.py rim --video --out runs/scripted
+MUJOCO_GL=egl python yam_trial.py rim --control --out runs/control
+MUJOCO_GL=egl python yam_eval.py rim --out runs/dream
+inspect-robots video runs/dream/toilet-yam-rim_*.json --out runs/dream-video
 ```
 
-Use the model provider's environment credential. For an OpenAI-compatible endpoint, add `--base-url "$MODEL_BASE_URL" --api-key-env NAME_OF_KEY_VARIABLE`. The Inspect Robots seed is 0 and the scene reset is deterministic. Set `--blocked` to 0, 1, 2 or 3 in reading order. Native runs produce `result.json`, a 25 Hz trace, and optional H.264 video. The scripted nominal trial lasts about 15 seconds of simulated time. Each model trial is bounded by 60 seconds of physical simulation and 100 model calls. Wall time depends on inference and rendering.
+Set the Dream API credential in the authorised environment before running the model. Both runs use the same workcell and scorer. The model uses seed 0 with a deterministic reset and 1,200 control steps at 20 Hz. The scripted demo takes 29.0 seconds of simulated time. Wall time varies with rendering and inference.
 
-The reference is 200 mL per outlet in a two-second rinse. The nominal demo starts at 40 mL on the weak side, reaches 200 mL on all four sides, and clears the four chips. See [scripted measurements](evidence/scripted.json). The native off-target control earns diagnosis credit only. Inspect Robots requires physical contact at the restricted outlet for partial credit, plus a second valid rinse with the tool clear. Full credit also requires clearing all four deposits and restoring all four outlets to 160–240 mL. The two-rinse no-contact smoke check should score zero.
+The two-second open-flow reference is 200 mL per outlet. In the nominal demo the front-right outlet starts at 40 mL. All four chips detach and all four outlets finish at 200 mL. A no-contact control scores zero. See the [scripted result](evidence/scripted.json) and [off-target control](evidence/control.json).
+
+The [Dream-1 baseline](evidence/dream.json) scored 0.00 after 1,200 steps. It used 25 model requests in 101.4 seconds of wall time. The baseline and scripted video are both supplied.
 
 ## Physical reset and measurement
 
