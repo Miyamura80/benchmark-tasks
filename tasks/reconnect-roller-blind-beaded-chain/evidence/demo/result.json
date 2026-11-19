@@ -1,0 +1,17 @@
+{
+  "step": 481,
+  "seconds": 24.05,
+  "phase": "Release the chain after the pull",
+  "score": 1.0,
+  "coupler_closed": true,
+  "shade_drop_mm": -1.1,
+  "peak_drop_mm": 38.6,
+  "return_mm": 39.7,
+  "terminal_mm": 25.0,
+  "title": "Reconnect a roller blind\u2019s beaded chain",
+  "variant": 0,
+  "mode": "scripted",
+  "simulator": "MuJoCo dual YAM",
+  "control_hz": 20,
+  "error": null
+}

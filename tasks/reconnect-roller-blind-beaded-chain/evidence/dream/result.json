@@ -1,0 +1,19 @@
+{
+  "step": 1200,
+  "seconds": 60.0,
+  "phase": "Dream-1 policy",
+  "score": 0.0,
+  "coupler_closed": false,
+  "shade_drop_mm": 5.7,
+  "peak_drop_mm": 0.0,
+  "return_mm": -5.7,
+  "terminal_mm": 0.0,
+  "title": "Reconnect a roller blind’s beaded chain",
+  "variant": 0,
+  "run_limit": 1200,
+  "model": "dreamlabs/dream-1-beta",
+  "model_requests": 25,
+  "video_sha256": "477bf758b922bff0a9712f45716123d2786739ab102526113afeed63706badc1",
+  "service_sessions": 15,
+  "inference_retries": 14
+}
