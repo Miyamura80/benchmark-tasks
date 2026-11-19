@@ -1,0 +1,28 @@
+{
+  "step": 1200,
+  "seconds": 60.0,
+  "phase": "Dream-1 policy",
+  "score": 0.0,
+  "lint_tufts_removed": 0,
+  "strap_closed": false,
+  "load_released": false,
+  "weight_drop_mm": 0.6,
+  "load_held_s": 0.0,
+  "pressed_before_load": false,
+  "lint_travel_mm": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "title": "Restore grip to a lint-clogged hook-and-loop strap",
+  "variant": 0,
+  "run_limit": 1200,
+  "model": "dreamlabs/dream-1-beta",
+  "model_requests": 25,
+  "video_sha256": "9635e2237808cdc6b44ed7f4ddf6d675d03725b3c67a8d003949228324e7f217",
+  "service_sessions": 25,
+  "inference_retries": 24
+}

@@ -1,0 +1,213 @@
+{
+  "model": "dreamlabs/dream-1-beta",
+  "control_hz": 20,
+  "rows_per_request": 48,
+  "preroll_steps": 32,
+  "dry_run": false,
+  "tracking_error_rad": {
+    "mean": 0.07968586508514215,
+    "max": 0.8124974566303346
+  },
+  "requests": [
+    {
+      "step": 32,
+      "rtt_s": 3.781405657995492,
+      "infer_ms": 303,
+      "attempts": 1,
+      "rows": 48,
+      "rows_beyond_limits": 0
+    },
+    {
+      "step": 80,
+      "rtt_s": 0.7137656700797379,
+      "infer_ms": 264,
+      "attempts": 2,
+      "rows": 48,
+      "rows_beyond_limits": 0
+    },
+    {
+      "step": 128,
+      "rtt_s": 0.7063783281482756,
+      "infer_ms": 262,
+      "attempts": 2,
+      "rows": 48,
+      "rows_beyond_limits": 0
+    },
+    {
+      "step": 176,
+      "rtt_s": 0.7514261500909925,
+      "infer_ms": 292,
+      "attempts": 2,
+      "rows": 48,
+      "rows_beyond_limits": 0
+    },
+    {
+      "step": 224,
+      "rtt_s": 0.7123196511529386,
+      "infer_ms": 257,
+      "attempts": 2,
+      "rows": 48,
+      "rows_beyond_limits": 39
+    },
+    {
+      "step": 272,
+      "rtt_s": 0.6986560239456594,
+      "infer_ms": 264,
+      "attempts": 2,
+      "rows": 48,
+      "rows_beyond_limits": 48
+    },
+    {
+      "step": 320,
+      "rtt_s": 0.6884905500337481,
+      "infer_ms": 260,
+      "attempts": 2,
+      "rows": 48,
+      "rows_beyond_limits": 48
+    },
+    {
+      "step": 368,
+      "rtt_s": 0.7129157478921115,
+      "infer_ms": 262,
+      "attempts": 2,
+      "rows": 48,
+      "rows_beyond_limits": 48
+    },
+    {
+      "step": 416,
+      "rtt_s": 0.69189219083637,
+      "infer_ms": 258,
+      "attempts": 2,
+      "rows": 48,
+      "rows_beyond_limits": 48
+    },
+    {
+      "step": 464,
+      "rtt_s": 0.7069946969859302,
+      "infer_ms": 261,
+      "attempts": 2,
+      "rows": 48,
+      "rows_beyond_limits": 48
+    },
+    {
+      "step": 512,
+      "rtt_s": 0.682258483953774,
+      "infer_ms": 259,
+      "attempts": 2,
+      "rows": 48,
+      "rows_beyond_limits": 48
+    },
+    {
+      "step": 560,
+      "rtt_s": 0.728464269079268,
+      "infer_ms": 257,
+      "attempts": 2,
+      "rows": 48,
+      "rows_beyond_limits": 48
+    },
+    {
+      "step": 608,
+      "rtt_s": 0.7063783789053559,
+      "infer_ms": 258,
+      "attempts": 2,
+      "rows": 48,
+      "rows_beyond_limits": 48
+    },
+    {
+      "step": 656,
+      "rtt_s": 0.7163299997337162,
+      "infer_ms": 259,
+      "attempts": 2,
+      "rows": 48,
+      "rows_beyond_limits": 48
+    },
+    {
+      "step": 704,
+      "rtt_s": 0.7205416318029165,
+      "infer_ms": 260,
+      "attempts": 2,
+      "rows": 48,
+      "rows_beyond_limits": 48
+    },
+    {
+      "step": 752,
+      "rtt_s": 0.7028974457643926,
+      "infer_ms": 263,
+      "attempts": 2,
+      "rows": 48,
+      "rows_beyond_limits": 48
+    },
+    {
+      "step": 800,
+      "rtt_s": 0.72299127234146,
+      "infer_ms": 260,
+      "attempts": 2,
+      "rows": 48,
+      "rows_beyond_limits": 48
+    },
+    {
+      "step": 848,
+      "rtt_s": 0.744710017926991,
+      "infer_ms": 261,
+      "attempts": 2,
+      "rows": 48,
+      "rows_beyond_limits": 48
+    },
+    {
+      "step": 896,
+      "rtt_s": 0.810461432673037,
+      "infer_ms": 261,
+      "attempts": 2,
+      "rows": 48,
+      "rows_beyond_limits": 48
+    },
+    {
+      "step": 944,
+      "rtt_s": 0.7673661652952433,
+      "infer_ms": 261,
+      "attempts": 2,
+      "rows": 48,
+      "rows_beyond_limits": 48
+    },
+    {
+      "step": 992,
+      "rtt_s": 0.7466200618073344,
+      "infer_ms": 260,
+      "attempts": 2,
+      "rows": 48,
+      "rows_beyond_limits": 48
+    },
+    {
+      "step": 1040,
+      "rtt_s": 0.6901641101576388,
+      "infer_ms": 256,
+      "attempts": 2,
+      "rows": 48,
+      "rows_beyond_limits": 48
+    },
+    {
+      "step": 1088,
+      "rtt_s": 0.6903404118493199,
+      "infer_ms": 263,
+      "attempts": 2,
+      "rows": 48,
+      "rows_beyond_limits": 48
+    },
+    {
+      "step": 1136,
+      "rtt_s": 0.7866345318034291,
+      "infer_ms": 259,
+      "attempts": 2,
+      "rows": 48,
+      "rows_beyond_limits": 48
+    },
+    {
+      "step": 1184,
+      "rtt_s": 0.7586423791944981,
+      "infer_ms": 259,
+      "attempts": 2,
+      "rows": 48,
+      "rows_beyond_limits": 48
+    }
+  ]
+}

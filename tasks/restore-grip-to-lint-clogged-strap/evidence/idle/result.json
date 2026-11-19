@@ -1,0 +1,26 @@
+{
+  "step": 129,
+  "seconds": 6.45,
+  "phase": "Leave the fault unchanged",
+  "score": 0.0,
+  "lint_tufts_removed": 0,
+  "strap_closed": false,
+  "load_released": false,
+  "weight_drop_mm": 0.6,
+  "load_held_s": 0.0,
+  "pressed_before_load": false,
+  "lint_travel_mm": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "title": "Restore grip to a lint-clogged hook-and-loop strap",
+  "variant": 0,
+  "mode": "inactivity control",
+  "simulator": "MuJoCo dual YAM",
+  "control_hz": 20,
+  "error": null
+}
