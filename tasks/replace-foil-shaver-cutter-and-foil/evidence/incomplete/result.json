@@ -1,0 +1,25 @@
+{
+  "step": 570,
+  "seconds": 28.5,
+  "phase": "Clear the assembled shaver",
+  "score": 0.75,
+  "old_parts_removed": true,
+  "cutter_seated": true,
+  "foil_seated": true,
+  "motor_on": false,
+  "cutter_stroke_mm": 0.0,
+  "test_seconds": 0.0,
+  "powered_exposed": false,
+  "grasped_parts": [
+    "fresh_cutter",
+    "fresh_foil",
+    "worn_cutter",
+    "worn_foil"
+  ],
+  "title": "Replace a foil shaver\u2019s cutter and foil",
+  "variant": 0,
+  "mode": "specific failure control",
+  "simulator": "MuJoCo dual YAM",
+  "control_hz": 20,
+  "error": null
+}

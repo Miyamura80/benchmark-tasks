@@ -1,0 +1,25 @@
+{
+  "step": 647,
+  "seconds": 32.35,
+  "phase": "Replaying recorded robot commands",
+  "score": 1.0,
+  "old_parts_removed": true,
+  "cutter_seated": true,
+  "foil_seated": true,
+  "motor_on": false,
+  "cutter_stroke_mm": 2.13,
+  "test_seconds": 1.444,
+  "powered_exposed": false,
+  "grasped_parts": [
+    "fresh_cutter",
+    "fresh_foil",
+    "worn_cutter",
+    "worn_foil"
+  ],
+  "title": "Replace a foil shaver\u2019s cutter and foil",
+  "variant": 0,
+  "mode": "replay",
+  "simulator": "MuJoCo dual YAM",
+  "control_hz": 20,
+  "error": null
+}

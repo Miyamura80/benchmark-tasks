@@ -1,0 +1,22 @@
+{
+  "step": 1200,
+  "seconds": 60.0,
+  "phase": "Dream-1 policy",
+  "score": 0.0,
+  "old_parts_removed": false,
+  "cutter_seated": false,
+  "foil_seated": false,
+  "motor_on": false,
+  "cutter_stroke_mm": 0.0,
+  "test_seconds": 0.0,
+  "powered_exposed": false,
+  "grasped_parts": [],
+  "title": "Replace a foil shaver’s cutter and foil",
+  "variant": 0,
+  "run_limit": 1200,
+  "model": "dreamlabs/dream-1-beta",
+  "model_requests": 25,
+  "video_sha256": "cba2ec6febce477aeb3bfd1ed907accd2161d1b879e49120cdfe3e6cc446e501",
+  "service_sessions": 25,
+  "inference_retries": 24
+}
