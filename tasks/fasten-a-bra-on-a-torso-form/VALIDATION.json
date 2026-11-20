@@ -1,20 +1,24 @@
 {
-  "date": "2026-11-20",
-  "native_demo": {
-    "score": 1.0,
-    "steps": 580,
-    "retained_seconds": 5.4
+  "status": "validated_revision_media_uploaded",
+  "submission_ready": true,
+  "scores": {
+    "demo": 1.0,
+    "dream": 0.0
   },
-  "dream": {
-    "score": 0.0,
-    "steps": 1800,
-    "requests": 73,
-    "sessions": 37,
-    "expiry_recoveries": 36,
-    "physical_episodes": 1
+  "steps": {
+    "demo": 580,
+    "dream": 1800
   },
-  "frozen_rescores_passed": true,
-  "native_finger_contact_audits_passed": true,
-  "videos": "Full uncut native rear-camera episodes, 20 fps, H.264 yuv420p. Setup screenshot is demo frame zero.",
-  "limits": "Elastic end-link approximation, visual intermediate ribbons, rigid closure tapes, finite contact pinch joints. No garment comfort assessment or distributed cloth model."
+  "wall_seconds": {
+    "demo": 643.251672611048,
+    "dream": 1740.509422234958
+  },
+  "runtime_sources_match": true,
+  "visual_review_passed": true,
+  "independent_trace_audits_passed": true,
+  "media_uploaded": true,
+  "checked_utc": "2026-11-20T23:27:59.117399+00:00",
+  "remaining_gates": [
+    "same-PR revision receipt"
+  ]
 }
