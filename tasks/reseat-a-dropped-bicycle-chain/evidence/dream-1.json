@@ -1,0 +1,41 @@
+{
+  "source_commit": "ef7a59d2ab5075b53b83b09820a81fdf304654f0",
+  "case": "deep_near_light",
+  "tool": "pick",
+  "policy": "Dream-1",
+  "media": "M-H4U2P5",
+  "result": {
+    "step": 1200,
+    "seconds": 60,
+    "front_from_reset": -3.1188922854061694e-20,
+    "rear_from_reset": 0.003944512489993477,
+    "phase": "Dream-1 policy",
+    "score": 0,
+    "front_pockets": 0,
+    "rear_pockets": 8,
+    "crank_turns": 0,
+    "driven_turns": 0,
+    "distinct_front_links": 0
+  },
+  "versions": {
+    "python": "3.12.16",
+    "mujoco": "3.3.7",
+    "numpy": "2.2.6",
+    "inspect-robots": "1.0.0",
+    "dreamlabs": "1.0.23",
+    "dreamlabs-client": "1.0.14",
+    "inspect-robots-dream": "0.1.0"
+  },
+  "model_video": {
+    "codec_name": "h264",
+    "duration": "60.900000",
+    "nb_frames": "609",
+    "sha256": "73545c92f69f23ac4fea925376bf1f1746dbc89e8fc797cc1b93711ab1435d98"
+  },
+  "scripted_video": {
+    "duration_seconds": 39.4,
+    "frames": 394,
+    "sha256": "ee013561a99228284e10a37cbf4c5e252566709c1f5b6fc01a2c10b821d4d1c4"
+  },
+  "setup_image_sha256": "ca4a20c4bd8455e756472687502b54f5a8cec24ca287bc924c7a49eda16277f0"
+}
