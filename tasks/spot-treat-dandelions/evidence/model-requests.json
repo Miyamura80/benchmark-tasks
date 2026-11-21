@@ -1,0 +1,9 @@
+{
+  "model": "dreamlabs/dream-1-beta",
+  "dry_run": false,
+  "requests": 12,
+  "sessions": 1,
+  "max_attempts_per_request": 1,
+  "preroll_steps": 32,
+  "control_hz": 20
+}

@@ -1,0 +1,182 @@
+[
+  {
+    "seed": 0,
+    "case": "careful",
+    "step": 166,
+    "seconds": 8.3,
+    "phase": "Inspect turf",
+    "weed_coverage": [
+      0.47708674304418985,
+      0.5171875,
+      0.514751552795031
+    ],
+    "turf_spill_ratio": 0.22559366754617413,
+    "score": 1.0,
+    "pulses": 3
+  },
+  {
+    "seed": 0,
+    "case": "miss",
+    "step": 130,
+    "seconds": 6.5,
+    "phase": "Inspect turf",
+    "weed_coverage": [
+      0.47708674304418985,
+      0.5171875,
+      0.0
+    ],
+    "turf_spill_ratio": 0.1525065963060686,
+    "score": 0.0,
+    "pulses": 2
+  },
+  {
+    "seed": 0,
+    "case": "blanket",
+    "step": 490,
+    "seconds": 24.5,
+    "phase": "Inspect turf",
+    "weed_coverage": [
+      0.3690671031096563,
+      0.31328125,
+      0.4161490683229814
+    ],
+    "turf_spill_ratio": 3.8839050131926123,
+    "score": 0.0,
+    "pulses": 12
+  },
+  {
+    "seed": 0,
+    "case": "idle",
+    "step": 32,
+    "seconds": 1.6,
+    "phase": "Inspect turf",
+    "weed_coverage": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "turf_spill_ratio": 0.0,
+    "score": 0.0,
+    "pulses": 0
+  },
+  {
+    "seed": 1,
+    "case": "careful",
+    "step": 166,
+    "seconds": 8.3,
+    "phase": "Inspect turf",
+    "weed_coverage": [
+      0.5111111111111111,
+      0.5123558484349259,
+      0.5319148936170213
+    ],
+    "turf_spill_ratio": 0.30263547527391177,
+    "score": 1.0,
+    "pulses": 3
+  },
+  {
+    "seed": 1,
+    "case": "miss",
+    "step": 130,
+    "seconds": 6.5,
+    "phase": "Inspect turf",
+    "weed_coverage": [
+      0.5111111111111111,
+      0.5123558484349259,
+      0.0
+    ],
+    "turf_spill_ratio": 0.21172638436482086,
+    "score": 0.0,
+    "pulses": 2
+  },
+  {
+    "seed": 1,
+    "case": "blanket",
+    "step": 490,
+    "seconds": 24.5,
+    "phase": "Inspect turf",
+    "weed_coverage": [
+      0.3748792270531401,
+      0.34925864909390447,
+      0.40868794326241137
+    ],
+    "turf_spill_ratio": 4.380515250222091,
+    "score": 0.0,
+    "pulses": 12
+  },
+  {
+    "seed": 1,
+    "case": "idle",
+    "step": 32,
+    "seconds": 1.6,
+    "phase": "Inspect turf",
+    "weed_coverage": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "turf_spill_ratio": 0.0,
+    "score": 0.0,
+    "pulses": 0
+  },
+  {
+    "seed": 2,
+    "case": "careful",
+    "step": 166,
+    "seconds": 8.3,
+    "phase": "Inspect turf",
+    "weed_coverage": [
+      0.5127420998980632,
+      0.5482728077945084,
+      0.5376532399299475
+    ],
+    "turf_spill_ratio": 0.33087330873308735,
+    "score": 1.0,
+    "pulses": 3
+  },
+  {
+    "seed": 2,
+    "case": "miss",
+    "step": 130,
+    "seconds": 6.5,
+    "phase": "Inspect turf",
+    "weed_coverage": [
+      0.5127420998980632,
+      0.5482728077945084,
+      0.0
+    ],
+    "turf_spill_ratio": 0.23308733087330874,
+    "score": 0.0,
+    "pulses": 2
+  },
+  {
+    "seed": 2,
+    "case": "blanket",
+    "step": 490,
+    "seconds": 24.5,
+    "phase": "Inspect turf",
+    "weed_coverage": [
+      0.3577981651376147,
+      0.27812223206377323,
+      0.4028021015761821
+    ],
+    "turf_spill_ratio": 4.5984009840098405,
+    "score": 0.0,
+    "pulses": 12
+  },
+  {
+    "seed": 2,
+    "case": "idle",
+    "step": 32,
+    "seconds": 1.6,
+    "phase": "Inspect turf",
+    "weed_coverage": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "turf_spill_ratio": 0.0,
+    "score": 0.0,
+    "pulses": 0
+  }
+]

@@ -1,0 +1,13 @@
+{
+  "step": 166,
+  "seconds": 8.3,
+  "phase": "Starting state",
+  "weed_coverage": [
+    0.47708674304418985,
+    0.5171875,
+    0.514751552795031
+  ],
+  "turf_spill_ratio": 0.22559366754617413,
+  "score": 1.0,
+  "pulses": 3
+}
