@@ -1,0 +1,28 @@
+{
+  "step": 1162,
+  "seconds": 58.1,
+  "phase": "Check the mat sits flat",
+  "brushed": 12,
+  "vacuumed": 26,
+  "tray": 18,
+  "vacuum_on": false,
+  "clips_closed": 2,
+  "clips_released": 2,
+  "mat_grasped": false,
+  "flat": true,
+  "score": 1.0,
+  "mat_yaw": -0.9,
+  "wrist_yaw": -0.0,
+  "socket_error_mm": [
+    [
+      -3.1,
+      -0.4,
+      -0.0
+    ],
+    [
+      0.2,
+      -0.4,
+      -0.0
+    ]
+  ]
+}

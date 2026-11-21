@@ -1,0 +1,28 @@
+{
+  "step": 765,
+  "seconds": 38.25,
+  "phase": "Raise the vacuum",
+  "brushed": 12,
+  "vacuumed": 0,
+  "tray": 0,
+  "vacuum_on": false,
+  "clips_closed": 2,
+  "clips_released": 0,
+  "mat_grasped": false,
+  "flat": true,
+  "score": 0.25,
+  "mat_yaw": -1.6,
+  "wrist_yaw": -0.2,
+  "socket_error_mm": [
+    [
+      -2.8,
+      -0.6,
+      -0.0
+    ],
+    [
+      3.0,
+      -0.7,
+      -0.0
+    ]
+  ]
+}
