@@ -1,0 +1,20 @@
+{
+  "title": "Remove pet hair from a cloth boot liner",
+  "instruction": "Brush the pet hair loose from both strips of carpet, including the strip beside the raised trim. Vacuum the hair, then return the vacuum to its dock and switch it off.",
+  "category": "Societal relatability",
+  "keywords": [
+    "car detailing",
+    "boot liner",
+    "pet hair",
+    "rubber brush",
+    "handheld vacuum"
+  ],
+  "context": "Loose and embedded pet hair can collect on a car's carpeted cargo liner, including along the molded side trim.",
+  "setup": "A trimmed 232 × 122 mm carpet liner holds 10 tan bundles placed in two rows of five, with one row near the raised side trim. The rubber brush starts beside the loading sill. The cordless vacuum starts switched off in its dock beside the liner with its bin empty.",
+  "scoring": "Award 0.09 per captured bundle within 16 mm of the bin center at scoring time. Award the last 0.10 once all ten bundles have been collected and the vacuum is switched off and released in its dock.",
+  "run_limit": "1,200 control steps at 20 Hz (60 seconds)",
+  "reset_notes": "Replace the 10 bundles at the marked positions, clear the vacuum bin, dock the vacuum switched off, and park the brush by the sill.",
+  "fidelity": "Brush engagement is gated by overlap with a low, moving bristle envelope. Dynamic 3.8 g proxies represent visible fibre groups. A bounded directional force within 40 mm models intake airflow, and captured groups are retained inside the bin. The hand tools retain fixed orientation in the simulation.",
+  "scores": "Native dual-YAM joint replay 1.00. Power-off control 0.00. Powered control without brushing 0.00. Dream-1 0.00 after 1,200 actions.",
+  "media": "M-5UAHGS"
+}

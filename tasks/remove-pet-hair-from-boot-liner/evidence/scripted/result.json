@@ -1,0 +1,83 @@
+{
+  "step": 710,
+  "seconds": 35.5,
+  "phase": "Clear the dock",
+  "score": 1.0,
+  "bundles_settled_in_bin": 10,
+  "vacuum_docked": true,
+  "sources_displaced": 10,
+  "bundles_in_bin": 10,
+  "vacuum_power": false,
+  "switch_mm": 0.2,
+  "peak_suction_mN": 294.3,
+  "nearest_uncollected_mm": 5.9,
+  "intake_mm": [
+    104,
+    61,
+    241
+  ],
+  "left_mm": [
+    134,
+    158,
+    345
+  ],
+  "vacuum_gripped": false,
+  "hair": [
+    [
+      0.1,
+      0.114,
+      0.254
+    ],
+    [
+      0.102,
+      0.114,
+      0.254
+    ],
+    [
+      0.104,
+      0.114,
+      0.254
+    ],
+    [
+      0.106,
+      0.114,
+      0.254
+    ],
+    [
+      0.108,
+      0.114,
+      0.254
+    ],
+    [
+      0.1,
+      0.124,
+      0.254
+    ],
+    [
+      0.102,
+      0.124,
+      0.254
+    ],
+    [
+      0.104,
+      0.124,
+      0.254
+    ],
+    [
+      0.106,
+      0.124,
+      0.254
+    ],
+    [
+      0.108,
+      0.124,
+      0.254
+    ]
+  ],
+  "title": "Remove pet hair from a cloth boot liner",
+  "variant": 0,
+  "mode": "scripted",
+  "simulator": "MuJoCo dual YAM",
+  "control_hz": 20,
+  "error": null
+}
