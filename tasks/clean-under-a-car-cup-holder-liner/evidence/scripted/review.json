@@ -1,0 +1,58 @@
+{
+  "setup": {
+    "title": "Starting setup",
+    "step": 0,
+    "seconds": 0.0,
+    "score": 0.0,
+    "liner_removed": false,
+    "spots_cleaned": 0,
+    "liner_seated": false,
+    "sponge_contact_n": 0.0,
+    "continuous_seat_hold_s": 0.0,
+    "liner_x_y_error_mm": 0.0,
+    "liner_height_error_mm": 0.0,
+    "liner_tilt_deg": 0.0
+  },
+  "dirty-well": {
+    "title": "Before scrubbing",
+    "step": 150,
+    "seconds": 7.5,
+    "score": 0.25,
+    "liner_removed": true,
+    "spots_cleaned": 0,
+    "liner_seated": false,
+    "sponge_contact_n": 0.0,
+    "continuous_seat_hold_s": 0.0,
+    "liner_x_y_error_mm": 137.06,
+    "liner_height_error_mm": 12.21,
+    "liner_tilt_deg": 0.0
+  },
+  "clean-well": {
+    "title": "After scrubbing",
+    "step": 404,
+    "seconds": 20.2,
+    "score": 0.75,
+    "liner_removed": true,
+    "spots_cleaned": 9,
+    "liner_seated": false,
+    "sponge_contact_n": 0.0,
+    "continuous_seat_hold_s": 0.0,
+    "liner_x_y_error_mm": 137.06,
+    "liner_height_error_mm": 12.21,
+    "liner_tilt_deg": 0.0
+  },
+  "seated-liner": {
+    "title": "Liner refitted",
+    "step": 567,
+    "seconds": 28.35,
+    "score": 1.0,
+    "liner_removed": true,
+    "spots_cleaned": 9,
+    "liner_seated": true,
+    "sponge_contact_n": 0.0,
+    "continuous_seat_hold_s": 2.15,
+    "liner_x_y_error_mm": 0.32,
+    "liner_height_error_mm": 0.21,
+    "liner_tilt_deg": 0.0
+  }
+}

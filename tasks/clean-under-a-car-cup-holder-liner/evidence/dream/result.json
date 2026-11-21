@@ -1,0 +1,13 @@
+{
+  "step": 1200,
+  "seconds": 60.0,
+  "phase": "Dream-1 policy",
+  "score": 0.0,
+  "liner_removed": false,
+  "spots_cleaned": 0,
+  "liner_seated": true,
+  "sponge_contact_n": 0.0,
+  "title": "Clean under a car cup-holder liner",
+  "variant": 0,
+  "run_limit": 1200
+}

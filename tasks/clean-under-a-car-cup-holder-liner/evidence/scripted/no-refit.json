@@ -1,0 +1,16 @@
+{
+  "step": 423,
+  "seconds": 21.15,
+  "phase": "Clear the opening",
+  "score": 0.75,
+  "liner_removed": true,
+  "spots_cleaned": 9,
+  "liner_seated": false,
+  "sponge_contact_n": 0.0,
+  "title": "Clean under a car cup-holder liner",
+  "variant": 0,
+  "mode": "specific failure control",
+  "simulator": "MuJoCo dual YAM",
+  "control_hz": 20,
+  "error": null
+}

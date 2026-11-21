@@ -1,0 +1,17 @@
+{
+  "title": "Clean under a car cup-holder liner",
+  "category": "Societal relatability",
+  "keywords": [
+    "car detailing",
+    "cup holder",
+    "residue",
+    "dual YAM"
+  ],
+  "instruction": "Lift the rubber liner out by its tab, scrub the sticky residue with the sponge, then put the liner back flat in the cup holder.",
+  "setup": "Fixed automotive centre console with two flared cup wells, brushed trim, padded side bolster and selector surround. A 74 mm rubber liner with pull loop covers nine irregular spill regions in a 94 mm bore. A handled 27 × 23 mm foam pad starts in the utility pocket.",
+  "scoring": "0.25 after removing the grasped liner beyond 60 mm in x or 65 mm in y. 0.50 after scrubbing four regions and 0.75 after scrubbing all nine. Scrubbing requires 3 mm of pressure-weighted travel with the pad overlapping the mark under a floor load of at least 0.10 N. 1.00 after the liner is released, aligned and seated for at least 0.35 s.",
+  "run_limit": "1,200 control steps at 20 Hz",
+  "fidelity": "Smooth console skins over compound contact geometry. The residue fades under measured overlapping tool contact and sliding, with simplified compliant materials.",
+  "scores": "Dream-1: 0.00 (1200 steps). Scripted dual-YAM replay: 1.00 (567 steps). Idle: 0.00. Air wipe: 0.25. Cleaning without refit: 0.75.",
+  "media": "M-RZERHE"
+}
