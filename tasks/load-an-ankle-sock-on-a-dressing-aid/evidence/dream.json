@@ -1,0 +1,10 @@
+{
+  "step": 1200,
+  "seconds": 60.0,
+  "phase": "Dream-1 policy",
+  "score": 0.0,
+  "left_mm": 0.0,
+  "right_mm": 0.0,
+  "skew_mm": 0.0,
+  "retained": false
+}

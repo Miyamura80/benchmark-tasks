@@ -1,0 +1,19 @@
+{
+  "title": "Load a sock on a dressing aid",
+  "category": "Societal relatability",
+  "keywords": [
+    "dressing aid",
+    "sock",
+    "bimanual",
+    "elastic fabric"
+  ],
+  "instruction": "Stretch the ankle sock over both edges of the sock aid and leave it square and held by the rim.",
+  "context": "Loading a sock aid is a preparatory step for people who have difficulty reaching their feet.",
+  "setup": "The two YAM arms face a 310 × 380 mm rubber work mat. A 152 mm long, 72 mm wide polymer sock-dressing trough lies lengthwise on the mat, with two nylon pull cords out to the sides. A stretch-knit ankle sock has its toe started over the narrow end. The two sides of its mouth start square, short of the rolled retaining lips.",
+  "scoring": "Give 0.25 for each cuff edge advanced more than 50 mm from reset. Award 1.00 when both edges clear 50 mm, differ by less than 7 mm, and hold for 0.50 s with both grippers released.",
+  "run_limit": "1,200 actions (60 seconds at 20 Hz)",
+  "reset_notes": "Return both cuff edges to the starting marks and lay the cord ends away from the fingers.",
+  "fidelity": "Finger contact loads both guided cuff edges. Spring detents approximate retention by the trough lip. The sock surface deforms with edge travel. The cloth and cords are visual geometry on a reduced-order fixture.",
+  "scores": "Scripted dual-YAM: 1.00 in 214 actions. Dream-1: 0.00 in 1,200 actions.",
+  "media": "M-YL32YV"
+}
