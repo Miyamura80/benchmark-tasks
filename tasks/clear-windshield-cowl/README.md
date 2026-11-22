@@ -6,9 +6,9 @@ Pick up the leaves gathered below the windshield and put them in the tray. Clear
 
 The scene is a 3.76 m long, approximately 1.64 m wide compact hatchback with four wheels, lamps, windows, doors, parked wipers and a contoured hood. The 90 cm wide cowl fixture has a 15 cm gutter and recessed drain grilles. Removing the ordinary visible leaves is the main task. Clearing the drain areas also matters because they allow collected rainwater to leave the gutter. Two leaves cover the drains beneath shallow retaining edges. The 25 by 21 cm collection tray is centred on the rear of the hood.
 
-Two articulated I2RT YAMs with linear parallel grippers mount on external cantilever pedestals, one at each front fender. They each handle two leaves and share the tray. In world coordinates the base plates are at x = ±465 mm, y = −120 mm, z = 872 mm, with the inside yaw offsets at 40° and 140°. In the render, floor-standing uprights sit outside the body at x = ±920 mm and support the base plates through horizontal cantilevers. The models' bases are fixed in the simulator. The stand geometry represents the mounting arrangement and has no structural or physical stability validation.
+Two articulated I2RT YAMs with linear parallel grippers mount on external cantilever pedestals, one at each front fender. They each handle two leaves and share the tray. In world coordinates the base plates are at x = ±465 mm, y = −120 mm, z = 872 mm, with the inside yaw offsets at 40° and 140°. In the render, floor-standing uprights sit outside the body at x = ±920 mm and support the base plates through horizontal cantilevers. The models' bases are fixed in the simulator. These cantilevers illustrate the full-car scene. For hardware, use the separate bench insert and directly supported arms in BENCH.md. The bench alternative also runs in simulation: `python task.py --bench --output bench-replay`.
 
-The four leaves start at the coordinates below, in millimetres. The origin is at the hood-facing edge of the cowl gutter. Positive x points toward the car's right side and positive y toward the windshield. Leaves 1 and 4 overlap the grilles. Each leaf is about 52–73 mm long, 28–40 mm wide and 1.5 g in the simulation.
+The four leaves start at the coordinates below, in millimetres. The y=0 datum runs along the windshield-facing edge of the narrow hood panel (within 1 mm). The x=0 datum bisects the 900 mm gutter. Positive x points toward the car's right side and positive y toward the windshield. Leaves 1 and 4 overlap the grilles. Each leaf is about 52–73 mm long, 28–40 mm wide and 1.5 g in the simulation.
 
 | Leaf | x | y |
 | --- | ---: | ---: |
@@ -45,3 +45,11 @@ Run the same policy evaluation from this task directory with Python 3.12, Inspec
 The baseline made 12 successful model requests in 12 sessions after session expiry recoveries.
 
 Ford and Volvo owner guides describe removing leaves from the area at the windshield base. The simulation represents visible leaves over two cowl grilles. It does not model water flow.
+
+## Leaf patterns, fixture and assets
+
+Print [the four actual-size leaf patterns](leaf-templates.svg). [BENCH.md](BENCH.md) specifies material, mass, curl, slot geometry, reset tolerances, arm locations, budget and mount selection. The bench trial retains the arm motions, scored leaves, retaining lips and scoring function. Its support-contact count tests the simplified simulated supports along the scripted route. The full-car layout remains the nominal model-evaluation scene.
+
+The only imported scene model is **I2RT Robotics YAM**. Each arm uses `vendor/i2rt_yam/yam.xml` and the 17 meshes `assets/model2.stl` and `assets/model2__2.stl` through `assets/model2__17.stl`. They are distributed under the **MIT License, copyright 2025 i2rt robotics**. This task instantiates two copies, modifies actuator settings and adds fingertip collision pads at runtime. All car panels, rims, leaves, grilles, tray and bench fixtures are generated in the task. [Menagerie source](https://github.com/google-deepmind/mujoco_menagerie/tree/main/i2rt_yam) · [Bundled license](vendor/i2rt_yam/LICENSE).
+
+The bench replay collected four leaves and reduced coverage on both drains to 0% in 27.32 s. No moving arm geometry touched the modelled bench supports along the route. Open-jaw controls on this layout scored 0.5, 0.5 and 0.0. Run `python check_controls.py --bench` to repeat them. The revised board demo shows the bench layout; the setup photograph and original Dream-1 recording show the nominal full car.

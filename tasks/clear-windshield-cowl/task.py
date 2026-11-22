@@ -168,28 +168,54 @@ def vein(a, b, width, color):
             'contype="0" conaffinity="0" mass="0"/>')
 
 
-def make_scene():
+def bench_supports():
+    """Direct supports at each arm base and an independent frame below the cowl."""
+    steel = ".28 .33 .34 1"
+    parts = [box("0 .035 .680", ".410 .370 .010", ".48 .37 .25 1", 'name="bench_deck"')]
+    for x in (-.38, .38):
+        for y in (-.30, .35):
+            parts.append(box(f"{x} {y} .335", ".019 .019 .335", steel, 'name="bench_leg_%s_%s"' % (x,y)))
+    for side in (-1, 1):
+        x = side * BASE_X
+        for name,z,half in (("foot",.012,".105 .105 .012"), ("column",.430,".045 .045 .406"),
+                            ("plate",.854,".065 .065 .018")):
+            parts.append(box(f"{x} {BASE_Y} {z}", half, steel, f'name="bench_{name}_{side}"'))
+    # Spacers support the model cowl and tray without filling either drain.
+    for x in (-.29,.27):
+        parts.append(box(f"{x} .055 .719", ".025 .060 .029", steel, f'name="bench_riser_{x}"'))
+    for x in (-.08,.08):
+        parts.append(box(f"{x} -.246 .7575", ".018 .065 .0675", steel, f'name="bench_tray_{x}"'))
+    return parts
+
+
+def make_scene(bench=False):
     steel = "0.105 0.125 0.133 1"
     trim = "0.081 0.087 0.086 1"
     paint = "0.16 0.25 0.30 1"
     black = "0.075 0.084 0.088 1"
-    car_assets, car_vis = car_parts()
-    assets, panels = bodywork()
+    car_assets, car_vis = ([], bench_supports()) if bench else car_parts()
+    assets, panels = ([], []) if bench else bodywork()
+    if bench:
+        # Show the local hood edge and angled backing on the removable insert.
+        panels.append(visual_box("0 .256 .194", ".443 .130 .011", ".18 .31 .36 1", 'euler="43 0 0"'))
+        panels.append(visual_box("0 -.064 .113", ".380 .063 .008", paint))
     assets.extend(car_assets)
     assets.extend(leaf_mesh(i, leaf[2]) for i, leaf in enumerate(LEAVES))
     parts = [
         *panels,
         # The drain slots are open through the floor, with narrow ribs between them.
-        box("0 -.0205 .080", ".45 .1445 .02", steel, 'name="cowl_floor"'),
-        box("0 -.064 .113", ".445 .063 .008", paint, 'name="hood_edge" group="3"'),
+        *([box("0 .047 .080", ".45 .077 .02", steel, 'name="cowl_floor"'),
+           box("0 -.0975 .080", ".390 .0675 .02", steel, 'name="bench_front_floor"')]
+          if bench else [box("0 -.0205 .080", ".45 .1445 .02", steel, 'name="cowl_floor"')]),
+        box("0 -.064 .113", ".380 .063 .008" if bench else ".445 .063 .008", paint, 'name="hood_edge" group="3"'),
         box("0 .162 .101", ".45 .011 .028", trim, 'name="glass_seal"'),
         box("0 .256 .194", ".443 .130 .011", trim,
             'euler="43 0 0" name="windscreen" group="3"'),
         box("-.445 .100 .111", ".009 .066 .023", trim),
         box(".445 .100 .111", ".009 .066 .023", trim),
         box("0 .153 .083", ".446 .007 .016", steel),
-        box("-.436 -.21 .062", ".017 .145 .054", paint),
-        box(".436 -.21 .062", ".017 .145 .054", paint),
+        *([] if bench else [box("-.436 -.21 .062", ".017 .145 .054", paint),
+                            box(".436 -.21 .062", ".017 .145 .054", paint)]),
         box(f"{TRAY_X} {TRAY_Y} {TRAY_Z - .010}", ".125 .103 .010", "0.28 0.34 0.33 1", 'name="tray_floor"'),
     ]
     blind_sections = [(-.45, DRAIN_X[0] - .035),
@@ -224,7 +250,7 @@ def make_scene():
             for yy in (-.014, -.001, .011) for xx in (-.011, .011)
         ]
         parts.append(f'<body name="leaf{i}" pos="{x} {y} .109"><freejoint/>{collision}{contact_patch}{mesh}{midrib}{stem}{"".join(veins)}</body>')
-    for side in (-1,1):
+    for side in (() if bench else (-1,1)):
         post_x = side*.920
         car_vis.extend((
             visual_box(f"{post_x} {BASE_Y} .032", ".128 .122 .030", ".24 .26 .26 1"),
@@ -307,8 +333,8 @@ def score(model, data):
     }
 
 
-def run(output, *, show_trace=False):
-    model = mj.MjModel.from_xml_string(make_scene())
+def run(output, *, show_trace=False, bench=False):
+    model = mj.MjModel.from_xml_string(make_scene(bench=bench))
     data = mj.MjData(model)
     visibility = mj.MjvOption()
     for group in (3, 4, 5):
@@ -338,9 +364,14 @@ def run(output, *, show_trace=False):
         ], stdin=subprocess.PIPE)
 
     worst_ik = 0.
+    support_ids = {i for i in range(model.ngeom) if (model.geom(i).name or "").startswith("bench_")}
+    moving_arm = {i for i in range(model.ngeom)
+                  if model.body_weldid[model.geom_bodyid[i]] != 0
+                  and model.body(model.geom_bodyid[i]).name.startswith(ARM_PREFIXES)}
+    support_contacts = 0
 
     def move(which, target, opening, duration, *, view="work", focus=0):
-        nonlocal worst_ik
+        nonlocal worst_ik, support_contacts
         arm = arms[which]
         start = xyz[which]
         target = np.array(target)
@@ -348,6 +379,9 @@ def run(output, *, show_trace=False):
         if view == "car":
             camera.lookat[:] = [0, .36, .72]
             camera.distance, camera.azimuth, camera.elevation = 4.62, 141, -29
+            if bench:
+                camera.lookat[:] = [0, 0, .65]
+                camera.distance, camera.azimuth, camera.elevation = 2.45, 112, -23
         elif view == "drains":
             camera.lookat[:] = [-.017, .118, .800]
             camera.distance, camera.azimuth, camera.elevation = 1.09, 90, -29
@@ -367,6 +401,12 @@ def run(output, *, show_trace=False):
                 worst_ik = max(worst_ik, error)
                 arm.command(data, aperture)
             mj.mj_step(model, data)
+            if bench:
+                for contact in data.contact:
+                    a, b = contact.geom
+                    if contact.dist <= 0 and ((a in support_ids and b in moving_arm)
+                                              or (b in support_ids and a in moving_arm)):
+                        support_contacts += 1
             if renderer and round(data.time / DT) % 20 == 0:
                 renderer.update_scene(data, camera=camera, scene_option=visibility)
                 ffmpeg.stdin.write(renderer.render().tobytes())
@@ -420,6 +460,9 @@ def run(output, *, show_trace=False):
         "max_weighted_ik_residual": round(float(worst_ik), 6),
         "embodiment": "Two 6-axis I2RT YAM models with linear grippers",
     }
+    if bench:
+        result["layout"] = "bench"
+        result["moving_arm_support_contacts"] = support_contacts
     if renderer:
         renderer.close()
         ffmpeg.stdin.close()
@@ -433,8 +476,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path, help="Export a demo MP4 and setup/result screenshots")
     parser.add_argument("--trace", action="store_true", help="Print end-effector and leaf positions at each waypoint")
+    parser.add_argument("--bench", action="store_true", help="Use the freestanding cowl insert and direct supports")
     args = parser.parse_args()
-    result = run(args.output, show_trace=args.trace)
+    result = run(args.output, show_trace=args.trace, bench=args.bench)
     print(json.dumps(result))
-    if result["initial"]["score"] != 0 or result["final"]["score"] != 1:
+    if result["initial"]["score"] != 0 or result["final"]["score"] != 1 or result.get("moving_arm_support_contacts", 0):
         raise SystemExit(1)

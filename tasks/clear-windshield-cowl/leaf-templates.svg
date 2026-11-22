@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="210mm" height="297mm" viewBox="0 0 210 297">
+<title>Windshield cowl leaf cutting patterns at actual size</title>
+<g font-family="sans-serif" font-size="4" fill="black">
+<text x="12" y="15">Cowl leaf patterns · A4 · print at 100%</text>
+<text x="12" y="24">Arrow points toward the windshield. Dashed line is the midrib.</text>
+<polygon points="55.00,111.52 59.60,103.24 69.72,94.96 71.56,85.76 67.88,79.32 71.56,71.04 64.20,67.36 61.44,61.84 55.00,51.72 49.48,60.92 43.04,65.52 43.96,71.96 38.44,75.64 40.28,86.68 43.96,95.88 52.24,102.32" fill="none" stroke="black" stroke-width=".35"/>
+<path d="M 55,109.68 v -51.52 m -1.8,2 1.8,-2 1.8,2" fill="none" stroke="black" stroke-width=".35" stroke-dasharray="2 1"/>
+<text x="41" y="125">Leaf 1 · 59.8 mm</text>
+<polygon points="153.00,114.62 158.10,105.44 169.32,96.26 171.36,86.06 167.28,78.92 171.36,69.74 163.20,65.66 160.14,59.54 153.00,48.32 146.88,58.52 139.74,63.62 140.76,70.76 134.64,74.84 136.68,87.08 140.76,97.28 149.94,104.42" fill="none" stroke="black" stroke-width=".35"/>
+<path d="M 153,112.58 v -57.120000000000005 m -1.8,2 1.8,-2 1.8,2" fill="none" stroke="black" stroke-width=".35" stroke-dasharray="2 1"/>
+<text x="139" y="125">Leaf 2 · 66.3 mm</text>
+<polygon points="55.00,212.80 59.00,205.60 67.80,198.40 69.40,190.40 66.20,184.80 69.40,177.60 63.00,174.40 60.60,169.60 55.00,160.80 50.20,168.80 44.60,172.80 45.40,178.40 40.60,181.60 42.20,191.20 45.40,199.20 52.60,204.80" fill="none" stroke="black" stroke-width=".35"/>
+<path d="M 55,211.2 v -44.800000000000004 m -1.8,2 1.8,-2 1.8,2" fill="none" stroke="black" stroke-width=".35" stroke-dasharray="2 1"/>
+<text x="41" y="230">Leaf 3 · 52.0 mm</text>
+<polygon points="153.00,222.72 158.60,212.64 170.92,202.56 173.16,191.36 168.68,183.52 173.16,173.44 164.20,168.96 160.84,162.24 153.00,149.92 146.28,161.12 138.44,166.72 139.56,174.56 132.84,179.04 135.08,192.48 139.56,203.68 149.64,211.52" fill="none" stroke="black" stroke-width=".35"/>
+<path d="M 153,220.48000000000002 v -62.720000000000006 m -1.8,2 1.8,-2 1.8,2" fill="none" stroke="black" stroke-width=".35" stroke-dasharray="2 1"/>
+<text x="139" y="230">Leaf 4 · 72.8 mm</text>
+<path d="M12 252 v4 m0 -2 h50 m0 -2 v4" fill="none" stroke="black" stroke-width=".4"/>
+<text x="12" y="264">Check scale: 50 mm between ticks.</text>
+</g></svg>

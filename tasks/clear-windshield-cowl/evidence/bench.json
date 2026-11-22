@@ -1,0 +1,104 @@
+{
+  "scripted": {
+    "initial": {
+      "leaves_in_tray": 0,
+      "drains_clear": 0,
+      "drain_leaf_coverage": [
+        0.2993,
+        0.3147
+      ],
+      "score": 0.0
+    },
+    "final": {
+      "leaves_in_tray": 4,
+      "drains_clear": 2,
+      "drain_leaf_coverage": [
+        0.0,
+        0.0
+      ],
+      "score": 1.0
+    },
+    "seconds": 27.32,
+    "max_weighted_ik_residual": 0.044732,
+    "embodiment": "Two 6-axis I2RT YAM models with linear grippers",
+    "layout": "bench",
+    "moving_arm_support_contacts": 0
+  },
+  "open_jaw_controls": {
+    "L_": {
+      "initial": {
+        "leaves_in_tray": 0,
+        "drains_clear": 0,
+        "drain_leaf_coverage": [
+          0.2993,
+          0.3147
+        ],
+        "score": 0.0
+      },
+      "final": {
+        "leaves_in_tray": 2,
+        "drains_clear": 1,
+        "drain_leaf_coverage": [
+          0.2993,
+          0.0
+        ],
+        "score": 0.5
+      },
+      "seconds": 27.32,
+      "max_weighted_ik_residual": 0.044732,
+      "embodiment": "Two 6-axis I2RT YAM models with linear grippers",
+      "layout": "bench",
+      "moving_arm_support_contacts": 0
+    },
+    "R_": {
+      "initial": {
+        "leaves_in_tray": 0,
+        "drains_clear": 0,
+        "drain_leaf_coverage": [
+          0.2993,
+          0.3147
+        ],
+        "score": 0.0
+      },
+      "final": {
+        "leaves_in_tray": 2,
+        "drains_clear": 1,
+        "drain_leaf_coverage": [
+          0.0,
+          0.2072
+        ],
+        "score": 0.5
+      },
+      "seconds": 27.32,
+      "max_weighted_ik_residual": 0.044732,
+      "embodiment": "Two 6-axis I2RT YAM models with linear grippers",
+      "layout": "bench",
+      "moving_arm_support_contacts": 0
+    },
+    "L_ R_": {
+      "initial": {
+        "leaves_in_tray": 0,
+        "drains_clear": 0,
+        "drain_leaf_coverage": [
+          0.2993,
+          0.3147
+        ],
+        "score": 0.0
+      },
+      "final": {
+        "leaves_in_tray": 0,
+        "drains_clear": 0,
+        "drain_leaf_coverage": [
+          0.2993,
+          0.2072
+        ],
+        "score": 0.0
+      },
+      "seconds": 27.32,
+      "max_weighted_ik_residual": 0.044732,
+      "embodiment": "Two 6-axis I2RT YAM models with linear grippers",
+      "layout": "bench",
+      "moving_arm_support_contacts": 0
+    }
+  }
+}

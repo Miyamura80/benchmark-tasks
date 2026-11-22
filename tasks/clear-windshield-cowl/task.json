@@ -11,8 +11,8 @@
   "setup": "Full 3.76 m compact hatchback with a 90 cm cowl, two open slotted drains, parked wipers and a hood-mounted collection tray. Four leaves sit in the gutter. Two six-axis I2RT YAM arms with linear grippers are mounted on exterior stands.",
   "scoring": "Three points per leaf in the tray and two points per grille with less than 5% leaf coverage across the open slots. Divide by sixteen. Slot coverage is estimated from area-weighted vertical rays against the leaf meshes.",
   "run_limit": "30 seconds of simulated time",
-  "reset_notes": "Rebuild the scene at its fixed initial poses and settle for 1.32 seconds.",
+  "reset_notes": "Rebuild the scene at its fixed initial poses and settle for 1.32 seconds. For the bench alternative use the four actual-size leaf patterns and BENCH.md placement marks; stems point toward the hood and the centre ridges face up.",
   "fidelity": "Joint-actuated I2RT YAM models, physical pad contact with curled rigid leaf approximations, a fixed collision-enabled cowl, and full car exterior. The bodywork outside the working area is mainly visual.",
-  "scores": "Two-YAM scripted MuJoCo prototype: 1.0. Dream-1 0.00 after 600 actions.",
-  "media": "M-BXQSDL"
+  "scores": "Scripted demo on bench insert: 1.0 in 27.32 seconds. Original full-car scripted run: 1.0. Original full-car Dream-1 baseline: 0.00 after 600 actions.",
+  "media": "M-5TZLYY"
 }
