@@ -1,0 +1,10 @@
+{
+  "step": 1200,
+  "seconds": 60.0,
+  "phase": "Dream-1 policy",
+  "score": 0.0,
+  "hook_engaged": false,
+  "button_mm": 0.0,
+  "cuff_tension_mm": 0.0,
+  "fastened": false
+}

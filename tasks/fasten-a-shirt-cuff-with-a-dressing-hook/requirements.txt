@@ -1,0 +1,5 @@
+mujoco==3.3.7
+dreamlabs==1.0.23
+inspect-robots==1.0.0
+Pillow
+scikit-image>=0.25,<0.27
