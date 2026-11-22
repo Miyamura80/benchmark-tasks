@@ -1,0 +1,115 @@
+{
+  "demo": {
+    "score": 1,
+    "initial_sectors": 0,
+    "peak_sectors": 12,
+    "final_sectors": 12,
+    "release_s": 7.35,
+    "drop_s": 8.15,
+    "last_robot_film_contact_s": 7.68625,
+    "puck_final_z_m": 0.029993773067765805,
+    "trace_sha256": "41cc1cbdcb1635b57ecfa7992fd592597cb078983b9e7f3afe811f809a4e07d0",
+    "audit": {
+      "mode": "assisted",
+      "samples": 192,
+      "maximum_sample_gap_s": 0.05,
+      "initial_rim_sectors": 0,
+      "initial_hem_height_range_mm": [
+        263.43,
+        294.12
+      ],
+      "minimum_released_rim_sectors": 12,
+      "minimum_loaded_rim_sectors": 12,
+      "minimum_released_opening_fraction": 1,
+      "sampled_grasps_clear": true,
+      "sampled_pads_clear_during_load": true,
+      "reported_native_puck_contact": true,
+      "sampled_puck_settled_inside": true,
+      "sampled_puck_above_floor": true,
+      "sampled_liner_reaches_into_bin": true,
+      "sampled_retention_pass": true,
+      "physics_step_audit": {
+        "physics_samples": 7641,
+        "min_released_rim": 12,
+        "min_released_opening": 1,
+        "min_loaded_puck_height_m": 0.024481477422664318,
+        "max_terminal_puck_speed_m_s": 5.683313999960007e-7,
+        "terminal_puck_film_contact_fraction": 1,
+        "hands_clear_during_load": true,
+        "retention_pass": true
+      },
+      "sampled_rigid_contacts": {
+        "samples": 192,
+        "maximum_rigid_overlap_m": 0.0003548243381969497,
+        "contacts_over_0p5_mm": 0,
+        "initial_contacts_over_0p5_mm": 0
+      }
+    },
+    "warnings": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "dream": {
+    "score": 0,
+    "initial_sectors": 0,
+    "peak_sectors": 0,
+    "final_sectors": 0,
+    "release_s": 18,
+    "drop_s": 18.8,
+    "last_robot_film_contact_s": 1.63125,
+    "puck_final_z_m": 0.029993753590089125,
+    "trace_sha256": "4400dfc386496fde57fa8078ab09c62740eb14746ca47aa81aaee64afcfc428c",
+    "audit": {
+      "mode": "dream",
+      "samples": 405,
+      "maximum_sample_gap_s": 0.05,
+      "initial_rim_sectors": 0,
+      "initial_hem_height_range_mm": [
+        263.43,
+        294.12
+      ],
+      "minimum_released_rim_sectors": 0,
+      "minimum_loaded_rim_sectors": 0,
+      "minimum_released_opening_fraction": 0.1125,
+      "sampled_grasps_clear": true,
+      "sampled_pads_clear_during_load": true,
+      "reported_native_puck_contact": true,
+      "sampled_puck_settled_inside": true,
+      "sampled_puck_above_floor": true,
+      "sampled_liner_reaches_into_bin": true,
+      "sampled_retention_pass": false,
+      "physics_step_audit": {
+        "physics_samples": 16161,
+        "min_released_rim": 0,
+        "min_released_opening": 0.1125,
+        "min_loaded_puck_height_m": 0.02404487620642903,
+        "max_terminal_puck_speed_m_s": 0.0001349009803589776,
+        "terminal_puck_film_contact_fraction": 1,
+        "hands_clear_during_load": true,
+        "retention_pass": false
+      }
+    },
+    "warnings": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "model": "dreamlabs/dream-1-beta",
+    "requests": 7,
+    "preroll_steps": 32,
+    "service_sessions": 7,
+    "action_rows": 360
+  }
+}

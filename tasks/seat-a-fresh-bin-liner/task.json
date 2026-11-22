@@ -1,0 +1,19 @@
+{
+  "title": "Seat a fresh bin liner around the rim",
+  "category": "Impact on jobs",
+  "keywords": [
+    "custodial work",
+    "thin film",
+    "bimanual manipulation",
+    "wastebasket"
+  ],
+  "instruction": "Fold the loose bin liner over the entire wastebasket rim. Let go with the opening clear.",
+  "context": "Custodial training specifies folding a fresh liner around the wastebasket rim. O*NET lists gathering and emptying trash as core custodial work. A Washington study found 66% of surveyed janitors emptied and relined trash cans daily. BLS counts 2.341 million U.S. janitors and building cleaners. Reaching 500,000 would require 21.4% of that national occupation to do this routine step.",
+  "setup": "Use a round open wastebasket with a 270 mm rim height and 248 mm outer rim diameter and a thin LDPE liner of about 3.6 g. Rest the bottom of the open liner inside the basket with the mouth loosely draped around the rim. The exposed hem varies from 263 to 294 mm above the support surface and zero of twelve equal rim sectors have a seated cuff. Two YAM arms flank the basket. A centered 100 g test puck, 56 mm in diameter and 20 mm thick, is parked above the bin for the evaluator.",
+  "scoring": "Score 1.0 if every one of twelve equal rim sectors has liner running from inside over the lip and at least 9 mm down its outer face. Require at least 85% clear projected aperture. With both hands released and clear, the cuff and opening must hold through the evaluator's centered 100 g puck drop and the following 1.4 seconds, with the puck resting on the liner within the basket. Score 0.0 otherwise.",
+  "run_limit": "360 robot actions at 20 Hz, followed by the evaluator's 2.2-second observation and load sequence",
+  "reset_notes": "Open a clean liner by hand, push the bottom inside and drape the loose mouth just around the rim. Lift up any fully seated folds and compare the twelve rim marks to the setup image. Remove all hands and aids before starting. Use a fresh liner if it stretches or tears.",
+  "fidelity": "Full-size MuJoCo basket and 3.6 g deformable liner. An opposed-pad contact gate enables a bounded compliant pinch to represent film thinner than the modeled fingertips. The robot makes actual jaw contact and moves the liner through the same physical path. Simplified rim and film are uncalibrated. A puck contact pair prevents numerical floor escape.",
+  "scores": "Dream-1 run: 0.0; scripted demo: 1.0",
+  "media": "M-U6QLPK"
+}
