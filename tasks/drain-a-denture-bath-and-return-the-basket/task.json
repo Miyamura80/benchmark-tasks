@@ -1,0 +1,20 @@
+{
+  "title": "Drain and reset a denture bath",
+  "category": "Societal relatability",
+  "keywords": [
+    "care-home",
+    "denture bath",
+    "basket",
+    "pouring",
+    "fluid"
+  ],
+  "instruction": "Lift the basket with the denture inside, drain the cup into the catch basin, then put the basket back.",
+  "context": "A removable basket lets a carer replace soaking water without handling or dropping the denture.",
+  "setup": "Two YAM arms face a 380 × 340 mm mat. On the left is a polymer bath with a 76 × 82 × 48 mm internal well, an open lid, a 70 mm wide perforated lift basket, and a silicone mock denture. The cup and wet basket contain 110 mL of water in total. The hinged cradle and its horizontal lever start upright. The empty 136 × 116 mm catch basin is aligned with the cup lip on the right.",
+  "scoring": "0.33 for raising the basket more than 47 mm. 0.67 when at least 105 mL lands in the catch basin. Award 1.00 when spill and water in the cup are each below 3 mL, airborne water is below 0.1 mL, the cup is within 0.10 rad of upright and the basket within 9 mm of seated height, held for 0.45 s after release.",
+  "run_limit": "1,200 actions (60 seconds at 20 Hz)",
+  "reset_notes": "Empty the basin, return the cradle and basket to their start positions and restore the 110 mL fill.",
+  "fidelity": "The model conserves liquid volume, balances cup load, sloshes the free surface and tracks gravity-driven parcels to the basin or mat. A guided cradle and a basket-retained mock denture are used. This is a reduced-order flow and fixture model.",
+  "scores": "Scripted dual-YAM: 1.00 in 344 actions. Dream-1: 0.00 in 1,200 actions.",
+  "media": "M-K9RGZN"
+}

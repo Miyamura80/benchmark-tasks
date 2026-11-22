@@ -1,0 +1,14 @@
+{
+  "step": 1200,
+  "seconds": 60.0,
+  "phase": "Dream-1 policy",
+  "score": 0.0,
+  "caught_ml": 0.0,
+  "in_cup_ml": 107.5,
+  "spill_ml": 0.0,
+  "flow_ml_s": 0.0,
+  "in_flight_ml": 0.0,
+  "lift_mm": -2.4,
+  "mass_balance_error_ml": 0.0,
+  "reset_verified": false
+}
