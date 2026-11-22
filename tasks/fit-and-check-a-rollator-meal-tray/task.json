@@ -1,0 +1,19 @@
+{
+  "title": "Fit a rollator meal tray",
+  "category": "Societal relatability",
+  "keywords": [
+    "rollator",
+    "assistive equipment",
+    "locking clips",
+    "retention"
+  ],
+  "instruction": "Lower the tray onto the rollator fixture, close both clips, and check the tray stays attached.",
+  "context": "A removable meal tray must remain clipped during ordinary handling of the walker.",
+  "setup": "An empty, stationary full-height four-wheel rollator has a tubular frame, handgrips about 865 mm high, 126 mm rubber tyres, a seat and fabric basket. Two horizontal metal mounting rails are 196 mm apart. A 198 × 164 mm polymer tray starts above the rails on a lowering guide, with both contrasting clips open. The two YAM arms face the tray.",
+  "scoring": "0.25 for each clip advanced more than 18 mm. Award 1.00 when the tray lowers more than 27 mm, both clips stay engaged during an upward tug that deflects the seat by at least 1.2 mm for over 0.25 s, and the assembly remains seated after release for 0.45 s.",
+  "run_limit": "1,200 actions (60 seconds at 20 Hz)",
+  "reset_notes": "Raise the tray to its starting guide position, re-open both clips and leave the walker stationary.",
+  "fidelity": "The full-height frame is stationary. Both clips and the tray have constrained motion. A measured spring deflection gives an approximate retention load with the clips engaged.",
+  "scores": "Scripted dual-YAM: 1.00 in 436 actions. Dream-1: 0.00 in 1,200 actions.",
+  "media": "M-6427RP"
+}
