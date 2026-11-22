@@ -1,0 +1,65 @@
+{
+  "full": {
+    "flag": "default",
+    "initial_sectors": 0,
+    "final_sectors": 12,
+    "retained_sector_ids_1_based": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "retained_sector_count": 12,
+    "score": 1.0,
+    "physics_samples": 7641,
+    "min_released_rim": 12,
+    "min_released_opening": 1.0,
+    "min_loaded_puck_height_m": 0.02448066133596108,
+    "max_terminal_puck_speed_m_s": 7.56417732549732e-07,
+    "terminal_puck_film_contact_fraction": 1.0,
+    "hands_clear_during_load": true,
+    "retention_pass": true
+  },
+  "partial": {
+    "flag": "--one-pair",
+    "initial_sectors": 0,
+    "final_sectors": 11,
+    "retained_sector_ids_1_based": [
+      3,
+      4,
+      6,
+      8,
+      12
+    ],
+    "retained_sector_count": 5,
+    "score": 0.38461538461538464,
+    "physics_samples": 4161,
+    "min_released_rim": 6,
+    "min_released_opening": 1.0,
+    "min_loaded_puck_height_m": 0.0244806426507471,
+    "max_terminal_puck_speed_m_s": 7.46338313052559e-07,
+    "terminal_puck_film_contact_fraction": 1.0,
+    "hands_clear_during_load": true,
+    "retention_pass": false
+  },
+  "archived_dream_360_action_replay": {
+    "retained_sector_count": 0,
+    "score": 0.0,
+    "physics_samples": 16161,
+    "min_released_rim": 0,
+    "min_released_opening": 0.05,
+    "min_loaded_puck_height_m": 0.024938091321457048,
+    "max_terminal_puck_speed_m_s": 1.9709461593443776e-06,
+    "terminal_puck_film_contact_fraction": 1.0,
+    "hands_clear_during_load": true,
+    "retention_pass": false
+  }
+}

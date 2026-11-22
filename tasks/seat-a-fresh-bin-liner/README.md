@@ -70,13 +70,13 @@ Configure `DREAM_API_KEY` outside the task directory.
 ## Success checks
 
 A sector needs film running from the interior across the lip to an exterior
-hem hanging at least 9 mm below the rim. From final release through the load
-test, all 12 sectors must hold and at least 85% of aperture samples must
-remain clear. The robot clears the liner before the independent drop.
+hem hanging at least 9 mm below the rim. Each of the twelve marked sectors earns one point if that same sector stays seated at **every** 1.25 ms physics step from final release through the end of the puck test. The score is sector points divided by 13, plus one extra point divided by 13 only for the original full pass. For full credit all twelve must hold, at least 85% of the aperture must remain clear, and the puck must pass the checks below. A simulator warning, active grip assistance at or after release, or robot–film contact at or after the drop gives zero. For physical scoring use numbered sectors on the basket and check their identity in the continuous release/drop recording. The robot clears the liner before the independent drop.
 The puck center must remain above the 20 mm base and settle on the lining
 inside the basket. Positive puck–film contact must persist throughout the
 last 0.35 s with speed below 20 mm/s. The rigid bottom supports most of the
 puck's weight.
+
+The one-pair control uses the same reset, arms, and independently timed load. It skips the second grasp. In this run 11 sectors were seated at the end, but only five specific sectors held continuously. It earned **5/13 (0.385)**. If all twelve stay seated but the opening or puck fails, a hands-clear valid run earns 12/13. To reproduce the partial trial add `--one-pair` to the scripted command, then pass its trace to the same auditor and renderer. The auditor reconstructs retention by intersecting the recorded twelve-bit sector masks over every physics step. Older traces without per-step sector identities can still be audited for their original full pass.
 
 The successful native episode starts at **0/12**, then retains **12/12**
 and **100% aperture** after final release. The puck center stays above
@@ -136,3 +136,5 @@ the edge. Lift any folds that have already seated. Record the reset from
 above and around the rim. Film a hands-free control and a manually fitted
 cuff with a centered 100 g drop from 95 mm above the lip. Use the overhead
 view to score aperture and the side views to verify the exterior hem.
+
+The original board videos remain valid at their reported scores. The scorer-only revision also includes a fresh scripted full run, one-pair control and offline regrade of the archived model actions in [the revised results](evidence/revised-grades.json). The local action replay reproduced the model's zero score, with a minimum opening of 5% versus 11.25% in the original model trace. No new model inference was used.

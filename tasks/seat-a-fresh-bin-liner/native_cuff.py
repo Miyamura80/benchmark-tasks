@@ -289,6 +289,8 @@ def run(stock_file, mode='pinch', spread=.145, lift=.306, lower_radius=.135,
     robot_geoms = {i for i in range(m.ngeom) if m.body(m.geom_bodyid[i]).name.startswith(prefixes)}
     load_hit = None
     min_released, min_loaded = 12,12
+    retained = np.ones(12, dtype=bool)
+    sector_bits = 1 << np.arange(12)
     min_open = 1.
     settled = True
     min_puck_z = np.inf
@@ -358,8 +360,9 @@ def run(stock_file, mode='pinch', spread=.145, lift=.306, lower_radius=.135,
         aperture = opening_count(points,samples)/len(samples)
         puck_speed = float(np.linalg.norm(d.qvel[puck_vel:puck_vel+3]))
         full_rate.append([round(time,6),count,aperture,int(robot_film),int(any(applied)),int(hit),
-                          float(d.xpos[puck,2]),float(np.linalg.norm(d.xpos[puck,:2])),puck_speed,puck_film_normal])
+                          float(d.xpos[puck,2]),float(np.linalg.norm(d.xpos[puck,:2])),puck_speed,puck_film_normal,int(sectors @ sector_bits)])
         if released:
+            retained &= sectors
             min_released = min(min_released,count)
             min_open = min(min_open,aperture)
         if dropped:
@@ -393,7 +396,9 @@ def run(stock_file, mode='pinch', spread=.145, lift=.306, lower_radius=.135,
     valid = (min_released == 12 and min_open >= .85 and settled and load_hit is not None
              and min_puck_z >= .020 and all(terminal_film_contacts)
              and clear_at_load and clear_assist and not any(warning))
-    return dict(mode=mode, timestep_s=timestep, grip_scale=grip_scale, spread_m=spread, lift_m=lift, lower_radius_m=lower_radius,
+    # Twelve sector points plus a completion point for the original load test.
+    score = (int(retained.sum()) + int(valid)) / 13 if clear_assist and clear_at_load and not any(warning) else 0.0
+    return dict(score=score, retained_sectors=retained.tolist(), mode=mode, timestep_s=timestep, grip_scale=grip_scale, spread_m=spread, lift_m=lift, lower_radius_m=lower_radius,
                 orientation=orientation, withdrawal=withdrawal, release_opening_m=release_opening, stiff_pads=stiff_pads, film_mass_kg=film_mass, initial_sectors=sum(frames[0]['sectors']),final_sectors=count,
                 min_released_sectors=min_released,min_loaded_sectors=min_loaded,min_released_opening=min_open,
                 post_load_retained=bool(valid),puck_settled=settled,first_film_contact_s=load_hit,
@@ -405,7 +410,7 @@ def run(stock_file, mode='pinch', spread=.145, lift=.306, lower_radius=.135,
                 last_robot_film_contact_s=last_robot_film, last_assist_force_s=last_assist,
                 max_assist_force_n=max_assist.tolist(),
                 physics_trace_keys=['time_s','num_sectors','aperture','robot_touches_film','assist_active',
-                                    'puck_touches_film','puck_z_m','puck_radius_m','puck_speed_m_s','puck_film_normal_n'], physics_trace=full_rate,
+                                    'puck_touches_film','puck_z_m','puck_radius_m','puck_speed_m_s','puck_film_normal_n','sector_mask'], physics_trace=full_rate,
                 pinch_events=[p.events for p in pinches],
                 bilateral_pad_contact_s=(bilateral_ticks*timestep).tolist(),max_pad_normal_n=max_forces.tolist(),
                 preparation_max_sampled_strain=prep_strain,peak_sampled_max_abs_edge_strain=max_strain,

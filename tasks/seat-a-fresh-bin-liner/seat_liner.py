@@ -145,7 +145,7 @@ def main():
     trace = dict(results=[trial], faces=FACES.tolist(), wall_height=WALL_HEIGHT,
                  lip_radius=LIP_RADIUS, release_s=release, drop_s=drop)
     args.output.write_text(json.dumps(trace, separators=(",", ":")))
-    keys = ("mode", "initial_sectors", "final_sectors", "min_released_sectors", "min_released_opening",
+    keys = ("score", "retained_sectors", "mode", "initial_sectors", "final_sectors", "min_released_sectors", "min_released_opening",
             "post_load_retained", "preparation_max_sampled_strain", "peak_sampled_max_abs_edge_strain",
             "pinch_events", "warnings")
     print(json.dumps({key: trial[key] for key in keys}))

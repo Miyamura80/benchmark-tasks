@@ -140,7 +140,7 @@ def main():
                  release_s=release, drop_s=drop)
     (args.output / "trace.json").write_text(json.dumps(trace, separators=(",", ":")))
     (args.output / "transcript.json").write_text(json.dumps(transcript, indent=2) + "\n")
-    print(json.dumps({"score": float(result["post_load_retained"]), "actions": controller.count}))
+    print(json.dumps({"score": result["score"], "actions": controller.count}))
 
 
 if __name__ == "__main__":

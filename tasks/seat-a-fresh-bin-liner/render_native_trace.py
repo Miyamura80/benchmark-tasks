@@ -69,7 +69,9 @@ def main():
             mujoco.mj_forward(m, data)
             renderer.update_scene(data, camera=camera, scene_option=opt)
             if i == len(frames) - 1:
-                phase = "Cuff held through load" if run["post_load_retained"] else "Retention test failed"
+                phase = "Cuff held through load" if run["post_load_retained"] else "End of load test"
+                if "score" in run:
+                    phase = f"{sum(run['retained_sectors'])}/12 retained | Score {run['score']:.3f}"
             elif frame["puck"] is not None:
                 phase = "100 g puck test"
             else:

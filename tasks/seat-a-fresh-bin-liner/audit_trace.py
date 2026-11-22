@@ -45,12 +45,27 @@ def audit_physics_steps(run, release, drop):
     contact_fraction = float(np.mean(normal > 0.))
     hand_clear = (not cols["assist_active"][after_release].any()
                   and not cols["robot_touches_film"][after_drop].any())
-    terminal_inside = (terminal_z.min() >= .025 and terminal_z.max() <= .090
+    terminal_inside = (terminal_z.min() >= .020 and terminal_z.max() < .090
                        and cols["puck_radius_m"][terminal].max() < .085)
-    passed = (rim == 12 and aperture >= .85 and min_z >= .020 and max_speed <= .02
-              and terminal_inside and had_contact and contact_fraction == 1. and hand_clear
-              and not any(run.get("warnings", [])))
-    return {"physics_samples": len(rows), "min_released_rim": rim,
+    full_score = (rim == 12 and aperture >= .85 and min_z >= .020 and max_speed <= .02
+                  and terminal_inside and had_contact and cols["puck_touches_film"][terminal].all()
+                  and hand_clear and not any(run.get("warnings", [])))
+    # Preserve the historical audit's stricter 25 mm height and positive-force checks.
+    passed = (full_score and terminal_z.min() >= .025 and contact_fraction == 1.)
+    graded = {}
+    if "sector_mask" in cols:
+        raw = cols["sector_mask"]
+        masks = raw.astype(int)
+        if not np.array_equal(raw, masks) or np.any((masks < 0) | (masks >= 4096)):
+            raise ValueError("Invalid 12-sector mask.")
+        if any(int(mask).bit_count() != count for mask, count in zip(masks, cols["num_sectors"])):
+            raise ValueError("Recorded sector mask and count disagree.")
+        kept = int(np.bitwise_and.reduce(masks[after_release])).bit_count()
+        grade = (kept + int(full_score)) / 13 if hand_clear and not any(run.get("warnings", [])) else 0.0
+        if grade != run["score"]:
+            raise ValueError("Native and audited scores disagree.")
+        graded = {"retained_sector_count": kept, "score": grade}
+    return {**graded, "physics_samples": len(rows), "min_released_rim": rim,
             "min_released_opening": aperture, "min_loaded_puck_height_m": min_z,
             "max_terminal_puck_speed_m_s": max_speed, "terminal_puck_film_contact_fraction": contact_fraction,
             "hands_clear_during_load": bool(hand_clear), "retention_pass": bool(passed)}
