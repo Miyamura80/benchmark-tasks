@@ -1,0 +1,5 @@
+mujoco==3.3.7
+numpy==2.2.6
+dreamlabs==1.0.23
+Pillow
+inspect-robots==1.0.0

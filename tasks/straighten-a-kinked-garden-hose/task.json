@@ -1,0 +1,17 @@
+{
+  "title": "Restore water flow through a kinked garden hose",
+  "category": "Societal relatability",
+  "keywords": [
+    "hose kink",
+    "elastic snap-through",
+    "flow restoration"
+  ],
+  "instruction": "Straighten the kink in the garden hose until the running nozzle delivers a steady stream. Leave both ends connected.",
+  "context": "A hose can kink while its source and nozzle stay connected. Straightening the bend restores the lumen and flow without disconnecting the system.",
+  "setup": "Secure both metal hose connections on a 300 \u00d7 368 mm stand. Turn on the water. The 24 mm outside-diameter hose starts in a tight kink of roughly 72\u00b0 and its fixed brass nozzle points into a collector.",
+  "scoring": "Partial credit 0.5 when flow recovers to 105 mL/s. Full credit requires both grippers at least 70 mm clear of the bend, 163 mL/s for at least 1.2 consecutive seconds, and at least 200 mL of modeled collection in that interval. The fixed couplers stay connected.",
+  "reset_notes": "Empty the collector, restore the same supply setting and fold the same section beyond its kink point.",
+  "fidelity": "A three-joint bend transmits gripper contact. A dynamic wall coordinate models local bore collapse and recovery. Modeled discharge depends on the resulting elliptical aperture, and the collector accumulates flow during the hands-clear proof. The pressure setting and wall parameters are nominal. The outlet beyond the active bend is rendered as a smooth curve. See the timed jug protocol for the matching physical measurement.",
+  "run_limit": "420 joint actions at 20 Hz (21 seconds)",
+  "scores": "Scripted 1.0; Dream-1 pending"
+}
