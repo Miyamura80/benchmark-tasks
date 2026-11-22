@@ -1,0 +1,12 @@
+{
+  "step": 1200,
+  "seconds": 60.0,
+  "phase": "Dream-1 policy",
+  "score": 0.0,
+  "old_clear": false,
+  "replacement_flush": false,
+  "extract_n": 0.0,
+  "press_n": 0.0,
+  "flush_error_mm": 20.0,
+  "tools_parked": false
+}

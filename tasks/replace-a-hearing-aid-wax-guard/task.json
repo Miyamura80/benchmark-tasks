@@ -1,0 +1,19 @@
+{
+  "title": "Replace a hearing-aid wax guard",
+  "category": "Societal relatability",
+  "keywords": [
+    "hearing aid",
+    "wax guard",
+    "press fit",
+    "service"
+  ],
+  "instruction": "Extract the used wax guard, clear the receiver port, and seat a fresh guard flush.",
+  "context": "Replacing a clogged wax guard restores a routine serviceable part on a receiver.",
+  "setup": "Two YAM arms face a 274 × 290 mm work mat. A receiver mock-up with a 22 mm diameter carrier sits port-up in a metal nest. The used polymer guard in the port and the fresh guard are approximately 6.4 mm across the flange. A 48 mm stem extraction applicator is parked 69 mm to the left. The insertion applicator with the fresh guard is parked 69 mm to the right. The receiver and its cable stay on the bench.",
+  "scoring": "0.33 when the spent guard breaks free and is parked more than 36 mm to the left and 13 mm above the seat. 0.67 when a new guard releases from the aligned applicator under at least 0.55 N of pressure for 0.05 s and sits within 1.7 mm vertically and 1.8 mm laterally of its seat. Award 1.00 if both tools are parked and released for 0.40 s.",
+  "run_limit": "1,200 actions (60 seconds at 20 Hz)",
+  "reset_notes": "Seat the spent guard in the receiver, load a fresh guard on the insertion tool and park both applicators.",
+  "fidelity": "Both guards are independent jointed parts. The extractor barb and bore shoulder use compliant force models. Planar channels guide the tools and parts at enlarged bench-fixture scale.",
+  "scores": "Scripted dual-YAM: 1.00 in 458 actions. Dream-1: 0.00 in 1,200 actions.",
+  "media": "M-8BRMYM"
+}
