@@ -1,0 +1,11 @@
+{
+  "title": "Empty the roller sweeper's debris tray",
+  "category": "Societal relatability",
+  "instruction": "Pull the loaded drawer clear of its guides, empty the dry spill into the waste bin, and slide the tray home.",
+  "setup": "Park the compact sweeper with its 134 \u00d7 62 mm drawer seated under the cover. Load six rice grains, six split lentils and six oat flakes. Place a 250 \u00d7 224 mm receiving bin alongside the drawer opening.",
+  "scoring": "Pull the pan at least 48 mm forward while level with the guides, lift it over 35 mm, then tip it over 45 degrees. Score settled pieces in the receiver divided by 18, capped at 0.75. Full credit requires all 18 pieces resting in the receiver for 0.5 s. Both rear corners of the drawer must finish within 2 mm of the back stop, with the floor supported by the chassis and both grippers clear for 0.4 s. The pose check also limits displacement to 10 mm and rotation to 10 degrees.",
+  "fidelity": "The loaded drawer slides under a cover and two fixed retaining lips before lifting and tipping. Eighteen free rigid food pieces model six rice grains, six split lentils and six oat flakes. Each piece moves by contact and gravity. The 0.5 ms physics step resolves thin flakes. Fine dust adhesion, the motor and powered sweeping are outside the task. Guide spacing and release forces have not been measured on a commercial unit.",
+  "scores": "Scripted 1.0; Dream-1 pending",
+  "run_limit": "420 joint actions at 20 Hz (21 seconds)",
+  "reset_notes": "Recover all 18 pieces and spread them across the seated tray in three rows."
+}
