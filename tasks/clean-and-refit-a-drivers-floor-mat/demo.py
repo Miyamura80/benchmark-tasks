@@ -18,6 +18,42 @@ BONDED_GRIT = 12
 TOTAL_GRIT = LOOSE_GRIT + BONDED_GRIT
 
 
+# Coupon shear-force target for the replaceable bond, in newtons.
+BREAKAWAY_N = 1.0
+
+
+def brush_releases(model, data, bristles, bonds, mat_id):
+    """Sum solved bristle forces on each attached clump in the mat's tangent plane."""
+    forces = {}
+    normal = data.xmat[mat_id].reshape(3, 3)[:, 2]
+    wrench = np.empty(6)
+    # Only bristles in this fixture carry this collision filter. Confirm exact IDs below.
+    geom_pairs = data.contact.geom
+    brush_filter = model.geom_conaffinity[geom_pairs] == 2
+    for index in np.flatnonzero(brush_filter.any(axis=1)):
+        contact = data.contact[index]
+        if contact.efc_address < 0 or contact.dist > 0:
+            continue
+        if contact.geom1 in bristles and contact.geom2 in bonds:
+            dirt, sign = contact.geom2, 1
+        elif contact.geom2 in bristles and contact.geom1 in bonds:
+            dirt, sign = contact.geom1, -1
+        else:
+            continue
+        if data.eq_active[bonds[dirt]]:
+            mj.mj_contactForce(model, data, index, wrench)
+            force = sign * (contact.frame.reshape(3, 3).T @ wrench[:3])
+            forces[dirt] = forces.get(dirt, 0) + force
+    released = []
+    for dirt, force in forces.items():
+        shear = float(np.linalg.norm(force - normal * (force @ normal)))
+        if shear >= BREAKAWAY_N:
+            data.eq_active[bonds[dirt]] = False
+            released.append(dict(clump=model.geom(dirt).name, shear_N=shear,
+                                 time_s=float(data.time)))
+    return released
+
+
 def scene():
     mat = []
     for i in range(2):
@@ -173,7 +209,6 @@ class Trial:
         self.bonds = {self.model.geom(f'crust{i}').id: self.model.equality(f'bond{i}').id
                       for i in range(LOOSE_GRIT,TOTAL_GRIT)}
         self.bristles = {self.model.geom(f'bristle{i}').id for i in range(7)}
-        self.brush_ends = np.zeros(6)
         self.debris_geoms = [self.model.geom(f'particle{i}' if i<LOOSE_GRIT else f'crust{i}').id
                              for i in range(TOTAL_GRIT)]
         self.debris_vel = np.array([int(self.model.body_jntadr[body]) for body in self.grit])
@@ -232,14 +267,7 @@ class Trial:
             if self.latched[i]:
                 force = np.clip(-780*error, -8.0, 8.0)
                 mj.mj_applyFT(m,d,force,np.zeros(3),point,self.mat_id,d.qfrc_applied)
-        # An advancing bristle peels the contact bond before a rigid impact.
-        if d.joint('brush_slide').qpos[0] < -.10 and abs(d.joint('x').qvel[0]) > .008:
-            for geom, bond in self.bonds.items():
-                if not d.eq_active[bond]:
-                    continue
-                if any(mj.mj_geomDistance(m,d,bristle,geom,.002,self.brush_ends) < .0007
-                       for bristle in self.bristles):
-                    d.eq_active[bond] = False
+        brush_releases(m, d, self.bristles, self.bonds, self.mat_id)
         self.step_vacuum()
         previous_time = d.time
         mj.mj_step(m,d)

@@ -10,7 +10,7 @@ import mujoco as mj
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
-from demo import BONDED_GRIT, LOOSE_GRIT, TOTAL_GRIT, scene
+from demo import BONDED_GRIT, LOOSE_GRIT, TOTAL_GRIT, brush_releases, scene
 from yam_station import Station, station_xml
 
 SCENE_OFFSET = np.array([-.265, 0., .145])
@@ -86,8 +86,7 @@ class FloorMat:
                          for i in range(TOTAL_GRIT)]
         self.grit_dofs=m.jnt_dofadr[m.body_jntadr[self.grit]]
         self.bristles={m.geom(f'bristle{i}').id for i in range(7)}
-        self.brush_ends=np.zeros(6)
-        self.brush_contact_gaps=[]
+        self.releases=[]
         self.motor_indicator=m.geom('vac_switch').id
         self.jaw_sensor=m.joint('right_finger_1').qposadr[0]
         if not self.vacuum_control:
@@ -129,24 +128,9 @@ class FloorMat:
         self.last_time=d.time
 
     def brush(self,s):
-        """Use the bristle sweep and its 0.7 mm flex envelope to release dirt."""
-        d,m=s.data,s.model
-        if not np.any(d.eq_active[:BONDED_GRIT]):
-            return
-        if d.geom_xpos[min(self.bristles),2] > .228:
-            return
-        mj.mj_objectVelocity(m,d,mj.mjtObj.mjOBJ_SITE,s.sites['left'],self.arm_vel,0)
-        if np.linalg.norm(self.arm_vel[3:5])<=.012:
-            return
-        for particle,bond in self.bonds.items():
-            if not d.eq_active[bond]:
-                continue
-            for bristle in sorted(self.bristles):
-                gap=mj.mj_geomDistance(m,d,bristle,particle,.002,self.brush_ends)
-                if gap<.0007:
-                    d.eq_active[bond]=False
-                    self.brush_contact_gaps.append(float(gap*1000))
-                    break
+        if any(s.data.eq_active[bond] for bond in self.bonds.values()):
+            self.releases.extend(brush_releases(s.model, s.data, self.bristles,
+                                                self.bonds, self.mat_id))
 
     def grip(self,s):
         d,m=s.data,s.model
@@ -228,6 +212,8 @@ class FloorMat:
                +.20*bool(parked and np.all(self.released) and collected>=44 and brushed==BONDED_GRIT))
         return dict(brushed=int(brushed), vacuumed=int(np.sum(self.loaded)), tray=int(np.sum(tray)),
                     vacuum_on=self.powered,
+                    bonded_in_vacuum=int(self.loaded[LOOSE_GRIT:].sum()),
+                    bonded_in_tray=int((tray & ~self.loaded)[LOOSE_GRIT:].sum()),
                     clips_closed=int(np.sum(self.latched)), clips_released=int(np.sum(self.released)),
                     mat_grasped=bool(self.loaded_sides), flat=bool(flat), score=round(score,3),
                     mat_yaw=round(math.degrees(math.atan2(d.xmat[self.mat_id,3],d.xmat[self.mat_id,0])),1),
@@ -462,7 +448,7 @@ def main():
             render.finish()
     points=trial.data.xpos[fixture.grit]-SCENE_OFFSET
     remaining=points[~fixture.loaded]
-    result={'final':trial.reading(),'error':error, 'brush_contact_gap_mm':fixture.brush_contact_gaps,
+    result={'final':trial.reading(),'error':error, 'bond_releases':fixture.releases,
             'remaining_debris_mm':np.round(remaining*1000,1).tolist(),
             'trace':trial.trace}
     (path/'floor-mat-yam.json').write_text(json.dumps(result,indent=2)+'\n')

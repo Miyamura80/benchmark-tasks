@@ -1,28 +1,92 @@
 {
-  "step": 765,
-  "seconds": 38.25,
+  "step": 756,
+  "seconds": 37.8,
   "phase": "Raise the vacuum",
   "brushed": 12,
   "vacuumed": 0,
   "tray": 0,
   "vacuum_on": false,
+  "bonded_in_vacuum": 0,
+  "bonded_in_tray": 0,
   "clips_closed": 2,
   "clips_released": 0,
   "mat_grasped": false,
   "flat": true,
   "score": 0.25,
-  "mat_yaw": -1.6,
-  "wrist_yaw": -0.2,
+  "mat_yaw": -0.8,
+  "wrist_yaw": -0.3,
   "socket_error_mm": [
     [
-      -2.8,
-      -0.6,
+      -0.1,
+      -0.1,
       -0.0
     ],
     [
-      3.0,
-      -0.7,
+      2.6,
+      -0.1,
       -0.0
     ]
+  ],
+  "bond_releases": [
+    {
+      "clump": "crust47",
+      "shear_N": 1.1821440317112455,
+      "time_s": 4.525999999999724
+    },
+    {
+      "clump": "crust46",
+      "shear_N": 1.304606392582327,
+      "time_s": 4.7359999999997004
+    },
+    {
+      "clump": "crust45",
+      "shear_N": 2.4542213010212643,
+      "time_s": 4.999999999999671
+    },
+    {
+      "clump": "crust44",
+      "shear_N": 1.7243627336559615,
+      "time_s": 5.213999999999648
+    },
+    {
+      "clump": "crust43",
+      "shear_N": 1.0655359526476804,
+      "time_s": 7.537999999999392
+    },
+    {
+      "clump": "crust42",
+      "shear_N": 1.6392822892609147,
+      "time_s": 7.73999999999937
+    },
+    {
+      "clump": "crust41",
+      "shear_N": 1.2646214180957807,
+      "time_s": 7.981999999999343
+    },
+    {
+      "clump": "crust40",
+      "shear_N": 2.124514540231616,
+      "time_s": 8.183999999999402
+    },
+    {
+      "clump": "crust39",
+      "shear_N": 1.1380360780930598,
+      "time_s": 10.534000000000187
+    },
+    {
+      "clump": "crust38",
+      "shear_N": 1.581651188484335,
+      "time_s": 10.736000000000255
+    },
+    {
+      "clump": "crust37",
+      "shear_N": 1.3256048809565748,
+      "time_s": 10.99000000000034
+    },
+    {
+      "clump": "crust36",
+      "shear_N": 1.312892560244158,
+      "time_s": 11.166000000000398
+    }
   ]
 }

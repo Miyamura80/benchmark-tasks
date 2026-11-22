@@ -1,0 +1,30 @@
+{
+  "step": 1200,
+  "seconds": 60.0,
+  "phase": "Replay of archived Dream-1 commands",
+  "brushed": 0,
+  "vacuumed": 0,
+  "tray": 0,
+  "vacuum_on": false,
+  "bonded_in_vacuum": 0,
+  "bonded_in_tray": 0,
+  "clips_closed": 2,
+  "clips_released": 0,
+  "mat_grasped": false,
+  "flat": true,
+  "score": 0.0,
+  "mat_yaw": 0.0,
+  "wrist_yaw": -23.8,
+  "socket_error_mm": [
+    [
+      0.0,
+      0.0,
+      -0.0
+    ],
+    [
+      -0.0,
+      0.0,
+      -0.0
+    ]
+  ]
+}

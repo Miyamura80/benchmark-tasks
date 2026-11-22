@@ -12,7 +12,7 @@
   "setup": "Two native I2RT YAM arms work at a driver's footwell fixture with pedals, door sill, two retention posts, a ribbed mat with a pull lip and a collection tray. The left arm carries a passive bristle brush and the right carries a vacuum controlled by its jaw opening. The mat starts clipped down with 12 adhered clumps and 36 loose grit pieces.",
   "scoring": "Award 0.15 after both clips are released, up to 0.25 in proportion to the 12 adhered clumps loosened, and up to 0.40 in proportion to the 44-piece collection target. Award the final 0.20 when both clips are reseated and the released mat lies flat after the cleaning thresholds are met.",
   "run_limit": "1,200 control steps at 20 Hz",
-  "fidelity": "Native dual-YAM joint actuators and collision geometry, a 0.7 mm bristle-flex contact envelope, jaw-travel motor interlock, bounded suction and compliant bin capture. The mat uses a compliant toe hinge, sensed retention clips and a compliant hold that requires two-pad contact.",
-  "scores": "Scripted dual-YAM replay: 1.00 at 1,162 steps (12 loosened, 26 vacuumed, 18 in tray, 2 clips seated). Power-off cleaning control: 0.25 (12 loosened, 0 vacuumed, motor never on). Dream-1: 0.00 after 1,200 actions.",
-  "media": "M-D2L26G"
+  "fidelity": "Native dual-YAM joint actuators and collision geometry, a 1.00 N net tangential bristle contact-load threshold, jaw-travel motor interlock, bounded suction and compliant bin capture. The mat uses a compliant toe hinge, sensed retention clips and a compliant hold that requires two-pad contact.",
+  "scores": "Scripted dual-YAM: 1.00 in 1,154 actions (12 clumps released, 26 pieces vacuumed, 18 in tray, both clips reseated). Vacuum-off cleaning control: 0.25. Original Dream-1 run and offline replay of its 1,200 actions: 0.00. Physical breakaway tolerance awaits bench measurement.",
+  "media": "M-9DSNR3"
 }
