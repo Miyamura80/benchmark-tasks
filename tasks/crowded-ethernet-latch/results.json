@@ -1,0 +1,28 @@
+{
+  "model": {
+    "model": "Dream-1",
+    "score": 0,
+    "steps": 2400,
+    "frames": 2401,
+    "seed": 0,
+    "max_steps": 2400,
+    "termination": [
+      "max_steps"
+    ],
+    "simulated_seconds": 120,
+    "elapsed_wall_seconds": 1261.924634629977,
+    "sha256_model_mp4": "2407617d51f996029616047690f747d5274cd1554b3614664383d444c0f8f721",
+    "sha256_eval": "dffee96206696177e276d65f006ff6db8a509c63dcb47feed7535d58f924b865"
+  },
+  "scripted": {
+    "score": 1.0,
+    "seed": 0,
+    "steps": 1582,
+    "simulated_seconds": 79.1,
+    "elapsed_wall_seconds": 376.8986434599501,
+    "retention_hold_seconds": 2.05,
+    "all_neighbour_latches_retained": true,
+    "trace_sha256": "5d4b56f2c5eed3d6b3fe2d2a6395013ea2d0885fd02f6ee4062362ac167f08d3",
+    "demo_sha256": "cdab6598a4d34d9c0abcc257e224ad7c3a496dee8b1c88fd0a4942894247d1c6"
+  }
+}

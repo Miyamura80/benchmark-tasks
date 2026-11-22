@@ -1,0 +1,19 @@
+{
+  "title": "Move a latched Ethernet plug on a crowded switch",
+  "category": "Impact on jobs",
+  "keywords": [
+    "bimanual",
+    "network maintenance",
+    "spring latch",
+    "cable routing"
+  ],
+  "instruction": "Depress the orange plug's tab, withdraw it from the lower socket, and latch it into the empty socket directly above. Release both grippers and keep the other six cables connected.",
+  "context": "A technician reassigning a live patch connection must release its locking tab in a crowded panel while leaving adjacent connections intact.",
+  "setup": "Two YAM arms with parallel grippers face a fixed 4-column, 2-row switch on a stand. The simulated panel is 65.91 mm wide, 27.30 mm high and 31.23 mm deep. Socket centers are 16.26 mm apart horizontally and 13.72 mm vertically. The orange cable occupies the lower socket directly below the only empty socket. Six blue or green cables fill the remaining ports. Each plug has a rigid plastic-like shell with a 24 × 12 mm base, a 20 × 5 × 1 mm spring tab and a 14 mm boot. Each flexible jacket is modeled with twelve approximately 16 mm links, 5 mm in diameter. Reset both arms to their default ready poses and all seven clips to their seated positions.",
+  "scoring": "0.25 after depressing the source tab by at least 1.8 mm while inserted over 6 mm, then withdrawing until source insertion is below −2 mm. 0.5 when the target hook engages with insertion over 8 mm, lateral error under 1 mm, axis error under 5°, and residual tab depression under 0.3 mm. 0.75 after 1 second continuously seated with both gripper centers over 70 mm away, gripper mesh clearance at least 5 mm, and plug speed under 10 mm/s. 1.0 after 2 seconds. Withdrawal before tab release, a neighbor withdrawing over 8 mm, clip travel over 2.6 mm, or dropping the service plug more than 20 mm below the work surface invalidates the attempt.",
+  "run_limit": "2,400 control steps (120 simulated seconds at 20 Hz).",
+  "reset_notes": "Fixed starting layout, seed 0 and zero object jitter. Start a fresh simulator for each evaluation.",
+  "fidelity": "Open sockets, guide rails, passive spring clips, retaining ledges and jointed cable jackets are simulated. Geometry approximates RJ45 hardware. Electrical continuity, plastic fracture and internal conductor strain are outside the model. The scripted run reached 2.33° relative clip rotation and 0.122 mm transverse anchor drift under load, exceeding the separate joint diagnostic limits of 0.5° and 0.100 mm.",
+  "scores": "Dream-1 run: 0.00; scripted demo: 1.00.",
+  "media": "M-EL6DX9"
+}
