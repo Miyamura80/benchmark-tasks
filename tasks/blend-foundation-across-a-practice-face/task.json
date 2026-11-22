@@ -13,5 +13,6 @@
   "scoring": "1.00 requires at least 93% usable coverage on each cheek and the nose, at most 20% peak transfer to the lips or eyelids, and under 0.15 s above 5.5 N. A usable sample has at least 82% of the reference coating. Otherwise, at most 35% protected transfer and combined usable coverage of 25% or 55% earn 0.25 or 0.50, respectively. All other outcomes score 0.00.",
   "reset_notes": "Clean the face, return the dry sponge and replenish the palette to its reference amount.",
   "fidelity": "Native gripper and foam contacts with a measured pigment-transfer approximation.",
-  "scores": "Scripted and fresh replay 1.00 in 836 actions. Idle 0.00. One-cheek 0.25. Dream-1 0.00 after 1,200 actions."
+  "scores": "Scripted and fresh replay 1.00 in 836 actions. Idle 0.00. One-cheek 0.25. Dream-1 0.00 after 1,200 actions.",
+  "media": "M-RFJWJY"
 }
