@@ -1,0 +1,122 @@
+{
+  "model": "dreamlabs/dream-1-beta",
+  "server_url": null,
+  "control_hz": 20,
+  "rows_per_request": 48,
+  "preroll_steps": 32,
+  "dry_run": false,
+  "requests": [
+    {
+      "step": 32,
+      "rtt_s": 2.300947569310665,
+      "infer_ms": 303,
+      "attempts": 1,
+      "rows": 48,
+      "rows_beyond_limits": 0,
+      "session_id": "session-1"
+    },
+    {
+      "step": 80,
+      "rtt_s": 0.5888237711042166,
+      "infer_ms": 265,
+      "attempts": 2,
+      "rows": 48,
+      "rows_beyond_limits": 0,
+      "session_id": "session-2"
+    },
+    {
+      "step": 128,
+      "rtt_s": 0.3542126137763262,
+      "infer_ms": 259,
+      "attempts": 2,
+      "rows": 48,
+      "rows_beyond_limits": 0,
+      "session_id": "session-3"
+    },
+    {
+      "step": 176,
+      "rtt_s": 0.3692890019156039,
+      "infer_ms": 265,
+      "attempts": 2,
+      "rows": 48,
+      "rows_beyond_limits": 0,
+      "session_id": "session-4"
+    },
+    {
+      "step": 224,
+      "rtt_s": 0.37364812288433313,
+      "infer_ms": 270,
+      "attempts": 2,
+      "rows": 48,
+      "rows_beyond_limits": 40,
+      "session_id": "session-5"
+    },
+    {
+      "step": 272,
+      "rtt_s": 0.5871215108782053,
+      "infer_ms": 264,
+      "attempts": 2,
+      "rows": 48,
+      "rows_beyond_limits": 48,
+      "session_id": "session-6"
+    },
+    {
+      "step": 320,
+      "rtt_s": 0.5506184590049088,
+      "infer_ms": 275,
+      "attempts": 2,
+      "rows": 48,
+      "rows_beyond_limits": 48,
+      "session_id": "session-7"
+    },
+    {
+      "step": 368,
+      "rtt_s": 0.6980004198849201,
+      "infer_ms": 289,
+      "attempts": 2,
+      "rows": 48,
+      "rows_beyond_limits": 48,
+      "session_id": "session-8"
+    },
+    {
+      "step": 416,
+      "rtt_s": 0.3515559956431389,
+      "infer_ms": 269,
+      "attempts": 2,
+      "rows": 48,
+      "rows_beyond_limits": 48,
+      "session_id": "session-9"
+    },
+    {
+      "step": 464,
+      "rtt_s": 0.3428619038313627,
+      "infer_ms": 262,
+      "attempts": 2,
+      "rows": 48,
+      "rows_beyond_limits": 48,
+      "session_id": "session-10"
+    },
+    {
+      "step": 512,
+      "rtt_s": 0.3498912937939167,
+      "infer_ms": 267,
+      "attempts": 2,
+      "rows": 48,
+      "rows_beyond_limits": 48,
+      "session_id": "session-11"
+    },
+    {
+      "step": 560,
+      "rtt_s": 0.8803130583837628,
+      "infer_ms": 270,
+      "attempts": 2,
+      "rows": 48,
+      "rows_beyond_limits": 48,
+      "session_id": "session-12"
+    }
+  ],
+  "tracking_error_rad": {
+    "mean": 0.03017430402554841,
+    "max": 0.10247380501456882
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "step": 600,
+  "seconds": 30.0,
+  "phase": "Dream-1 policy",
+  "leaves_in_tray": 0,
+  "drains_clear": 0,
+  "drain_leaf_coverage": [
+    0.2993,
+    0.1995
+  ],
+  "score": 0.0,
+  "title": "Clear leaves from the base of the windshield",
+  "variant": 0,
+  "run_limit": 600
+}

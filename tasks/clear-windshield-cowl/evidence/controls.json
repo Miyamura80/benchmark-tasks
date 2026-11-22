@@ -1,0 +1,71 @@
+{
+  "left jaw held open": {
+    "initial": {
+      "leaves_in_tray": 0,
+      "drains_clear": 0,
+      "drain_leaf_coverage": [
+        0.2993,
+        0.3147
+      ],
+      "score": 0.0
+    },
+    "final": {
+      "leaves_in_tray": 2,
+      "drains_clear": 1,
+      "drain_leaf_coverage": [
+        0.2993,
+        0.0
+      ],
+      "score": 0.5
+    },
+    "seconds": 27.32,
+    "max_weighted_ik_residual": 0.044732,
+    "embodiment": "Two 6-axis I2RT YAM models with linear grippers"
+  },
+  "right jaw held open": {
+    "initial": {
+      "leaves_in_tray": 0,
+      "drains_clear": 0,
+      "drain_leaf_coverage": [
+        0.2993,
+        0.3147
+      ],
+      "score": 0.0
+    },
+    "final": {
+      "leaves_in_tray": 2,
+      "drains_clear": 1,
+      "drain_leaf_coverage": [
+        0.0,
+        0.2072
+      ],
+      "score": 0.5
+    },
+    "seconds": 27.32,
+    "max_weighted_ik_residual": 0.044732,
+    "embodiment": "Two 6-axis I2RT YAM models with linear grippers"
+  },
+  "both jaws held open": {
+    "initial": {
+      "leaves_in_tray": 0,
+      "drains_clear": 0,
+      "drain_leaf_coverage": [
+        0.2993,
+        0.3147
+      ],
+      "score": 0.0
+    },
+    "final": {
+      "leaves_in_tray": 0,
+      "drains_clear": 0,
+      "drain_leaf_coverage": [
+        0.2993,
+        0.2072
+      ],
+      "score": 0.0
+    },
+    "seconds": 27.32,
+    "max_weighted_ik_residual": 0.044732,
+    "embodiment": "Two 6-axis I2RT YAM models with linear grippers"
+  }
+}
