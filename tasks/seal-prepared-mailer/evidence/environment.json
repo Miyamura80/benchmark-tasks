@@ -1,0 +1,11 @@
+{
+  "repos": {
+    "arena": "c7edf3a9d5d8276565208f72422f8f8a0806d6cf",
+    "yam": "0059d02a1a91bc6834c1d0846022891df0c78730",
+    "inspect": "fc5ace923ce85117f9c86f35274122212fbcfe2c"
+  },
+  "control_hz": 20,
+  "physics_hz": 240,
+  "python": "Python 3.12.16",
+  "winning_device": "PhysX CPU"
+}

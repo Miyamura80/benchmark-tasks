@@ -1,0 +1,19 @@
+{
+  "title": "Seal a preloaded peel-and-seal carton",
+  "instruction": "Close the open lid of the preloaded carton, press along the entire exposed adhesive strip, then withdraw both grippers and leave the carton sealed.",
+  "category": "Societal relatability",
+  "keywords": [
+    "packing",
+    "carton",
+    "pressure-sensitive adhesive",
+    "shipping"
+  ],
+  "context": "Preparing a small parcel for shipping using a mailer with a factory-applied adhesive strip.",
+  "setup": "Place a 220 × 145 × 85 mm kraft-board mailer on the workbench between two 4 × 43 × 18 mm rigid side guides. The 2.2 mm lid starts open with a spring-rest angle of 33°. Its front strip has five 43.3 × 16 mm adhesive sections spanning the width. Remove the liner before reset. Inside are two rigid boxed products, blue (64 × 44 × 25 mm) and rust-coloured (55 × 44 × 38 mm), each 90 g. Both YAM arms start in the calibrated station ready pose.",
+  "scoring": "Award 1.0 for five intact adhesive bonds, the lid within 3 degrees of closed, both products inside, grippers clear and carton motion under 10 mm/s for two continuous seconds. Each bond requires 100 ms of simultaneous fingertip and flange pressure with less than 1.7 mm separation. A total observed pad load over 30 N invalidates the trial. Otherwise award 0.0.",
+  "run_limit": "1,500 actions at 20 Hz (75 seconds)",
+  "reset_notes": "Remove pressure-created bonds, restore the open lid and both products, return the arms to their ready poses and reset the release timer.",
+  "fidelity": "The carton uses rigid cardboard panels, sprung creases and five locally compliant adhesive sections. Adhesion strength and board stiffness are simulation parameters.",
+  "scores": "Dream-1 beta 0.0 after 1,500 actions. Scripted Isaac Lab demo 1.0 after 418 actions.",
+  "media": "M-G7M995"
+}

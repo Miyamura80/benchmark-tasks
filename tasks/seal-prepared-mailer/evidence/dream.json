@@ -1,0 +1,12 @@
+{
+  "model": "dreamlabs/dream-1-beta",
+  "dry_run": false,
+  "actions": 1500,
+  "inference_requests": 31,
+  "frames_per_camera": 1501,
+  "status": "success",
+  "score": 0,
+  "seed": 0,
+  "errors": 0,
+  "control_hz": 20
+}
