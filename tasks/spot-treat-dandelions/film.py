@@ -116,7 +116,7 @@ class Film:
         )
         d.text(
             (577, 417),
-            f"{s.data.time:.1f} s    •    {len(f.pulses)} sprays",
+            f"{s.data.time:.1f} s    •    {len(f.pulses)} sprays    •    Score {f.result['score']:.2f}",
             font=self.text,
             fill="#e9e4cc",
         )

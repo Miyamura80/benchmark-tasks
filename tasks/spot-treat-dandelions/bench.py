@@ -117,7 +117,8 @@ def grade_frames(before, after, labels, aligned):
     if reasons:
         return dict(status="unreadable", score=None, reasons=reasons, **results)
     metrics = score(np.asarray(before.crop(TRAY)), np.asarray(after.crop(TRAY)), labels)
-    return dict(status="pass" if metrics["score"] else "fail", **results, **metrics)
+    status = "pass" if metrics["score"] == 1 else "partial" if metrics["score"] > 0 else "fail"
+    return dict(status=status, **results, **metrics)
 
 
 if __name__ == "__main__":

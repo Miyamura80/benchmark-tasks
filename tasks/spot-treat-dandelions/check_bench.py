@@ -8,7 +8,21 @@ from bench import FRAME, TRAY, POSITIVE, CLEAN, alignment_overlay, rectify, grad
 
 
 def checks(root):
+    # Three equal-area weed regions and the grass-spill boundary are exact in pixels.
+    from verify import score
+    labels = np.repeat(np.array([0, 0, 0, 1, 2, 3], dtype=np.uint8), 100)[None, :]
+    clean = np.zeros((1, labels.size, 3), dtype=np.uint8)
     records = {}
+    for count in range(4):
+        wet = clean.copy()
+        for weed in range(1, count + 1):
+            ix = np.flatnonzero(labels[0] == weed)[:30]
+            wet[0, ix, 1] = 35
+        wet[0, :135, 1] = 35
+        assert score(clean, wet, labels)["score"] == count / 3
+        wet[0, 135, 1] = 35
+        assert score(clean, wet, labels)["score"] == 0
+
     for name in ("careful", "miss", "blanket", "idle"):
         case = root / name
         labels = np.asarray(
@@ -27,7 +41,7 @@ def checks(root):
             photo.paste(frame, (20, 20))
             frames.append(rectify(photo, [(20, 20), (700, 20), (700, 480), (20, 480)]))
         result = grade_frames(*frames, labels, True)
-        assert result["score"] == float(name == "careful"), (name, result)
+        assert result["score"] == {"careful": 1.0, "miss": 2 / 3, "blanket": 0.0, "idle": 0.0}[name], (name, result)
         records[name] = result
     for name in (
         "bad_positive",

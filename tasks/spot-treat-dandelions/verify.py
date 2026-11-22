@@ -28,7 +28,7 @@ def score(before, after, labels, delta=35):
     return dict(
         weed_coverage=coverage,
         turf_spill_ratio=spill,
-        score=float(min(coverage) >= MIN_WEED and spill <= MAX_SPILL),
+        score=sum(value >= MIN_WEED for value in coverage) / 3 if spill <= MAX_SPILL else 0.0,
     )
 
 

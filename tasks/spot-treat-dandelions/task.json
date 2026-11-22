@@ -9,10 +9,10 @@
   "instruction": "Spot-treat the three dandelions with the sprayer on your right hand. Aim at each rosette and close and reopen the gripper to spray. Keep the surrounding grass as dry as possible.",
   "context": "A gardener spot-treats scattered broadleaf weeds in established turf. This work sample measures where the application lands.",
   "setup": "Two parallel-gripper YAMs face a 300 by 200 mm turf tray with three rooted dandelion rosettes (two open yellow flower heads and one closed green bud). A filled sprayer is bracketed to the right wrist, with jaws open. All foliage starts dry. The left hand is free. The fixed seed and setup screenshot specify the nominal layout.",
-  "scoring": "Binary. At least 30% of the visible overhead area of EACH weed must show new tracer, and the newly marked grass area must be at most 45% of the three weeds' combined visible area. Score the final deposited pattern.",
+  "scoring": "Award one third per weed whose visible overhead area has at least 30% new tracer. If marked grass exceeds 45% of the combined visible weed area, award zero for the trial. Unreadable physical photos have no score.",
   "run_limit": "600 actions at 20 Hz (30 seconds)",
   "reset_notes": "Replace the sod and three rooted plugs with dry material. Copy the crown locations, photograph the new leaf outlines and confirm clean and wet controls before each run.",
   "fidelity": "Articulated YAM hardware models, a wrist-mounted sprayer and a jaw-travel trigger proxy. Straight sampled spray rays hit a 1 mm canopy height map. Visible upper foliage is rigid. Pump pressure, wind, runoff, leaf flex and plant response are omitted. Physical thresholds await bench calibration.",
-  "scores": "Dream-1: 0.0 after 600 actions, one spray. Scripted dual-YAM: 1.0 at 166 actions. Independent scripted replay: 1.0. Missed weed, blanket spray and idle: 0.0 on all three layouts.",
-  "media": "M-KPU6QB"
+  "scores": "Dream-1: 0.0 after 600 actions, one spray. Scripted dual-YAM: 1.0 at 166 actions. Independent scripted replay: 1.0. Missed weed: 2/3 on each layout. Blanket and idle: 0.0 on each layout.",
+  "media": "M-UCT2HJ"
 }

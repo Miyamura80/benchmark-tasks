@@ -22,13 +22,13 @@ The scripted trajectory takes 166 actions (8.3 simulated seconds). Dream-1 gets 
 
 ## Scoring
 
-The input is a registered clean UV image, a registered final UV image, and an evaluator's overhead weed mask made before treatment. A pixel is newly marked when its green-excess signal increases by at least 35 on an 8-bit image. Each weed's fraction of newly marked pixels must reach 0.30. Newly marked pixels in the rest of the turf must total at most 0.45 times the combined visible weed area. A 1 mm square grid represents the simulated surface. Use fractions of matched pixel areas at any fixed photographic resolution. Measurements refer to the tray. Deposits beyond it, leaf undersides, herbicide dose and long-term efficacy are outside scope. The proposed physical thresholds need calibration.
+The input is a registered clean UV image, a registered final UV image, and an evaluator's overhead weed mask made before treatment. A pixel is newly marked when its green-excess signal increases by at least 35 on an 8-bit image. Each weed with at least 0.30 coverage earns one third of a point while grass spill stays within its limit. Exceeding the grass limit gives zero for the trial. Newly marked pixels in the rest of the turf must total at most 0.45 times the combined visible weed area. A 1 mm square grid represents the simulated surface. Use fractions of matched pixel areas at any fixed photographic resolution. Measurements refer to the tray. Deposits beyond it, leaf undersides, herbicide dose and long-term efficacy are outside scope. The proposed physical thresholds need calibration.
 
 The sprayer fires once after measured jaw closure below 16 mm of individual finger slide travel. It rearms above 32 mm. Each squeeze emits 1,800 sampled rays around the actual moving nozzle axis (two transverse normal components with standard deviation 0.17). Each ray marks one overhead cell at its first crossing of the stepped leaf canopy/grass surface. This is a footprint approximation. Nozzle fan, droplet size, trigger mechanics, runoff, wind and leaf motion have not been calibrated on hardware. The bracket supports the sprayer throughout. No tool pickup is required.
 
 ## Measured results
 
-Across three independent simulated layouts, careful spot treatment passed 3/3. Deliberately missing a weed, spraying the lawn in a grid, and staying idle each passed 0/3. On the nominal tray the careful run marked 47.7%, 51.7% and 51.5% of the three weeds. Grass spill was 22.6% of the combined weed area. The blanket pass marked 36.9%, 31.3% and 41.6% of the weeds, yet its grass spill was 388.4%. Replaying the careful joint commands from reset reproduced the same fractions and full score.
+Across three independent simulated layouts, careful spot treatment passed 3/3. Deliberately missing the third weed scored 2/3 on every layout. Blanket spraying and staying idle each scored zero on every layout. On the nominal tray the careful run marked 47.7%, 51.7% and 51.5% of the three weeds. Grass spill was 22.6% of the combined weed area. The blanket pass marked 36.9%, 31.3% and 41.6% of the weeds, yet its grass spill was 388.4%. Replaying the careful joint commands from reset reproduced the same fractions and full score.
 
 Dream-1 ran for all 600 actions in one session (12 requests, one attempt each) on the nominal layout. It fired once. Weed coverages were 0%, 0% and 16.0%, with grass spill of 28.3%. Final score was 0.0. Independent joint replay and photo scoring reproduced this result.
 
@@ -44,4 +44,18 @@ BEHAVIOR-1K includes spraying both potted plants and applying chemicals across a
 
 ## Evidence layout
 
-The evidence subdirectory contains the executed joint commands and results for both trajectories, the three-layout control summary, synthetic photo checks and model-request summary. Replay either command sequence from the nominal reset using `python replay.py evidence/demo-commands.json` or `python replay.py evidence/dream-commands.json`. To regenerate inputs for the camera-control checks, run demo.py once per case with --out checks/CASETYPE, where CASETYPE is careful, miss, blanket or idle and matches --case, then run python check_bench.py checks. The videos and setup screenshot accompany board media M-KPU6QB.
+The evidence subdirectory contains the executed joint commands and results for both trajectories, the three-layout control summary, synthetic photo checks and model-request summary. Replay either command sequence from the nominal reset using `python replay.py evidence/demo-commands.json` or `python replay.py evidence/dream-commands.json`. To regenerate inputs for the camera-control checks, run demo.py once per case with --out checks/CASETYPE, where CASETYPE is careful, miss, blanket or idle and matches --case, then run python check_bench.py checks. The videos and setup screenshot accompany board media M-UCT2HJ.
+
+## Asset sources and licenses
+
+Install the pinned Dream Labs wheel rather than copying meshes into the task. The following names are relative to its `dream_examples/yam_mujoco/assets/` directory.
+
+| Assets | Source and license |
+| --- | --- |
+| `base_link_visual.stl`, `link_1_visual.stl`, `link2_black.stl`, `link2_white.stl`, `link3_black.stl`, `link3_white.stl`, `link_4_visual.stl`, `link_5_visual.stl`, `gripper.stl`, `tip_left.stl`, `tip_right.stl` | I2RT Robotics, MIT. The convex parts in `collisions.npz` are derived from these meshes and retain the MIT license. [I2RT](https://github.com/i2rt-robotics/i2rt) |
+| Arm and gripper description (`model.json`, `yam.urdf`) | Derived from I2RT YAM, MIT. See the wheel's `assets/LICENSE`. |
+| Station builder, camera calibration (`sim-eval-yam.json`), bundled station textures (`oak.png`, `brown_glaze.png`, `blue_glaze.png`) | Dream Labs SDK 1.0.23, distributed under Apache-2.0 with its NOTICE. Bowl and plate are removed from the task world. [Package](https://pypi.org/project/dreamlabs/1.0.23/) |
+| Inherited apple and banana mesh/texture declarations under `fruits/` | YCB Object and Model Set, Calli, Singh, Walsman, Srinivasa, Abbeel and Dollar, CC BY 4.0. Dream Labs recentred/resized meshes and downsampled textures. Fruit bodies are removed from the task world. See `fruits/ATTRIBUTION.md`. [YCB](https://www.ycbbenchmarks.com/) |
+| Video labels | DejaVu Sans, Bitstream Vera terms with DejaVu changes in the public domain. [Font license](https://dejavu-fonts.github.io/License.html) |
+
+The turf, soil, grass, leaves, flowers, bud, sprayer and registration frame are generated by this task.

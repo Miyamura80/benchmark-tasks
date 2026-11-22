@@ -15,7 +15,7 @@
     "score": 1.0
   },
   "miss": {
-    "status": "fail",
+    "status": "partial",
     "dry_new_fraction": 0.0,
     "dry_changed_fraction": 0.0,
     "dry_clipped_fraction": 0.0,
@@ -27,7 +27,7 @@
       0.0
     ],
     "turf_spill_ratio": 0.1525065963060686,
-    "score": 0.0
+    "score": 0.6666666666666666
   },
   "blanket": {
     "status": "fail",
