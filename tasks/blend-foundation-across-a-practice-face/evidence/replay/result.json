@@ -1,0 +1,26 @@
+{
+  "step": 836,
+  "seconds": 41.8,
+  "phase": "Replaying recorded robot commands",
+  "score": 1.0,
+  "coverage_pct": 95.8,
+  "protected_transfer_pct": 0.0,
+  "peak_force_n": 5.11,
+  "loaded_pct": 25.7,
+  "left_pct": 93.3,
+  "right_pct": 96.7,
+  "nose_pct": 100.0,
+  "overforce_s": 0.0,
+  "face_contact_s": 10.58,
+  "sponge_pos_m": [
+    -0.028,
+    0.1243,
+    0.2266
+  ],
+  "title": "Blend foundation across the cheeks and nose",
+  "variant": 0,
+  "mode": "replay",
+  "simulator": "MuJoCo dual YAM",
+  "control_hz": 20,
+  "error": null
+}

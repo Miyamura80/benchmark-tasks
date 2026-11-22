@@ -1,0 +1,26 @@
+{
+  "step": 409,
+  "seconds": 20.45,
+  "phase": "Unrepaired starting condition",
+  "score": 0.0,
+  "coverage_pct": 0.0,
+  "protected_transfer_pct": 0.0,
+  "peak_force_n": 0.0,
+  "loaded_pct": 0.0,
+  "left_pct": 0.0,
+  "right_pct": 0.0,
+  "nose_pct": 0.0,
+  "overforce_s": 0.0,
+  "face_contact_s": 0.0,
+  "sponge_pos_m": [
+    -0.0244,
+    0.1406,
+    0.2365
+  ],
+  "title": "Blend foundation across the cheeks and nose",
+  "variant": 0,
+  "mode": "inactivity control",
+  "simulator": "MuJoCo dual YAM",
+  "control_hz": 20,
+  "error": null
+}

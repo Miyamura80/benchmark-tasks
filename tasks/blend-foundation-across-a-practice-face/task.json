@@ -1,0 +1,17 @@
+{
+  "category": "Societal relatability",
+  "run_limit": "1,200 actions at 20 Hz (60 seconds)",
+  "title": "Blend foundation across the cheeks and nose",
+  "keywords": [
+    "cosmetic application",
+    "soft sponge",
+    "contact"
+  ],
+  "instruction": "Pick up the makeup sponge and load it with foundation. Blend it across both cheeks and the nose of the silicone practice face secured to the workbench. Keep the lips and eyelids clean.",
+  "context": "An even base layer is a recurring part of many makeup routines and depends on applying light pressure around curved features.",
+  "setup": "Mount a 166 × 126 mm molded silicone practice face face-up on a rigid backing and 310 × 390 mm bench board. Place a dry 40 mm foam sponge in the 64 × 72 mm dock and add 1.0 mL of liquid foundation to the 56 mm palette. From face center place the palette 46 mm toward the chin and 104 mm to the side, and the dock 59 mm toward the forehead and 104 mm to the same side. Keep the two YAM arms at the recorded reset pose.",
+  "scoring": "1.00 requires at least 93% usable coverage on each cheek and the nose, at most 20% peak transfer to the lips or eyelids, and under 0.15 s above 5.5 N. A usable sample has at least 82% of the reference coating. Otherwise, at most 35% protected transfer and combined usable coverage of 25% or 55% earn 0.25 or 0.50, respectively. All other outcomes score 0.00.",
+  "reset_notes": "Clean the face, return the dry sponge and replenish the palette to its reference amount.",
+  "fidelity": "Native gripper and foam contacts with a measured pigment-transfer approximation.",
+  "scores": "Scripted and fresh replay 1.00 in 836 actions. Idle 0.00. One-cheek 0.25. Dream-1 0.00 after 1,200 actions."
+}
