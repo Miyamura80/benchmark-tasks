@@ -12,7 +12,7 @@ PITCH = 0.01270
 ROLLER = 0.00385
 TEETH = (28, 16)
 RADII = PITCH / (2 * np.sin(np.pi / np.array(TEETH)))
-SPAN = 16
+SPAN = 32
 AXLES = np.array(
     [
         [-0.008, -0.048, 0.271],
@@ -247,13 +247,11 @@ class Chain:
         variant=0,
         *,
         drop=DROP,
-        sleeve_reduction=0.0,
         rear_drag=0.002,
         lift_pick=False,
     ):
         self.lift_pick = lift_pick
         self.points = make_loop(drop)
-        self.sleeve_reduction = sleeve_reduction
         self.rear_drag = rear_drag
         self.variant = variant
 
@@ -263,16 +261,17 @@ class Chain:
         base.set("pos", ".320 .115 .175")
         base.set("quat", "0 0 0 1")
         if self.lift_pick:
-            base.set("pos", ".32 .115 .200")
+            base.set("pos", "-0.29 0.13 0.29")
+            base.set("quat", "1 0 0 0")
             geom(
                 world,
                 "pick_arm_riser",
                 "box",
-                (0.320, 0.115, 0.1675),
-                (0.075, 0.065, 0.0125),
+                (-0.29, 0.13, .2125),
+                (0.075, 0.065, 0.0575),
                 DARK,
             )
-        tree.find(".//geom[@name='pedestal_1']").set("pos", ".320 .115 .077")
+        tree.find(".//geom[@name='pedestal_1']").set("pos", "-0.29 0.13 .077")
         tree.find(".//body[@name='right_base']").set("pos", "-.286 -.180 .175")
         tree.find(".//geom[@name='pedestal_-1']").set("pos", "-.286 -.180 .077")
         opt = tree.find("option")
@@ -310,139 +309,60 @@ class Chain:
             DARK,
             mass=0.012,
         )
-        # The flat jaw extension distributes contact over several pins.
-        carrier = tree.find(".//body[@name='left_grasp_site']")
-        geom(
-            carrier,
-            "guide_pad",
-            "box",
-            (-0.070, 0, 0.034),
-            (0.0017, 0.014, 0.0019),
-            (0.29, 0.47, 0.42, 1),
-            mass=0.008,
-            solref=".003 1",
-            friction=".16 .001 .0001",
-        )
-        if self.lift_pick:
-            # Shallow L-shaped tip. It can get under the unsupported upper span.
-            geom(
-                carrier,
-                "chain_pick",
-                "box",
-                (-0.0775, 0, 0.0385),
-                (0.008, 0.009, 0.0016),
-                (0.57, 0.59, 0.61, 1),
-                mass=0.002,
-                solref=".003 1",
-                friction=".30 .001 .0001",
-            )
-            geom(
-                carrier,
-                "pick_lip",
-                "box",
-                (-0.0845, 0, 0.0366),
-                (0.001, 0.009, 0.0027),
-                STEEL,
-                mass=0.001,
-            )
-            geom(
-                carrier,
-                "pick_back",
-                "box",
-                (-0.070, 0, 0.0363),
-                (0.0017, 0.009, 0.0024),
-                (0.57, 0.59, 0.61, 1),
-                mass=0.001,
-            )
-        geom(
-            carrier,
-            "guide_stem",
-            "box",
-            (-0.034, 0, 0.023),
-            (0.038, 0.005, 0.003),
-            DARK,
-            mass=0.004,
-        )
-        geom(
-            carrier,
-            "guide_tip_mount",
-            "box",
-            (-0.070, 0, 0.028),
-            (0.0015, 0.005, 0.0055),
-            STEEL,
-            **VISUAL,
-        )
-        geom(
-            carrier,
-            "guide_mount",
-            "box",
-            (0, 0, 0.011),
-            (0.003, 0.006, 0.013),
-            STEEL,
-            **VISUAL,
-        )
+        # Two removable parallel jaws. Offsets below are in the TCP frame
+        # at zero opening. Each jaw follows its own stock finger slide.
+        for sign, name, finger_origin, axes in [
+            (1, "left_tip_left", [-.0238981, -.0450619, -.0801401],
+             [[0,1,0],[0,0,-1],[-1,0,0]]),
+            (-1, "left_tip_right", [.0238981, .0450619, -.0801401],
+             [[1,0,0],[0,0,1],[0,-1,0]]),
+        ]:
+            finger = tree.find(f".//body[@name='{name}']")
+            rotation = np.asarray(axes)
+            def local(p):
+                return rotation.T @ (np.asarray(p) - finger_origin)
+            pad = np.array([-.085, .108 + sign * .0023, .075])
+            shoulder = pad + [0, sign*.004, -.018]
+            root = np.array([0, sign*.009, -.006])
+            middle = np.array([-.048, .094 + sign*.009, .012])
+            for k, (a, b) in enumerate(((root,middle),(middle,shoulder),(shoulder,pad))):
+                element(finger, "geom", name=f"tong_{sign}_{k}", type="capsule",
+                        fromto=(*local(a),*local(b)), size=(.002,), rgba=STEEL, mass=.0015)
+            rotation_q = np.zeros(4)
+            mj.mju_mat2Quat(rotation_q, rotation.T.ravel().astype(float))
+            geom(finger, f"tong_pad_{sign}", "box", local(pad),
+                 (.0075,.0018,.003), DARK, quat=rotation_q, mass=.0006,
+                 friction="1.0 .005 .0001", solref=".003 1")
         for name in ("front", "rear"):
             element(contact, "exclude", body1="workbench_fixture", body2=name)
         for k, (name, pos, r, n) in enumerate(
             zip(("front", "rear"), AXLES, RADII, TEETH)
         ):
             wheel(w, name, pos, r, n, k, self.rear_drag)
-            geom(
-                world,
-                name + "_support",
-                "box",
-                (pos[0] + 0.050, pos[1], 0.214),
-                (0.008, 0.011, 0.057),
-                DARK,
-            )
-            geom(
-                world,
-                name + "_spindle",
-                "cylinder",
-                (pos[0] + 0.026, pos[1], pos[2]),
-                (0.005, 0.022),
-                STEEL,
-                euler=XAXIS,
-            )
-        # Passive, stationary crank-side shoulder catches the inward-dropped chain.
-        geom(
-            world,
-            "smooth_shoulder",
-            "cylinder",
-            (AXLES[0, 0] + 0.014, AXLES[0, 1], AXLES[0, 2]),
-            (RADII[0] - ROLLER - 0.0004 - self.sleeve_reduction, 0.009),
-            (0.36, 0.39, 0.43, 1),
-            euler=XAXIS,
-            **WHEEL,
-        )
-        geom(
-            world,
-            "fixture_base",
-            "box",
-            (0.045, 0.036, 0.151),
-            (0.056, 0.158, 0.008),
-            DARK,
-        )
-        geom(
-            world,
-            "bench",
-            "box",
-            (0, 0, 0.132),
-            (0.44, 0.38, 0.010),
-            (0.29, 0.32, 0.32, 1),
-            mass=0,
-        )
+        # Fixed rear triangle, with the drive plane at x=-8 mm.
+        # Tubes, stays and bottom bracket are ordinary collision geometry.
+        front, rear = AXLES
+        bottom = front + [0.045, 0, 0]
+        seat = bottom + [0, 0.080, 0.320]
+        head = bottom + [0, -0.300, 0.295]
+        paint = (0.14, 0.38, 0.44, 1)
+        def tube(name, start, end, radius):
+            element(world, "geom", name=name, type="capsule",
+                    fromto=(*start, *end), size=(radius,), rgba=paint)
+        geom(world, "bottom_bracket_shell", "cylinder", bottom, (0.0205, 0.034),
+             STEEL, euler=XAXIS)
+        tube("seat_tube", bottom, seat, .014)
+        tube("down_tube", bottom, head, .018)
+        tube("top_tube", seat, head, .013)
         for side in (-1, 1):
-            for end in (-1, 1):
-                geom(
-                    world,
-                    f"anchor_{side}_{end}",
-                    "cylinder",
-                    (0.045 + side * 0.045, 0.036 + end * 0.143, 0.160),
-                    (0.004, 0.0015),
-                    STEEL,
-                    **VISUAL,
-                )
+            dropout = rear + [0.045 + side * 0.062, 0, 0]
+            tube(f"chainstay_{side}", bottom + [side*.026,.010,-.004],
+                 dropout, .008)
+            tube(f"seatstay_{side}", seat, dropout, .006)
+        geom(world, "rear_axle", "cylinder", rear+[.045,0,0],
+             (.005,.067), STEEL, euler=XAXIS)
+        geom(world, "stand", "box", rear+[.130,0,-.140],
+             (.013,.025,.140), DARK)
         tendon = tree.find("tendon")
         if tendon is None:
             tendon = element(tree, "tendon")
@@ -540,13 +460,22 @@ class Chain:
             [s.model.body(f"link{i}").id for i in range(len(self.points))]
         )
         self.xdofs = s.model.body_dofadr[self.ids].copy()
-        # Park with both tools clear, on opposite sides of the drivetrain.
+        # Park both arms on the drive side, with their tools separated.
         for side, pos in [
             ("right", AXLES[0] + [-0.165, -0.058, 0.040]),
-            ("left", AXLES[0] + [0.111, 0.055, 0.082]),
+            ("left", AXLES[0] + [-0.125, 0.190, 0.120]),
         ]:
             idx = ("left", "right").index(side)
-            options = [(yaw, s.solve(side, pos, yaw)) for yaw in (0, math.pi)]
+            options = [(yaw, s.solve(side, pos, yaw)) for yaw in ((math.pi/2,) if side=="left" else (0, math.pi))]
+            if side == "left":
+                rng = np.random.default_rng(32)
+                limits = np.array([j.range for j in s.joints[side]])
+                for _ in range(60):
+                    yaw = math.pi / 2
+                    start = rng.uniform(limits[:,0]*.85, limits[:,1]*.85)
+                    options.append((yaw,s.solve(side,pos,yaw,start)))
+                    if options[-1][1][1] < .001 and options[-1][1][2] < .02:
+                        break
             yaw, (angles, error, _) = min(
                 options, key=lambda pair: pair[1][1] + 0.03 * pair[1][2]
             )
@@ -565,16 +494,8 @@ class Chain:
         self.started_dropped = False
         self.pedal_id = s.model.geom("pedal").id
         self.socket_sides = [s.model.geom(f"socket_1_{sign}").id for sign in (-1, 1)]
-        guide_parts = ["guide_pad"]
-        if self.lift_pick:
-            guide_parts += [
-                "chain_pick",
-                "pick_lip",
-                "pick_back",
-                "guide_stem",
-                "guide_mount",
-                "guide_tip_mount",
-            ]
+        guide_parts = [f"tong_{sign}_{k}" for sign in (1,-1) for k in range(3)]
+        guide_parts += ["tong_pad_1","tong_pad_-1"]
         self.guide_ids = [s.model.geom(name).id for name in guide_parts]
         self.origin = None
         self.turns = 0.0
@@ -624,15 +545,20 @@ class Chain:
         if s.steps == 0 and self.counts[0] == 0 and self.counts[1] >= 3:
             self.started_dropped = True
         # The tool and chain must separate before the proof starts. Use the
-        # distance to the actual rectangular guide, not the arm's target.
+        # distance from each jaw segment to the roller and cheek envelope.
         clearance = float("inf")
         for geom_id in self.guide_ids:
             local = (
                 s.data.xpos[self.ids] - s.data.geom_xpos[geom_id]
             ) @ s.data.geom_xmat[geom_id].reshape(3, 3)
-            gap = np.linalg.norm(
-                np.maximum(abs(local) - s.model.geom_size[geom_id], 0), axis=1
-            ).min()
+            size = s.model.geom_size[geom_id]
+            if s.model.geom_type[geom_id] == mj.mjtGeom.mjGEOM_CAPSULE:
+                local[:, 2] -= np.clip(local[:, 2], -size[1], size[1])
+                distances = np.linalg.norm(local, axis=1) - size[0]
+            else:
+                distances = np.linalg.norm(np.maximum(abs(local) - size, 0), axis=1)
+            # Bound the roller and both cheeks with an enclosing sphere.
+            gap = distances.min() - .0053
             clearance = min(clearance, gap)
         angles = np.array([s.joint("front_angle"), s.joint("rear_angle")])
         ratio = TEETH[0] / TEETH[1]

@@ -125,8 +125,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("fixture", choices=FIXTURES)
     parser.add_argument("--out", type=Path, required=True)
-    parser.add_argument("--case", choices=CASES, default="reference")
-    parser.add_argument("--tool", choices=("flat", "pick"), default="flat")
+    parser.add_argument("--case", choices=CASES, default="frame")
+    parser.add_argument("--tool", choices=("jaws",), default="jaws")
     parser.add_argument("--variant", type=int, choices=[0], default=0)
     parser.add_argument(
         "--steps",

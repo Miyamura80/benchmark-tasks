@@ -1,94 +1,50 @@
 # Reseat a dropped bicycle chain
 
-When the front chain drops inboard, pedaling can turn the crank without driving the rear sprocket. Lift the loose span, feed the rollers onto the chainring, withdraw the guide and demonstrate at least two crank turns under rear drag.
+A chain has fallen between the front chainring and the frame. One robot grips the upper run, lifts it clear of the chainstay and lays it on the front teeth. The other turns the crank. The repair passes when the released chain transmits two uninterrupted crank revolutions to the rear sprocket and the pedal tool withdraws.
 
-## Submitted configuration
+## Frame-version evidence
 
-Use the `deep_near_light` case and the lift pick. Compared with the reference bench dimensions below, the catcher **radius is 42.46 mm**, the reset offset is **11 mm**, and rear bearing drag is **1 mN·m**. The left arm sits on a 25 mm riser. Its pick has a 16 × 18 × 3.2 mm shelf and a 2 mm wide retaining lip. In the settled simulation the lowest pin is 96.7 mm below the front axle. This is a proposed physical build, validated in simulation only.
+| Run | Score | What happened |
+| --- | ---: | --- |
+| Continuous scripted repair | 1.00 | 810 actions at 20 Hz (40.5 s). After the guide cleared, 3.5870 front turns drove 6.2880 rear turns. All 86 rollers visited front pockets. The run ended with 17 front and 10 rear pockets occupied. |
+| Independent command replay | 1.00 | Every sampled score, pocket count, roller count and shaft angle matched. Zero MuJoCo solver warnings. |
+| Crank only | 0.00 | The front made 2.371 turns. The rear moved −0.014 turns from reset, including settling. No rollers occupied front pockets at the end. |
+| Idle | 0.00 | The chain stayed off the front ring. |
+| Dream-1 | 0.00 | 1,200 actions on the same frame and jaws. It finished with 0 occupied front pockets and 9 rear pockets. The model video is 60.9 s. |
 
-## Run and verify
+The first crank turn in the scripted video demonstrates the fault. Between actions 48 and 158 the crank turns approximately once while the rear index stays still. The repair follows in the same episode. After the guiding jaws withdraw, the rear sprocket follows the crank. The pedal socket then releases. The episode ends at action 810. The video contains 414 H.264 frames at 10 fps, including the final hold (41.4 seconds).
 
-Use Python 3.12, MuJoCo 3.3.7, the Dream Labs dual-YAM assets and FFmpeg with libx264. The scripted run takes 770 robot commands, or 38.5 simulated seconds. The limit is 1,200 actions at 20 Hz. The controller uses simulated roller positions to aim the pick.
+## Reproduce
+
+The retained runs used Debian Linux x86_64, Python 3.12.16, MuJoCo 3.3.7, the pinned dual-YAM assets and FFmpeg with libx264. Install the dependencies in a fresh virtual environment. The scripted controller observes simulated roller positions to select its initial grasp. The Dream policy receives the standard three camera views and robot state.
 
 ```sh
-python -m pip install -r requirements.txt -c constraints-tested.txt
-MUJOCO_GL=egl python run.py chain --case deep_near_light --tool pick --show-fault --video --out runs/deep
-python run.py chain --case deep_near_light --tool pick --replay runs/deep/commands.json --out runs/replay
-python verify.py --out runs/sensitivity --jobs 4
-MUJOCO_GL=egl python evaluate.py chain --case deep_near_light --tool pick --video --out runs/dream
+python -m pip install -c constraints-tested.txt numpy Pillow mujoco inspect-robots dreamlabs-client
+python -m pip install --no-deps dreamlabs==1.0.23 https://codeload.github.com/kairosiann/inspect-robots-dream/tar.gz/b5e936a201cec66c54c297e522c920d98445e339
+export MUJOCO_GL=egl OPENBLAS_NUM_THREADS=1
+python run.py chain --show-fault --video --out runs/demo
+python run.py chain --replay runs/demo/commands.json --out runs/replay
+python run.py chain --control --out runs/idle
+python run.py chain --crank-only --out runs/crank
+python evaluate.py chain --video --out runs/dream
 ```
 
-The scripted run writes the setup image, video, command sequence and result. The submitted scripted MP4 contains 394 H.264 frames at 10 fps (39.4 seconds). The final image is held briefly after action 770 at 38.5 simulated seconds. Its SHA-256 is `ee013561a99228284e10a37cbf4c5e252566709c1f5b6fc01a2c10b821d4d1c4`. The scorer recorded 2.9148 front and 5.0961 rear revolutions after the guide cleared the chain. All 54 rollers visited front pockets. The saved run ended with 17 front and 10 rear pockets occupied. An independent replay matched the sampled scoring trace. The retained results are in `evidence/`.
+The last command requires a configured Dream account. The submitted numeric results are in `evidence/`. The demonstration command above generates the 14-dimensional robot commands and trace for replay. The task-board media set contains both videos and the setup image. Compare the replay and scripted traces by action number. Replay uses its own phase label.
 
-## Submitted bench and physical reset
+## Build and reset
 
-This is a proposed bench build with a simulated demonstration. Physical tolerances, friction and robot feasibility have not been verified on hardware.
+[Frame, tool dimensions and assembly](BUILD.md). Two moving finger extensions grip the chain's side plates. Collision-enabled frame tubes, chainstays, seatstays and a bottom-bracket shell constrain access. The chain drops onto the bottom-bracket area under gravity. The station has no front catcher. The rear disc guides and 58 mm service crank are retained simplifications. The rear wheel and tyre are omitted. The model uses parallel roller axes, simplified plates, and rigid tools. Fabrication and repair on hardware remain unverified.
 
-| Part | Nominal specification |
-| --- | --- |
-| Chain | Clean single-speed roller chain, 54 pitches in a closed loop (27 inner/outer pairs), 12.70 mm pitch, 7.70 mm roller diameter, 3.20 mm clear inner width. |
-| Sprockets | 28 teeth front, 16 teeth rear. Pitch diameters 113.43 and 65.10 mm. Tooth thickness 2.60 mm at the centerline. Use a fixed rear sprocket on its own bearing shaft, with approximately 0.001 N·m rear bearing drag. |
-| Frame | Mount parallel horizontal shafts 201.76 mm apart, 112 mm above the base top. Align both tooth center planes within 0.5 mm using a straightedge. Use a 316 × 112 × 16 mm bolted base and slotted bearing mounts to trim center distance. |
-| Drop catcher | Concentric stationary smooth sleeve on the inboard side of the front sprocket. Outer diameter 84.92 mm, width 18 mm, center 14 mm from the tooth plane. Rear guide discs are centered 6 mm to either side of the rear teeth. |
-| Crank and tools | Counterbalanced 58 mm bench crank with a 16 mm diameter, 112 mm long spindle. The turning arm carries a socket with a 19 mm square opening. The guiding arm carries the lift pick described below. Use a clean chain and cover the gripper pads. |
-| Index marks | Mark the tooth pocket at 12 o’clock on both sprockets. Paint one roller and mark one radial line on each hub. Use the marks or encoders to count independent axle turns. |
+With the chain rear-threaded and the crank mark at its reference angle, lay the front loop 11 mm inboard of the front tooth plane. Hold it there with a removable spacer, then remove the spacer. Let the chain settle onto the shell/stay. Confirm zero front pocket occupancy in simulation. On a physical fixture, slowly turn the crank once and check that the rear mark stays still. A repair demonstration must begin from the dropped condition.
 
-1. Level and secure the base. Leave the drivetrain unloaded except for the rear shaft drag. Align both marked pockets at 12 o’clock and the crank horizontally away from the rear sprocket.
-2. Thread the rear half-wrap between its guide discs. Put the front half-wrap on the smooth sleeve using an 11 mm removable spacing gauge. Place the marked front roller at 12 o’clock. Route the top and bottom spans without a twist.
-3. Remove the gauge. Check that the rear rollers sit in the rear pockets, the front rollers clear the teeth, and both tools start clear. Reject the reset if the chain falls off or seats itself at rest.
-4. Film approximately along the shaft axis so both index marks, the upper span and both teeth are visible. Use an oblique second view to check the lateral offset and guide withdrawal. On hardware, verify that the crank drives the rear against its drag for the full two turns after the guiding hand clears.
+## Judging the repair
 
-## Tool and mount dimensions
+Mark both sprockets. After the guiding jaws open and move away, turn the crank twice. The rear mark must make approximately 3½ turns. Release the pedal. The chain must remain wrapped around both sprockets. This is the physical check proposed for the build.
 
-All dimensions below are in millimetres. Tool positions use each YAM grasp-site coordinate system. The simulator fixes the tools rigidly to the grasp sites. The following dimensions reproduce the simulated contact surfaces. A physical adapter to the team's gripper and its retention under load still need a hardware trial.
-
-| Part | Build dimensions |
-| --- | --- |
-| Left riser | 150 × 130 × 25 block under the arm base. Machine or drill the bolt pattern to match the actual base plate. |
-| Lift pick | 16 × 18 × 3.2 shelf centered at (−77.5, 0, 38.5). The retaining lip is 2 × 18 × 5.4 centered at (−84.5, 0, 36.6). The back wall is 3.4 × 18 × 4.8 centered at (−70, 0, 36.3). These three surfaces form one rigid L-shaped tip. |
-| Pick attachment | Fix the tip to the 76 × 10 × 6 stem centered at (−34, 0, 23) through a 3 × 10 × 11 tip mount centered at (−70, 0, 28). The jaw-side mounting tab is 6 × 12 × 26 centered at (0, 0, 11). |
-| Right socket | Four 4 mm walls around a 19 mm square opening. The socket is 14 mm deep along its insertion axis. The 8 × 12 × 22 mounting stem is centered at (0, 0, 17). |
-
-## Dream-1 evaluation
-
-Dream-1 completed all 1,200 actions in the same `deep_near_light` setup using the lift pick. Its final score was 0.00. Eight rear pockets and zero front pockets held rollers. The front ring did not drive the rear through a proof interval. The model video is 60.9 seconds including its final hold; the scripted repair is 39.4 seconds. Both clips and the dropped-start image are in the task-board media set `M-H4U2P5`. See `evidence/dream-1.json` for the result, versions and video checksums.
+The native scorer detects rollers in tooth pockets using lateral, radial and tooth-phase errors. The drive proof requires at least four occupied front pockets, three rear pockets, and 10 mm clearance from the entire jaw to the chain envelope. If mesh or clearance is lost, or the rear angle differs from the 28:16 ratio by more than 0.040 revolution, the proof restarts. The final score requires at least two crank turns, 3½ rear turns, every roller identity passing the front ring, at least eight occupied front and five rear pockets, and a released pedal socket. No motor or kinematic constraint couples the shafts.
 
 ## Third-party assets
 
-The dual-YAM scene and robot descriptions come from the pinned Dream Labs distribution (`dreamlabs==1.0.23`, Apache-2.0). The YAM descriptions are derived from I2RT (MIT). These packages supply their own license and attribution files. The chain, sprockets, supports, socket and pick are generated from the dimensions in the task source. Video labels use DejaVu Sans, distributed under the DejaVu/Bitstream Vera font license. [Dream Labs source and notices](https://github.com/dreamlabs-co/dreamlabs/tree/main/dream_library) · [I2RT source and license](https://github.com/i2rt-robotics/i2rt) · [DejaVu font license](https://dejavu-fonts.github.io/License.html)
+The dual-YAM scene comes from Dream Labs (`dreamlabs==1.0.23`, Apache-2.0). The stock YAM geometry is derived from I2RT (MIT). The two generated shoe cavities fit that geometry. The asset notice is included in `hardware/YAM-LICENSE.txt`. MuJoCo is Apache-2.0. The recording uses DejaVu Sans with the DejaVu/Bitstream Vera font license. The frame, chain, sprockets, extensions and socket are generated from the included dimensions.
 
-## Simulation and score
-
-Each roller moves in three dimensions. Neighboring pins have pitch constraints, limited bending and passive lateral stiffness. The rollers and plate ends collide with individual teeth. Roller axes stay parallel to the shafts, the plates are simplified, and the sprocket roots use solid collision discs. The pedal socket and chain pad transmit force by contact. No actuator, target angle or kinematic coupling drives either sprocket.
-
-At the 20 Hz control boundaries, the scorer measures each roller’s axial offset, radial position and phase within a tooth pocket. A pocket is counted once. The proof requires a dropped start, a guide at least 10 mm clear, and continuous engagement of at least four front and three rear pockets. Losing that engagement or slipping more than 0.040 rear turns from the 28:16 ratio restarts the count.
-
-| Score | Requirement |
-| --- | --- |
-| 0.25 | At least four front and three rear pockets contain aligned rollers after a dropped start. |
-| 0.50 | At least a quarter crank turn with the guide withdrawn and the drive ratio maintained. |
-| 1.00 | Two complete front turns and at least 3.5 rear turns in the same uninterrupted interval. All 54 roller IDs must have visited a front pocket, at least eight front and five rear pockets must remain occupied, and the pedal socket must clear the spindle. |
-
-## Frame clearance
-
-The scored fixture is a bench drivetrain with a fixed catcher. A separate development trial used a 406 mm-class rear triangle, a bottom-bracket shell and collision-enabled stays, with the catcher removed. The existing lift trajectory encountered the seat tube and scored 0.00. The 1.00 scripted score reported here applies only to the submitted bench configuration. A demonstrated repair inside the bicycle frame remains open.
-
-## Measured sensitivity
-
-Scores are terminal results. Each row uses the same reset and brake setting for the two tools. The lift pick includes its riser and lift routine. Link positions, tools, and both axle angles are measured from the simulator.
-
-| Lateral offset (mm) | Catcher radius reduction (mm) | Rear drag (mN·m) | Flat pad | Lift pick |
-| ---: | ---: | ---: | ---: | ---: |
-| 13 | 0 | 2 | 1.00 | 0.00 |
-| 11 | 0 | 2 | 1.00 | 0.00 |
-| 15 | 0 | 2 | 0.00 | 0.00 |
-| 13 | 0 | 1 | 1.00 | 0.00 |
-| 13 | 0 | 3 | 1.00 | 0.00 |
-| 13 | 2 | 2 | 1.00 | 1.00 |
-| 13 | 5 | 2 | 0.00 | 1.00 |
-| 13 | 10 | 2 | 0.00 | 1.00 |
-| 11 | 10 | 1 | 0.00 | 1.00 |
-| 15 | 10 | 3 | 0.00 | 0.00 |
-
-All four idle and crank-only control trials scored zero. The filmed deep repair and fresh command replay agree at every recorded sample. Raw results for all 24 trials, including unsuccessful repairs, are in `evidence/sensitivity.json`.
-
+[Dream Labs](https://github.com/dreamlabs-co/dreamlabs/tree/main/dream_library) · [I2RT](https://github.com/i2rt-robotics/i2rt) · [DejaVu notice](https://dejavu-fonts.github.io/License.html)

@@ -2,7 +2,7 @@
 
 from math import tau, cos, sin
 import numpy as np
-from fixtures import AXLES, RADII
+from fixtures import AXLES
 
 
 def reseat(s, partial=False, guide=True, test_before=False, turn_budget=None):
@@ -34,95 +34,29 @@ def reseat(s, partial=False, guide=True, test_before=False, turn_budget=None):
             s.phase = "Test the dropped chain"
             s.action(commands)
         s.wait(0.45)
-    # Place the fingers on the inboard side of the loose incoming run.
-    q = front + np.array([0.094, 0.000, RADII[0] + 0.0345])
-    release_step = 65
-    if guide and s.fixture.lift_pick:
-        # Enter under the free upper span, lift over the tooth tips, then feed
-        # toward the top tangent. Everything after reset is robot contact.
-        pos = s.data.xpos[s.fixture.ids]
-        target_y = front[1] + 0.064
-        upper = pos[pos[:, 2] > front[2]]
-        near_axle = upper[abs(upper[:, 1] - front[1]) < 0.016]
-        radial_drop = (
-            front[2] + RADII[0] - near_axle[:, 2].max()
-            if len(near_axle)
-            else float("inf")
-        )
-        shallow = radial_drop < 0.007
-        pick = upper[np.argmin(abs(upper[:, 1] - target_y))]
-        grip = pick + np.array([0.070 + 0.007, 0, 0.0385 - 0.010])
-        move(
-            "left",
-            grip + [0.025, 0, 0.010],
-            0.65,
-            "Approach the hanging upper span",
-            0.12,
-        )
-        move("left", grip + [0.025, 0, 0], 0.45, "Lower beside the loose chain", 0.12)
-        move("left", grip, 0.60, "Slide the pick under the chain", 0.12)
-        move(
-            "left",
-            front + [0.086, 0.054, 0.100],
-            0.8,
-            "Lift the loose chain above the teeth",
-            0.12,
-        )
-        if shallow:
-            # A high upper span can be laid directly over the top tangent.
-            move(
-                "left",
-                front + [0.080, 0.011, 0.103],
-                0.80,
-                "Carry rollers across the tooth tips",
-                0.12,
-            )
-            move(
-                "left",
-                front + [0.079, 0.006, 0.098],
-                0.50,
-                "Lower rollers onto the front ring",
-                0.12,
-            )
-            q = front + np.array([0.080, 0.041, 0.091])
-            move("left", q, 0.75, "Slide the pick clear along the upper span", 0.12)
-            release_step = 95
-        else:
-            # A low, loose span needs support farther upstream while the crank feeds it.
-            move(
-                "left",
-                front + [0.078, 0.030, 0.100],
-                0.60,
-                "Carry rollers across the tooth tips",
-                0.12,
-            )
-            q = front + np.array([0.077, 0.029, 0.091])
-            move("left", q, 0.50, "Lower rollers onto the front ring", 0.12)
-            move(
-                "left",
-                q + [0.006, 0.013, -0.009],
-                0.45,
-                "Let the teeth support the upper run",
-                0.12,
-            )
-    elif guide:
-        move(
-            "left",
-            q + [0.005, 0.003, 0.006],
-            0.6,
-            "Approach the dropped upper run",
-            0.12,
-        )
-        move("left", q, 0.45, "Lower fingers beside the upper run", 0.12)
-        move(
-            "left",
-            q + [-0.0195, 0, 0],
-            0.65,
-            "Guide the rollers to the tooth plane",
-            0.12,
-        )
+    if guide:
+        yaw = np.pi / 2
+        def jaw(offset, opening, seconds, phase):
+            tcp = front + np.asarray(offset) + [-.108, .085, .075]
+            s.yaw_choices["left"] = (yaw, yaw)
+            s.move_arm("left", tcp, seconds, phase, opening, yaw=yaw)
+        rollers = s.data.xpos[s.fixture.ids] - front
+        near = rollers[(rollers[:,1] > .05) & (rollers[:,2] > 0)]
+
+        pos = near[np.argmin(abs(near[:,1]-.088))]
+        jaw(pos + [0,0,.030], .21, .8, "Approach the upper span from above")
+        jaw(pos + [0,0,.001], .21, .65, "Place jaws on either side of the chain")
+        jaw(pos + [0,0,.001], .00, .55, "Pinch the side plates")
+        jaw([pos[0], pos[1], .068], .00, 1., "Lift the chain over the stay")
+        jaw([0, pos[1], .076], .00,.6, "Bring the chain into the tooth plane")
+        jaw([0, .037, .067], .00,.85, "Guide the span over the chainring")
+        end_y = -0.012
+        end_x = 0
+        end_z = 0.06
+        jaw([end_x, end_y, end_z], .00,.60, "Set rollers on the chainring")
+        release_step = 3
     a = s.joint("front_angle")
-    count = 155 if partial else (turn_budget or (790 if s.fixture.lift_pick else 430))
+    count = 155 if partial else (turn_budget or 790)
     for i in range(1, count + 1):
         target = pedal(a + i * 0.066)
         side = "right"
@@ -140,15 +74,9 @@ def reseat(s, partial=False, guide=True, test_before=False, turn_budget=None):
         )
         s.action(targets)
         if guide and i == release_step:
-            if s.fixture.lift_pick and shallow:
-                move(
-                    "left",
-                    q + [0, 0.025, -0.010],
-                    0.5,
-                    "Lower the pick clear of the chain",
-                    0.12,
-                )
-            move("left", q + [0.028, 0.026, 0.004], 0.65, "Withdraw guiding hand", 0.7)
+            jaw([end_x, end_y, end_z], .3, .30, "Open the chain jaws")
+            jaw([-.030, .070, .104], .3, .75, "Withdraw guiding hand")
+            jaw([-.018, .142, .056], .24, .70, "Park beyond the crank")
         # In the fault trial, release the socket in the reachable forward sector.
         ready_to_release = not test_before or 0.4 < s.joint("front_angle") % tau < 0.6
         if (s.fixture.turns >= 2.08 and s.fixture.proven() and ready_to_release) or (

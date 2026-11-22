@@ -7,13 +7,13 @@
     "crank",
     "drivetrain"
   ],
-  "instruction": "Feed the dropped chain onto the front teeth. Withdraw the guiding hand and turn the crank for at least two revolutions with the rear sprocket driven throughout.",
-  "context": "A dropped bicycle chain can be restored by guiding its upper run back into the tooth plane while turning the crank.",
-  "setup": "Single-speed bench drivetrain with a 54-pitch chain (12.70 mm pitch), independently rotating 28/16-tooth sprockets 201.76 mm apart, a 42.46 mm radius catcher, and 1 mN·m rear drag. Reset the front chain 11 mm inboard. Two YAM arms use a pedal socket and a lift pick.",
-  "scoring": "Native pocket occupancy, all 54 roller identities, uninterrupted 28:16 drive for two crank turns, and pedal socket withdrawal. See README.md for thresholds and negative controls.",
+  "instruction": "Reseat the dropped front chain. Withdraw the guiding hand, turn the crank at least twice with the rear sprocket driven throughout, and release the pedal.",
+  "context": "The front chain has fallen between the chainring and the frame. The crank spins without driving the rear sprocket.",
+  "setup": "Collision-enabled tubular frame, 405.68 mm nominal axle spacing, 28/16-tooth sprockets, 86-pitch single-speed chain. Two YAM arms use offset parallel jaws and a pedal-spindle socket.",
+  "scoring": "The guide must clear the chain and all 86 rollers must pass front tooth pockets during an uninterrupted 28:16 drive interval. Score 1.00 requires two crank turns, at least 3.5 rear turns, retained mesh and pedal release.",
   "run_limit": "1,200 actions (60 seconds at 20 Hz)",
-  "reset_notes": "Thread the rear sprocket. Rest the front half-wrap on the inboard catcher. Remove the spacing gauge and let the chain settle. See README for dimensions and checks.",
-  "fidelity": "Simulated roller-to-tooth contact and constrained link pitch. Roller axes are parallel and side plates simplified. Proposed physical build has not been tested.",
-  "scores": "Dream-1: 0.00 over 1,200 actions (60.0 simulated seconds). Scripted repair: 1.00 over 770 actions. Fresh scripted replay: 1.00. Idle and crank-only controls: 0.00.",
-  "media": "M-H4U2P5"
+  "reset_notes": "Keep the rear sprocket threaded. Set the front loop 11 mm inboard of the tooth plane, then let it fall onto the bottom-bracket area before inspection. No catcher is fitted.",
+  "fidelity": "Simulated frame tubes and rear triangle, fixed-axis roller chain and independent sprockets. Short service crank and rear guide discs. Hardware build untested.",
+  "scores": "Dream-1 scored 0.00 in 1,200 actions. Scripted repair and independent replay both scored 1.00 in 810 actions. Idle and crank-only controls scored 0.00.",
+  "media": "M-UZ3KCS"
 }

@@ -25,7 +25,8 @@ class FaultRecorder(Recorder):
         for i in range(m.ntendon):
             if m.tendon_width[i] > 0.001:
                 m.tendon_rgba[i] = [0.94, 0.48, 0.035, 1]
-        self.cameras[0] = camera(AXLES[0] + [0.005, -0.019, 0.035], 0.155, 80, -36)
+        self.cameras[0] = camera(AXLES[0] + [0, .015, .012], .30, 325, -20)
+        self.cameras[1] = camera(AXLES[0] + [0, .105, .055], 1.15, 290, -27)
 
     def draw(self):
         canvas = Image.new("RGB", (W, H), BG)
@@ -48,42 +49,10 @@ class FaultRecorder(Recorder):
         ]:
             d.text((550, y), title, font=self.body, fill=MUTED)
             d.text((750, y), f"{abs(value):.2f}", font=self.body, fill=INK)
+        caption = s.phase
         if read["score"] == 1:
-            caption = "Repaired. The rear sprocket follows the crank."
-        elif s.fixture.lift_pick and s.phase in (
-            "Approach the hanging upper span",
-            "Lower beside the loose chain",
-            "Slide the pick under the chain",
-            "Lift the loose chain above the teeth",
-            "Carry rollers across the tooth tips",
-            "Lower rollers onto the front ring",
-            "Let the teeth support the upper run",
-        ):
-            caption = s.phase + "."
-        elif "Test the dropped" in s.phase:
-            caption = (
-                "Before repair: the crank turns and the rear sprocket stays still."
-            )
-        elif s.phase in (
-            "Approach the dropped upper run",
-            "Lower fingers beside the upper run",
-            "Guide the rollers to the tooth plane",
-            "Feed the first links onto the teeth",
-        ):
-            caption = "The left arm guides the chain sideways onto the front teeth."
-        elif s.phase in (
-            "Turn the crank through two revolutions",
-            "Withdraw guiding hand",
-            "Withdraw the pedal socket",
-            "Check both sprockets after release",
-        ):
-            caption = (
-                "The chain feeds around the front teeth and drives the rear sprocket."
-            )
-        else:
-            caption = (
-                "At reset: the chain rests on the smooth grey sleeve beside the teeth."
-            )
+            caption = "Repair verified. Both tools released."
+        d.text((550, 394), f'Score {read["score"]:.2f}   |   {read["seconds"]:.1f} s', font=self.small, fill=INK)
         d.text((12, 414), caption, font=self.body, fill=INK)
         self.final_pixels = canvas.tobytes()
         self.proc.stdin.write(self.final_pixels)

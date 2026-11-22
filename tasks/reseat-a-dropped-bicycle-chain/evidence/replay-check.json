@@ -1,0 +1,9 @@
+{
+  "sample_rate_hz": 10,
+  "action_rate_hz": 20,
+  "actions": 810,
+  "source": "fresh MuJoCo replay on the evaluation pod",
+  "sampled_trace_fields_identical_except_phase": true,
+  "rows_compared": 406,
+  "solver_warnings": 0
+}
