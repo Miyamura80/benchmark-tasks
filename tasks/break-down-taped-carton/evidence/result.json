@@ -1,0 +1,222 @@
+{
+  "result": {
+    "diagnostic": false,
+    "task_score": 1.0,
+    "unsealed_start": false,
+    "max_crease_separation_m": 0.000188525019721358,
+    "lowest_vertex_m": -1.0083322542486783e-05,
+    "smallest_height_span_m": 0.018611818655674073,
+    "checks": {
+      "creases_intact": true,
+      "above_table": true
+    },
+    "missing_cut_cells": [],
+    "privileged_robot_attempt": true,
+    "metrics": {
+      "score": 1.0,
+      "invalid": null,
+      "cuts": {
+        "seam": {
+          "cut": 110,
+          "total": 110
+        },
+        "front_fold": {
+          "cut": 24,
+          "total": 24
+        },
+        "back_fold": {
+          "cut": 24,
+          "total": 24
+        }
+      },
+      "bottom_opened": true,
+      "flat_release_hold": 1.75,
+      "turnover_complete": true
+    },
+    "bottom_up_start": false,
+    "controller_failure": null,
+    "controller_completed_cut_attempt": true,
+    "flaps_completed": 4,
+    "state_only": false,
+    "media_eligible": true,
+    "capture_manifest": "capture-manifest.json",
+    "video": "scripted-demo.mp4",
+    "success_screenshot": "score-1.png"
+  },
+  "first_full_score_s": 399.15000000000003,
+  "verified_steps": 7998,
+  "source_sha256": {
+    "west_slide.py": "f48e4ae6269f4f26453c63cf97c863237524fc35811b71e3917374d057dbe10e",
+    "west_notch_contact.py": "c8a27812af9b5bb39892a6b0868785ebc9c969f32ac660df1c85a3e36c60dbde",
+    "turnover_targets.py": "005bc3ccdd066e22d8ea3f0f65640e39bc955bb33ae4259f97c6b9a5f2a09b1c",
+    "turnover_safety.py": "03d398d2e99db0e8d083206e26d7f96504266d10c0ada9367ef0accf0ef8888f",
+    "turnover_effort.py": "78c2fbf4640b3958c3d05696365a792ebb30dc08dba4ee9373de73f2bef55881",
+    "turnover_contacts.py": "40ae0ad5498e7b41ac2665bf2f74d0d80efdf6390f5d7fac0c573fa8228e4e11",
+    "turnover.py": "fe88b5e2060d798961012300b26bbe0187f1be09a57da4169f754daf984941bd",
+    "translate_and_flatten.py": "d39aa11c7e609f5b81c3b058bb57e97ed54e811b968f4755d3ffe2e554f4df20",
+    "test_turnover_transactional.py": "36f91cdf346df2b39002eb6a070d7e4a15b2a84e6eaa86425adcaf9d8d51129b",
+    "test_turnover_rubric.py": "3bf51bd44cdac04d59dce1905c833fc010e804dca05c2a0c21d7448f62587500",
+    "test_turnover_layout.py": "d413641aefd503b2dd9590d10dcaa1309db6356546327d877b01a5ff051b0e39",
+    "test_turnover_force_native_state.py": "8813789ccb66e53a9c5a8942a4bb4d4568009440f143c291934717d8147ed707",
+    "test_turnover_force_acquisition.py": "aefb8114ae06cf1139c40dd4263f8d488e567ae180660da6f27605dca696d642",
+    "test_turnover_effort.py": "093f29e73d015847c697ffa8ec41031b55694afb8d97cda0a852cac648e645e0",
+    "test_turnover_contacts.py": "747c8324974601ecce565dfda7f277af193fbc3d6f5c684def8f7598d5c199e5",
+    "test_turnover_bottom_acquisition.py": "ec7f82048259f130ef4fef52bc0bb18ae8e7ec03548faeaa857d594e299f1afa",
+    "test_scoring.py": "4074e027868eb9db7cbe8530bc1432a790e881c127c468eaa9f720c4e1cf9269",
+    "test_scene.py": "5a76e70b1dc0b96bd9d9ac985c47d81fd862cd77c864d59a9833e750bec90999",
+    "test_feedback_geometry.py": "a5b682a2de99840b680328ec36fce303afaa2f66317c04c7141ae4e066b96c2f",
+    "test_cut_feedback.py": "74e09dcd3b74890833796563231a92d7cde7c837164238f178040d096488dbf0",
+    "test_cut_controller.py": "6fa20582c5f1caf5a6360d4d882220bca2adbfe3fe102de9786a3543a3072e6f",
+    "test_crease.py": "a3db4dbc252d4208259cd8bb16ee25144bd10801b3a129c219d9a6aabd63e75e",
+    "test_capture.py": "2f0882beb50b8cbad485e766e01de503c3396b2a6b1777786e511058cb550145",
+    "test_angle_tracking.py": "fea0914b14edaf15581887183f4f0a8bc927f8cefe73041035a8d008d79daa26",
+    "test_angle_step_observer.py": "233a9f2947f0c0add5a3a41411b9cc51e08fb7cfef935ba8a07f119e428f8e08",
+    "task.py": "a620d80b26e9a2a2368264b4363a426e17fc34d7a1126806c438b64ec26b728f",
+    "staged_compress.py": "361125ee9dc75b5ae966b221255da79523095c4eaff0440e599c1fb4620ed809",
+    "shift_open_carton.py": "35f58bd6860133f9f21b10392ae3bdf99ce2438a0f368c057b37e17ccfd578d7",
+    "scoring.py": "a7add6c05aa1b3f3e50ddc624980209c7b45dff595390bb3d284b6bf71aa9676",
+    "scene.py": "d9664fba57abe91dbfc5775292696459d25caff43e9fd75f244df71a920325dc",
+    "run.py": "7d11191496854078982ec8bdff5cc9ca82ac5c1ce6e1bae57087754fafc904cf",
+    "robot.py": "02e7d44c14e32db221930776bce8694e668625eb7c1d7f16a530488bba07406a",
+    "rim_pull.py": "484a06742d77e4ee9d186d625a8eae6b4fe8a44e3956ab498a9acb32078a6360",
+    "review.py": "80d9044fc7ee67d5a12bb198611d2351f2cf6b315a107e63b64a23237ed8dd39",
+    "replay_turnover.py": "0ebbc0154ff0b3d8db2b13e4afabcf903e1e9083a2efb9674c5e063289003aaf",
+    "release_support.py": "f2b44edd3fd9d681da0254e8874781192cbcfdedc41e2d11325e5dec669b3094",
+    "probe_flap_resistance.py": "557f77ef4bdbebc68116c50d7971c6fc30f0c97129ff791f9d3a1419c6f12b3a",
+    "north_contact_ik.py": "08d66e63743a78d8117e8adbc4628ab62708c27b7fdc1336599d0baa5c4f1dae",
+    "native_angle_binding.py": "4399cf5c863efcf1893be63e21ddc657e14c1e2f1b4173c3bd493d60481243ad",
+    "native.py": "da38a4796d8eebd399d9765dff38ced27e2a828194870884cbba7f3b7bf2caab",
+    "model.py": "aabc0a518b980efee373f06f18690992d396a179e6850c431c93437a8877964a",
+    "last_cell.py": "d873040a5ba0ca3f2fa783791674712b148a370cbc40d3b832a5bc60ece428da",
+    "inside_shift.py": "d64809eba596375dde1d5934823965b378b4c4e164ce1cf5a9c9d2ec310eb7b1",
+    "hook_flap.py": "e5622dc67c18264a4076b459a4e47b004901e8e5ebee53dbc77d213c6f1f4c6e",
+    "flap_contact_ik.py": "39687cc17cf5d646789a81b5dcf415a8f3f4bbc54b7f59ed776ca2bb49442c4e",
+    "finger_notch.py": "15cb139001e752d18af6de0a8bf840a8106724679cc23c78ad76218a080d0737",
+    "feedback_geometry.py": "c69971f54e37b2b1224812782ee970289dbd11d39b8f3ab2356f5453964d561a",
+    "fast_safety.py": "64af6ff63e1646466a41e6183de7562e0d1ae2e8cd95026afaa93fbb666e4f5c",
+    "diagonal_shear_probe.py": "a2620d698563d2e135a143e45e675449c7bb3cae64aded2f138b3925c4566815",
+    "cutter_pickup.py": "3ba8228298fb338e10bbbca93e791a994048dce840ab9b9b1a9f8d22e357acdd",
+    "cross_device_prefix.py": "f3b84cf8c475f3035cc3742af5bd775fe075c1320cef631d1d557636271ee2e7",
+    "crease.py": "d90c12d51e95fc006319e87ff794cc07939167003de6bd887f957865d7fcfe31",
+    "config.py": "8aa9fe2deca619c05902ea41ff59a4f7dea27a460e9394ad346fecc5e3d1550b",
+    "compress_and_tip_probe.py": "11be107260d33dd3a1b414ef28f29d259fdd74b6008ed74ed60d90b9568365da",
+    "collapse_geometry.py": "c0358e9b132ed2374f21516db6685cd6cc8e4cdf2e5c8195c3d5e0c573d29cac",
+    "collapse.py": "4292c96232cb9f27ffe478e46081eceee99b415b9e675e478564a0cfbc0c2a1d",
+    "check_turnover.py": "eab06741bc54c86fde0b08972d39bb0c92a2217d5c31617076cbc2e58cfd1c51",
+    "check_refined_turnover.py": "17281febd0f52cc0bc382e79022fbb6e3d0e1df76e1106520f06c0c70ffdc2f1",
+    "check_material_geometry.py": "62a0aecd7d889a4c3b28ce5ccda8b8e4c74639e603ba0219e55c721f589c35d0",
+    "capture.py": "1db2d047cfec374069d2a640f2cd6f11882fd74fa9ab1b28f63f0cc37206742a",
+    "brace_collapse_probe.py": "1e553820d80ebcecc9460b742c21eb57e738a5dc949da13def930408868bce75",
+    "blade_ik.py": "d07d229748691496f7b427132fef78decbc3d0c7617aaa293824af975c11e3ea",
+    "baseline_safety.py": "84f28e0cec97fc59da6891947815f670549f920c88ba7275e8bfd07ebadb9ad5",
+    "audit_angle_capture.py": "62e984aa808b3dbcd56f11f32234785479cbeb30ee9ba018d3536352f3feff44",
+    "angle_tracking.py": "0f9f8e5cba77ae405690113328851d79665119341d2c0c5d6e4befe350a94e3f",
+    "angle_step_observer.py": "39248dd084a243655a126bd9a0091402be324422054abefa54ed4b064b0f5ce8"
+  },
+  "final_native_sample": {
+    "time": 399.90000000000003,
+    "phase": "withdraw",
+    "angles_deg": {
+      "north_top_hinge": 90.00040435791016,
+      "north_bottom_hinge": 272.00730421574434,
+      "east_top_hinge": 90.94744110107422,
+      "east_bottom_hinge": 270.9443943316752,
+      "south_top_hinge": 90.94564056396484,
+      "south_bottom_hinge": 272.0019550734943,
+      "west_top_hinge": 89.99993133544922,
+      "west_bottom_hinge": 272.00899415662707,
+      "corner_0": -179.04966735839844,
+      "corner_1": -0.4057691991329193,
+      "corner_2": -178.9304962158203,
+      "corner_3": -1.6140556335449219
+    },
+    "score_sample": {
+      "body_up_dot": -0.01651442050933838,
+      "angle_evidence": {
+        "version": "carton-continuous-bottom-v1",
+        "valid": true,
+        "failure": null,
+        "initialized_from_authored_zero": true,
+        "initial_counter": 0,
+        "physics_dt_s": 0.004166666666666667,
+        "control_index": 7998,
+        "counter": 95976,
+        "time_s": 399.9,
+        "substeps_in_control": 12,
+        "angles_deg": [
+          272.00730421574434,
+          272.0019550734943,
+          270.9443943316752,
+          272.00899415662707
+        ]
+      },
+      "time": 399.90000000000003,
+      "blade_tip_local": [
+        -0.31937902113727745,
+        0.078316925792105,
+        0.022579762842155845
+      ],
+      "blade_alignment": -0.0428667813539505,
+      "cutter_held": false,
+      "bottom_angles": [
+        272.00730421574434,
+        272.0019550734943,
+        270.9443943316752,
+        272.00899415662707
+      ],
+      "top_angles": [
+        269.99959564208984,
+        269.05435943603516,
+        269.0525588989258,
+        270.0000686645508
+      ],
+      "crease_separation": 2.3087967486384255e-05,
+      "min_height": -4.523436819003912e-06,
+      "max_height": 0.018607330016791712,
+      "carton_speed": 2.5288106826337753e-06,
+      "cutter_height": 0.01803046464920044,
+      "cutter_parked": true,
+      "hands_clear": true
+    },
+    "metrics": {
+      "score": 1.0,
+      "invalid": null,
+      "cuts": {
+        "seam": {
+          "cut": 110,
+          "total": 110
+        },
+        "front_fold": {
+          "cut": 24,
+          "total": 24
+        },
+        "back_fold": {
+          "cut": 24,
+          "total": 24
+        }
+      },
+      "bottom_opened": true,
+      "flat_release_hold": 1.75,
+      "turnover_complete": true
+    },
+    "robot_control": [
+      {
+        "phase": "withdraw",
+        "failure": null,
+        "carton_lean_deg": 88.99581358563981,
+        "carton_height_span_m": 0.01861197764175082,
+        "ik_errors": [
+          [
+            7.862801346112728e-05,
+            0.00019714297387506079
+          ],
+          [
+            1.5470696852109795e-05,
+            5.8925133847319115e-05
+          ]
+        ],
+        "complete": true
+      }
+    ]
+  }
+}
