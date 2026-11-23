@@ -7,7 +7,7 @@ class Model(NativeModel):
  def __init__(self):
   super().__init__();self.grasp_state={};self.dwell=np.zeros((len(CELLS),len(SAMPLES)));self.bonded=np.zeros_like(self.dwell,dtype=bool);self.bond_cells=set();self.peak_gap=0.;self.roller_load=0.;self.sealed=np.zeros(96,dtype=bool)
  def configure_station(self):
-  from pad_covers import install
+  from stock_gripper import install
   install()
  def bind_native(self,base):
   super().bind_native(base)
@@ -17,8 +17,8 @@ class Model(NativeModel):
   root=str(self.joints['roller_compliance'].GetBody0Rel().GetTargets()[0]).rsplit('/',1)[0]
   for name in CELLS:UsdGeom.Imageable(self.stage.GetPrimAtPath(root+'/'+name)).CreateVisibilityAttr().Set('invisible')
   from finite_pinch import FinitePinch
-  self.film_pinch=FinitePinch(self,[f'film_{NX//2}_{j}' for j in [0,NY-1]],THICKNESS/2,.001,.003,(-.004,.004),force_limit=.4,torque_limit=.001)
-  self.tool_pinch=FinitePinch(self,['roller_handle'],.005,.001,.003,(-.006,.004))
+  self.film_pinch=FinitePinch(self,[f'film_{NX//2}_{j}' for j in [0,NY-1]],THICKNESS/2,0.,.003,(-.002,.002),force_limit=.4,torque_limit=.001)
+  self.tool_pinch=FinitePinch(self,['roller_handle'],.005,0.,.003,(-.002,.002))
  def sample_positions(self):return np.array([SAMPLES@self.orientation(n).T+self.p(n) for n in CELLS])
  def create_bond(self,index):
   from pxr import UsdPhysics,Sdf,Gf
