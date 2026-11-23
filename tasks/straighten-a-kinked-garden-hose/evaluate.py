@@ -129,6 +129,7 @@ def main():
         metavar="1..420",
     )
     parser.add_argument("--video", action="store_true")
+    parser.add_argument("--server-url", help="Private URL of an authenticated Dream bridge")
     args = parser.parse_args()
     args.out.mkdir(parents=True, exist_ok=False)
     fixture = FIXTURES[args.fixture](args.variant)
@@ -145,7 +146,7 @@ def main():
         max_steps=args.steps,
     )
     try:
-        with DreamPolicy(timeout_s=60.0) as policy:
+        with DreamPolicy(timeout_s=60.0, server_url=args.server_url) as policy:
             logs = eval(
                 task,
                 policy,

@@ -8,11 +8,11 @@
   ],
   "instruction": "Straighten the kink in the garden hose until the running nozzle delivers a steady stream. Leave both ends connected.",
   "context": "A hose can kink while its source and nozzle stay connected. Straightening the bend restores the lumen and flow without disconnecting the system.",
-  "setup": "Secure both metal hose connections on a 300 × 368 mm stand. Turn on the water. The 24 mm outside-diameter hose starts in a tight kink of roughly 72° and its fixed brass nozzle points into a collector.",
-  "scoring": "Partial credit 0.5 when flow recovers to 105 mL/s. Full credit requires both grippers at least 70 mm clear of the bend, 163 mL/s for at least 1.2 consecutive seconds, and at least 200 mL of modeled collection in that interval. The fixed couplers stay connected.",
-  "reset_notes": "Empty the collector, restore the same supply setting and fold the same section beyond its kink point.",
-  "fidelity": "A three-joint bend transmits gripper contact. A dynamic wall coordinate models local bore collapse and recovery. Modeled discharge depends on the resulting elliptical aperture, and the collector accumulates flow during the hands-clear proof. The pressure setting and wall parameters are nominal. The outlet beyond the active bend is rendered as a smooth curve. See the timed jug protocol for the matching physical measurement.",
+  "setup": "Use unreinforced flexible PVC tube, 12 mm ID, 16 mm OD and 480 mm exposed between two fixed barbs. A constant-head reservoir 1 m above the spout supplies the nozzle. Adjust the upstream valve once for 500 ± 25 g in five seconds with the tube open. Board dimensions, barb direction, materials and coordinates are in README.md.",
+  "scoring": "Divide the water collected in the final uninterrupted five seconds with both tools at least 70 mm clear of the entire tube, no arm contact, and both ends connected by the median of three five-second open-hose collections on the same setup. Full score 1.0 at 80% or higher, partial score 0.5 at 50% to below 80%, and zero otherwise. A shorter eligible interval scores zero.",
+  "reset_notes": "Mark the crease 100 mm from the inlet. Form a reverse fold around a 6 mm pin for 10 s, remove the pin and lay the hose on the coordinate template. Verify a stable 68–74 degree local turn and five-second collection at most 20% of the median open reference before each trial.",
+  "fidelity": "The entire hose is a colliding jointed chain from the rigid inlet to two constraints at the outlet barb. Contact forces load compliant links on both sides of the bistable crease. Curvature changes the cross-section through a compliant wall coordinate, which determines discharge. The timed jug protocol and the simulator share a scoring function. Model parameters and the proposed physical reset await bench validation.",
   "run_limit": "420 joint actions at 20 Hz (21 seconds)",
   "scores": "Dream-1 run: 0.0; scripted demo: 1.0",
-  "media": "M-PJCW5K"
+  "media": "M-TJGV7Y"
 }
