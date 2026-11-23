@@ -1,0 +1,19 @@
+{
+  "isaacsim": "6.1.0.0",
+  "isaaclab": "17.0.2",
+  "isaaclab-arena": "0.3.0",
+  "yam-arena": "0.1.0",
+  "inspect-robots": "1.0.0",
+  "inspect-robots-yam": "0.38.0",
+  "inspect-robots-dream": "0.1.0",
+  "dreamlabs-client": "1.1.7",
+  "torch": "2.11.0+cu128",
+  "numpy": "2.3.1",
+  "scipy": "1.17.0",
+  "source_revisions": {
+    "/workspace/IsaacLab-Arena": "c7edf3a9d5d8276565208f72422f8f8a0806d6cf",
+    "/workspace/IsaacLab-Arena/submodules/IsaacLab": "91a0906f93802eb859192dcb0bca879f891e92d6",
+    "/workspace/yam-arena": "0059d02a1a91bc6834c1d0846022891df0c78730"
+  }
+}
+

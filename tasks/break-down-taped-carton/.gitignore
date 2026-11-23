@@ -1,0 +1,5 @@
+__pycache__/
+*.py[cod]
+sealed-three-flap-actions.jsonl
+scripted-trial/
+model-trial/

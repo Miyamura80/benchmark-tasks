@@ -1,0 +1,20 @@
+{
+  "title": "Break down a sealed carton for recycling",
+  "category": "Impact on jobs",
+  "keywords": [
+    "bimanual",
+    "carton",
+    "tape cutting",
+    "recycling",
+    "turnover"
+  ],
+  "instruction": "Break down the empty taped carton for recycling: turn it upside down, cut the bottom seam and both taped end folds with the guarded cutter, park the cutter on its pad, open all four bottom flaps, and leave the intact carton flat on the table with both hands clear.",
+  "context": "Retail, warehouse and receiving workers routinely break down taped cartons. The task requires turning over a free box, controlling a blade along three tape paths, handling attached flaps and collapsing the carton without tearing it.",
+  "setup": "Two stock YAM parallel-gripper arms at the standard station. Empty 220 x 180 x 180 mm carton, 3 mm corrugated board, 450 g/m\u00b2, about 126 g total. Starts upright and axis-aligned at world XY (250,-100) mm on the Z=747.5 mm table. Four top flaps folded outward to 270 degrees; four bottom flaps closed and sealed with a 48 mm polypropylene packing-tape strip along the 220 mm bottom seam and 40 mm up each end wall. West inner bottom flap has one 28 x 10 mm rectangular free-edge finger notch. A 55 g plastic-bodied guarded cutter with a steel blade starts at world XYZ (130,420,767.5) mm on a 170 x 70 x 2 mm flat polymer pad. Cutter handle 100 x 25 x 25 mm, guard 20 x 30 x 20 mm, blade 14 x 0.5 x 8 mm. No fixture, added handle or pre-cut tape. See README, config.py and scene.py for exact panel geometry.",
+  "scoring": "0 before complete tape cutting; 0.25 after valid cuts through the whole centre seam and both end folds (158/158 native coverage cells); 0.50 after also opening each bottom flap outward to at least 150 degrees; 1.00 after also flattening the intact carton and releasing it for 1 second. Turnover must establish at least 0.5 s within 5 degrees of upside down before cutting. Full score: all eight flaps within 15 degrees of coplanar with their walls, total height span <=24 mm, lowest point -2 to +8 mm and highest <=30 mm above the tabletop; panel speed <10 mm/s, hands >=70 mm outside carton bounds and >=65 mm from the cutter, cutter within 50 mm of its reset pose and speed <20 mm/s. Torn creases >4 mm, forced sealed flaps >12 degrees, drops >30 mm below the table or invalid continuous angle evidence invalidate the trial. Physical checks use continuous tape inspection, ruler, angle references and video; see README.",
+  "run_limit": "12,000 control steps at 20 Hz (600 simulated seconds), for both model and scripted policies.",
+  "reset_notes": "Return the carton upright with top flaps folded back, refold the bottom and apply fresh tape. Keep all eight flaps attached and preserve the west finger notch. Replace torn or damaged cardboard; return cutter to pad.",
+  "fidelity": "Twelve finite-thickness rigid panels and physical revolute crease joints approximate cardboard; continuous bending, crushing and tearing are not simulated. Bottom creases use zero-stiffness passive angular drag with a torque cap scaled to flap weight. Tape is a discrete restraint released only by measured held-blade coverage, without tape-film deformation, peeling adhesion or cutting-force simulation. The notch has collision geometry. Adjacent bottom/corner panel joint collision is disabled. Independent carton, robot and table contacts remain native. Scoring checks separation and penetration. Scripted demo video replays measured native actor poses from the uninterrupted trial without invented motion or interpolation. Both trials retain the same setup and measured scorer.",
+  "scores": "Dream-1 run: 0.00; scripted demonstration: 1.00.",
+  "media": "M-DGS96R"
+}

@@ -4,9 +4,9 @@ Turn over the empty carton, cut its bottom tape with the guarded cutter, park th
 
 ## Fixed setup
 
-Use an empty 220 x 180 x 180 mm regular slotted carton made from 3 mm corrugated cardboard, with an areal density of 450 g/m² (about 126 g total). Its four top flaps are already folded outward to 270 degrees. All four bottom flaps start closed. One 48 mm packing-tape strip seals the 220 mm bottom centre seam and wraps 40 mm up both end walls. There are no pre-cut tape paths. Place the carton upright at world XY (250, -100) mm on the YAM station table, whose surface is Z=747.5 mm. The walls align with the world XY axes; `config.py` and `scene.py` give every panel pose and size.
+Use an empty 220 x 180 x 180 mm regular slotted carton made from 3 mm corrugated cardboard, with an areal density of 450 g/m² (about 126 g total). Its four top flaps are already folded outward to 270 degrees. All four bottom flaps start closed. One 48 mm polypropylene packing-tape strip seals the 220 mm bottom centre seam and wraps 40 mm up both end walls. There are no pre-cut tape paths. Place the carton upright at world XY (250, -100) mm on the YAM station table, whose surface is Z=747.5 mm. The walls align with the world XY axes; `config.py` and `scene.py` give every panel pose and size.
 
-The 55 g guarded cutter starts at (130, 420, 767.5) mm on a 170 x 70 x 2 mm pad. It has a 100 x 25 x 25 mm handle, a 20 x 30 x 20 mm guard and a 14 x 0.5 x 8 mm blade. Use two standard YAM arms with their stock parallel jaws. No carton fixture, handle, external force or object-pose controller is used.
+The 55 g plastic-bodied guarded cutter with a steel blade starts at (130, 420, 767.5) mm on a 170 x 70 x 2 mm flat polymer pad. It has a 100 x 25 x 25 mm handle, a 20 x 30 x 20 mm guard and a 14 x 0.5 x 8 mm blade. Use two standard YAM arms with their stock parallel jaws. No carton fixture, handle, external force or object-pose controller is used.
 
 For a physical reset, use a matching carton, refold its bottom flaps, apply fresh tape and return the cutter to its pad. Replace torn or permanently damaged cardboard. Use a guarded carton cutter and keep people outside the robot workspace while it moves.
 
@@ -58,3 +58,9 @@ The model command accepts no recorded action prefix. Dream-1 receives only the o
 ## Simulation fidelity
 
 The carton uses twelve finite-thickness rigid cardboard panels and twelve physical revolute crease joints; it does not simulate continuous bending, crushing or tearing. Bottom crease drag is a passive angular damper with a torque cap scaled to each flap's mass and lever arm, with zero spring stiffness. The notch geometry is collision-enabled. Tape is a discrete restraint released after measured complete blade coverage; peel adhesion, tape-film deformation and cutting forces are not modelled. The visual tape remains a surface marking. Bottom/corner adjacent-panel joint collision is disabled; independent board and robot contact remain physical. Crease separation and tabletop penetration are scored explicitly. These approximations and the notched flap must be retained when comparing the two policies or reproducing the setup.
+
+## Submitted model trial and media
+
+Dream-1 beta scored **0.00** after the full **12,000 controls / 600 simulated seconds**. All 250 inference requests completed; there was no model or native-scoring failure. It did not turn over the carton or cut any tape. Wall runtime was **31.7 minutes** on one RTX PRO 6000 Blackwell. An independent scorer replay matched **12,000/12,000** logged native score samples. The H.264 model recording contains exactly 12,000 frames at 20 fps. The scripted demonstration remains **1.00**.
+
+Board media **M-DGS96R** contains the complete model video, full-score native-state demonstration replay, and sealed-start setup screenshot. `evidence/model-result.json` records the score, model checkpoint, replay count and content hashes. `evidence/runtime-versions.json` records the installed runtime. The 43 focused scoring/angle/crease tests passed.

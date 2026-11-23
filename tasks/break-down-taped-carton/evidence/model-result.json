@@ -1,0 +1,37 @@
+{
+  "model": "Dream-1",
+  "checkpoint": "dreamlabs/dream-1-beta",
+  "score": 0,
+  "native_control_steps": 12000,
+  "simulated_seconds": 600,
+  "max_control_steps": 12000,
+  "independently_matched_score_samples": 12000,
+  "metrics": {
+    "score": 0,
+    "invalid": null,
+    "cuts": {
+      "seam": {
+        "cut": 0,
+        "total": 110
+      },
+      "front_fold": {
+        "cut": 0,
+        "total": 24
+      },
+      "back_fold": {
+        "cut": 0,
+        "total": 24
+      }
+    },
+    "bottom_opened": false,
+    "flat_release_hold": 0,
+    "turnover_complete": false
+  },
+  "model_requests": 250,
+  "model_failure": null,
+  "elapsed_wall_seconds": 1901.3414431280107,
+  "video_sha256": "b6e701ceb524d95486aa25b18a3043f5a8b8552deb562bce48d4198b6dc0b9d6",
+  "trajectory_sha256": "ce23daaf9a46d0db2cc9822cdf23729830e2d19846c81149fb3fc75e279dc1f9",
+  "native_runner_sha256": "7d11191496854078982ec8bdff5cc9ca82ac5c1ce6e1bae57087754fafc904cf"
+}
+
