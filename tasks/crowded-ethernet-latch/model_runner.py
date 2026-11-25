@@ -71,7 +71,17 @@ def main():
    return super().step(action)
   def _task_step(self):
    from inspect_robots.types import StepResult
-   row=self.episode.step(self.applied);success=row['metrics']['score']==1.
+   row=self.episode.step(self.applied);scorer=self.episode.scorer
+   # Scorer-side tug check (the policy never applies forces): a constant pull on the
+   # orange boot along its withdrawal axis while the tug window is open.
+   import torch
+   from scoring import TUG_N
+   from yam_arena.urdf import quat_xyzw_to_matrix
+   plug=np.asarray(row['poses']['plug_0']);axis=-quat_xyzw_to_matrix(plug[3:])[:,0]
+   f=axis*TUG_N if scorer.tug_active else np.zeros(3)
+   self._base.scene['plug_0'].permanent_wrench_composer.set_forces_and_torques_index(forces=torch.as_tensor(f[None,None,:],device=self._base.device,dtype=torch.float32),torques=torch.zeros((1,1,3),device=self._base.device,dtype=torch.float32),is_global=True)
+   row['tug_force_N']=f.tolist()
+   success=scorer.finished(self._t)
    return StepResult(observation=self._observation(),terminated=success,termination_reason='success' if success else None,info={'score':row['metrics']['score'],'success':success})
   def close(self):
    if hasattr(self,'episode'):self.episode.close()
