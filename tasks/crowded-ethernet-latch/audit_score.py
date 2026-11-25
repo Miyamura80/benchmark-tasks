@@ -55,22 +55,22 @@ def audit(root):
         sample=dict(time=t,clip_travel=travel,source_insertion=ins(source),target_insertion=ins(target),
             target_lateral_error=np.linalg.norm(plug[1:3]-target[1:3]),target_angle=np.arccos(np.clip(r[0,0],-1.,1.)),
             speed=0 if last is None else 20*np.linalg.norm(plug[:3]-last),height=plug[2],
-            max_neighbour_withdrawal=neighbour,hands_clear=clear,hook_retained=retaining_face(clip,TARGET)['retained'])
+            max_neighbour_withdrawal=neighbour,neighbour_median_depth=float(np.median([plugs[j][0]+.012*quat_xyzw_to_matrix(plugs[j][3:])[0,0]-.3985 for j in USED if j!=SERVICE])),hands_clear=clear,hook_retained=retaining_face(clip,TARGET)['retained'])
         last=plug[:3].copy()
         metrics=scorer.update(sample)
         assert scorer.invalid is None
         assert abs(metrics['score']-row['metrics']['score'])<=1e-9
-        if scorer.released:events.setdefault('release_s',t)
-        if scorer.disconnected:events.setdefault('withdrawal_s',t)
+        if scorer.out:events.setdefault('source_cleared_s',t)
+        if scorer.tug_start is not None:events.setdefault('tug_start_s',scorer.tug_start)
         if scorer.value>=.5:events.setdefault('seated_s',t)
         if scorer.hold>0:finalrows+=1;minfinalclear=min(minfinalclear,mesh['minimum_gap_m'])
         else:finalrows=0;minfinalclear=float('inf')
         if scorer.value==1:events.setdefault('full_score_s',t)
         peak=max(peak,travel);biggest_neighbor=max(biggest_neighbor,neighbour)
-    assert scorer.value==1. and scorer.hold>=2. and finalrows>=40
+    assert scorer.value==1. and scorer.passed_tug and finalrows>=40
     neighbors=[j for j in USED if j!=SERVICE]
     return dict(score=scorer.value,trace_sha256=digest.hexdigest(),steps=i+1,control_hz=20,
-        events=events,retention_hold_s=round(scorer.hold,5),peak_clip_travel_mm=round(1000*peak,4),
+        events=events,hands_off_hold_s=round(scorer.hold,5),tug_movement_mm=round(1000*(scorer.tug_depth0-scorer.tug_min),4),tug_attempts=scorer.tug_attempts,peak_clip_travel_mm=round(1000*peak,4),
         final_clip_travel_mm=round(1000*travel,4),target_depth_mm=round(1000*sample['target_insertion'],3),
         target_lateral_error_mm=round(1000*sample['target_lateral_error'],3),
         target_axis_error_deg=round(np.degrees(sample['target_angle']),3),
