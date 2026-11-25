@@ -23,7 +23,7 @@ Both runs start with seed 0 and zero object jitter. The limit is 2,400 control s
 | 0.25 | orange plug front ≥ 2 mm outside the switch face | lower port visibly empty |
 | 0.5 | orange plug in the upper port, no more than 1.5 mm shallower than the median neighbour, within 2 mm of the port centre and 5° of its axis | ruler: rear protrusion within 1.5 mm of the neighbours |
 | 0.75 | that state held for 2 s with both grippers open, both gripper centres ≥ 70 mm away and ≥ 5 mm clearance | stopwatch and ruler |
-| 1.0 | then a scorer-applied 3 N pull on the orange boot for 1 s moves it < 1 mm and it stays fully home | luggage scale: 3 N (about 300 g) straight back for 1 s |
+| 1.0 | then a scorer-applied 3 N pull on the orange boot for 1 s moves it < 2 mm and it stays fully home | luggage scale: 3 N (about 300 g) straight back for 1 s |
 
 Any blue/green plug pulled out more than 2 mm, the orange tab bent past its stop (broken), or the orange plug dropped below the tabletop scores 0. The tug is applied by the scorer, never by the policy, and only after the hands-off hold; the policy keeps running during it. After a full score the episode records one more second so the final frames show the result.
 

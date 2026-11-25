@@ -40,7 +40,7 @@ class ScoringTest(unittest.TestCase):
  def test_unlatched_plug_fails_tug_and_must_rehold(self):
   m=EthernetScorer();t=self.run_seq(m,0.,2,source_insertion=-.003)
   t=self.run_seq(m,t,int(HOLD_S/.05)+1,**self.home(hands_clear=True))
-  m.update(self.sample(t,source_insertion=-.02,target_insertion=HOME-.003,target_lateral_error=.0003,hands_clear=True))
+  m.update(self.sample(t,source_insertion=-.02,target_insertion=HOME-.0035,target_lateral_error=.0003,hands_clear=True))
   self.assertFalse(m.tug_active);self.assertEqual(m.hold,0.);self.assertEqual(m.value,.25)
 
  def test_hands_on_plug_never_reaches_three_quarters(self):

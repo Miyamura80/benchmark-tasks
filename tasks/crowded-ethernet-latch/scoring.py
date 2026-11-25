@@ -18,7 +18,7 @@ CLEAR_M=.070           # both gripper centres at least 70 mm from the orange plu
 HOLD_S=2.
 TUG_N=3.
 TUG_S=1.
-TUG_MOVE=.001          # plug may move at most 1 mm during the tug
+TUG_MOVE=.002          # plug may move at most 2 mm during the tug (latch play is about 1 mm)
 LINGER_S=1.            # keep recording after a full score so the final frames show it
 
 
