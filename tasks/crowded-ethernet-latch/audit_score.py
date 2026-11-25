@@ -78,7 +78,7 @@ def audit(root):
         minimum_neighbour_insertion_mm=round(1000*min_neighbor_depth,3),
         final_neighbour_latches={str(j):bool(retaining_face(clips[j],j)['retained']) for j in neighbors},
         final_neighbour_lateral_error_mm={str(j):round(1000*float(np.linalg.norm(plugs[j][1:3]-np.asarray(port(j))[1:3])),3) for j in neighbors},
-        external_forces=False,passed=True)
+        policy_external_forces=False,scorer_tug_N=3.0,passed=True)
 
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('run');a=p.parse_args();res=audit(a.run)

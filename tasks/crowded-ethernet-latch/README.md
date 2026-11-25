@@ -12,7 +12,7 @@ python model_runner.py --policy recorded --out /tmp/ethernet-scripted
 python audit_score.py /tmp/ethernet-scripted
 ```
 
-Both runs start with seed 0 and zero object jitter. The limit is 2,400 control steps at 20 Hz (120 simulated seconds). Inspect writes the final task score to the evaluation JSON, and `trajectory.jsonl` records every scored sample. Add `--state-only` to the scripted command for a faster run without cameras; it gives the same score.
+Both runs start with seed 0 and zero object jitter. The limit is 2,400 control steps at 20 Hz (120 simulated seconds). Inspect writes the final task score to the evaluation JSON, and `trajectory.jsonl` records every scored sample. Add `--state-only` to the scripted command for a faster run without cameras.
 
 ## Scoring
 
@@ -35,4 +35,6 @@ The recorded policy reads only the clock and sends 14 joint/gripper targets per 
 
 Seven articulated leads occupy a two-row, four-column block of ports. Each plug has a spring-loaded latch slider with a retaining hook; contact between the hook and the socket ledge provides retention. Dimensions approximate RJ45 hardware, not vendor CAD. Each lead's jacket is twelve 16 mm jointed capsules (19 cm), not the full lead length. The simulation does not model electrical continuity, plastic fracture or conductor strain.
 
-RESULTS_PLACEHOLDER
+## Recorded results
+
+Dream-1 scored 0.0 over the full 2,400 steps (120 simulated seconds); it never cleared the orange plug from its port. The scripted demo scored 1.0 in 1,622 steps (81.1 simulated seconds): plug out at 46.0 s, fully home at 74.2 s, 2 s hands-off hold, then the 3 N tug from 79.1 s moved it 1.1 mm (latch play) and it stayed home; full score at 80.1 s. All six neighbours stayed latched and none moved out. `audit_score.py` recomputes the same score from the saved poses. Exact numbers and hashes are in `results.json`.

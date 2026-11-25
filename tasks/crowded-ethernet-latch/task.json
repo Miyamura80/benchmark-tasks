@@ -15,6 +15,5 @@
   "run_limit": "2,400 control steps (120 seconds at 20 Hz).",
   "reset_notes": "Fixed layout, seed 0, no object jitter. Start a fresh simulator for each trial. Physically: re-seat all seven plugs until they click and confirm none is more than 1 mm proud of its neighbours before starting.",
   "fidelity": "Open sockets, guide rails, spring-loaded latch sliders with retaining hooks, socket ledges and jointed cable jackets are simulated with ordinary contact; nothing is welded or scripted. Only the 4 × 2 port block and its face are modelled, not the rest of the 1U chassis; dimensions approximate RJ45 hardware, not vendor CAD. Each jacket is twelve 16 mm capsules (19 cm of the lead). Electrical continuity, plastic fracture and conductor strain are not modelled; a tab pushed past its 2.6 mm stop is scored as broken. The latch tab is a stiff spring slider, not a bending plastic beam: while a gripper squeezes the orange tab, the slider rotates up to 2.3° and shifts 0.12 mm sideways relative to its plug (at most 0.22° and 0.03 mm on the other plugs). The score does not read the slider: it uses plug positions and the tug check. Under the 3 N tug a latched plug slides about 1.1 mm until the hook seats on its ledge, similar to the play of a real RJ45 latch. The tug is applied by the scorer, not the robot.",
-  "scores": "Dream-1 run: 0.00; scripted demo: 1.00.",
-  "media": "M-EL6DX9"
+  "scores": "Dream-1 run: 0.0 (2,400 steps); scripted demo: 1.0 (1,622 steps)."
 }
