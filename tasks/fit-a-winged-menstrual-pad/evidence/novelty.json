@@ -1,0 +1,84 @@
+{
+  "date": "2026-11-23",
+  "team_fork_base": "949bd054f3a310af40e08e4752ac8ffc458d0ed8",
+  "screened_upstream_public_pr_terms": [
+    "\"menstrual\"",
+    "\"sanitary pad\"",
+    "\"sanitary napkin\"",
+    "\"pantyliner\"",
+    "\"winged pad\"",
+    "\"gusset\""
+  ],
+  "outcome": "No menstrual care PR surfaced. The gusset result #2659 is a metal fabrication fixture. The known external pickup dataset ends with a boxed sanitary pad held above its box.",
+  "collections": {
+    "RLBench": {
+      "source": "stepjam/RLBench",
+      "tree_sha": "02720bba4c73fe02eb75df946b8791b806028a9d",
+      "truncated": false,
+      "candidate_paths": 107,
+      "exact_tokens": [],
+      "underwear_neighbours": []
+    },
+    "BEHAVIOR-1K": {
+      "source": "StanfordVL/BEHAVIOR-1K",
+      "tree_sha": "c6aca4609ea4c0bcab7e1a37d4f5a1c97ad2f5f5",
+      "truncated": false,
+      "candidate_paths": 1016,
+      "exact_tokens": [],
+      "underwear_neighbours": []
+    },
+    "RoboCasa": {
+      "source": "robocasa/robocasa",
+      "tree_sha": "7bfc60c9d26c02506d4265cbe0e86b35e6e25d42",
+      "truncated": false,
+      "candidate_paths": 380,
+      "exact_tokens": [],
+      "underwear_neighbours": []
+    },
+    "BDDL": {
+      "source": "StanfordVL/bddl",
+      "tree_sha": "06bec10ca54c7f375a1f71da8b94f7e1896ff77a",
+      "truncated": false,
+      "candidate_paths": 100,
+      "exact_tokens": [],
+      "underwear_neighbours": []
+    }
+  },
+  "external_neighbour": "https://silytics.si/datasets/Dongkkka/Task_000802_Pick_up_a_white_sanitary_pad_with_right_hand_MCAP",
+  "task_sequence": "https://www.always.com/en-us/period-hub/first-period-and-puberty/how-to-use-a-pad",
+  "procurement": "https://www.unicef.org/supply/media/12301/file/technical-specification-disposable-sanitary-pads-2022.pdf",
+  "pad_dimensions": "https://hlfppt.org/wp-content/uploads/2017/05/Request-for-Proposal-For-Supply-of-Sanitary-Napkin-Jan2017.pdf",
+  "retail_pad": "https://www.natracare.com/products/pads/ultra-regular-period-pads/",
+  "ordinary_briefs": "https://www.marksandspencer.com/5-pack-cotton-rich-bikini-briefs/p/clp60431152?color=WHITE",
+  "multi_liner_topology": "https://namyaa.in/blogs/magazine/how-to-wear-and-dispose-sanitary-pads",
+  "uk_230_by_152_mm_bulk_pad": "https://www.janitorialdirect.co.uk/care-and-protect-regular-ultra-pads-with-wings-x500.html",
+  "uk_230_mm_small_pack_pad": "https://shop.phs.co.uk/product/lil-lets-organic-pads-normal-10-per-pack-sale",
+  "official_product_dimensional_scope": "The supplier verifies length and wingspan, not exact liner count, release force or flexural rigidity; check the product lot during physical commissioning.",
+  "authenticated_board_snapshot": {
+    "date_utc": "2026-11-27T19:20:56.792187+00:00",
+    "endpoint": "https://tasks.robocurve.org/api/tasks",
+    "records_returned": 660,
+    "exhaustive": false,
+    "all_field_regex": "menstrual|sanitary[ -]?(?:pad|towel|napkin)|panty[ -]?liner|period[ -]?pad|winged[ -]?pad",
+    "matches": 0,
+    "coverage": "Returned authenticated export and direct text patterns only; not exhaustive semantic novelty clearance."
+  },
+  "previous_authenticated_board_snapshot": {
+    "date_utc": "2026-11-23",
+    "endpoint": "https://tasks.robocurve.org/api/tasks",
+    "records_returned": 1000,
+    "exhaustive": false,
+    "all_field_regex": "menstrual|sanitary[ -]?(?:pad|towel|napkin)|panty[ -]?liner|period[ -]?pad|winged[ -]?pad",
+    "matches": 0
+  },
+  "pre_submission_public_pr_refresh": {
+    "date_utc": "2026-11-27T19:20:56.792187+00:00",
+    "terms": [
+      "menstrual",
+      "sanitary",
+      "winged pad"
+    ],
+    "direct_matches": 0,
+    "coverage": "All-state public issue/PR search; not exhaustive semantic novelty clearance."
+  }
+}

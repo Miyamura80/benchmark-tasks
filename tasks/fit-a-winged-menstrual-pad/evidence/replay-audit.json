@@ -1,0 +1,39 @@
+{
+  "scripted": {
+    "fresh_reset": true,
+    "all_commands_replayed": 1709,
+    "states": 1710,
+    "native_qpos_bit_identical": true,
+    "whole_scoring_trace_equal": true,
+    "score": 1.0
+  },
+  "dream": {
+    "fresh_replay": true,
+    "steps": 1784,
+    "calls": 196,
+    "counted_bootstrap": 32,
+    "independently_compared_model_controls": 1568,
+    "session_restarts": 0,
+    "examiner": 184,
+    "all_controls_equal": true,
+    "all_fixture_equal": true,
+    "whole_trace_equal": true,
+    "native_events_equal": true,
+    "reset_max_abs_qpos_error": 1.8323476069781464e-10,
+    "max_qpos_abs_error": 1.1631218210794714e-10,
+    "max_abs_qpos_error_final": 1.734723475976807e-18,
+    "score": 0.0,
+    "warnings": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "sha256_raw_tape": "17c9718e5abb8eb148013635882bcc9c25fecfedfc36d79b4d9cf13a722c96dc"
+  },
+  "interpretation": "Dream replay uses a separately solved initial reset. Its cross-host coordinates agree numerically; they are not bit-identical. Media-only revisions do not change the native physics or controller sources."
+}
